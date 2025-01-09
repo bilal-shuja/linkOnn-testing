@@ -1,4 +1,4 @@
-'use client '
+'use client'
 
 import useAuth from "@/app/lib/useAuth"
 import React from "react"
