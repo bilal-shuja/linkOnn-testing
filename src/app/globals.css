@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+.body {
+  font-family: 'Roboto', sans-serif;
+  background-color: whitesmoke;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.bold-text {
+  font-weight: 600;
+}
+
+.bold-text:hover {
+  color: #3b82f6;
+}
+
+.no-border:focus {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.reaction-container .reaction-bar {
+  display: none;
+
+}
+
+.reaction-container:hover .reaction-bar {
+  display: block;
+
+}
+
+.bg-gradient-left {
+  background: linear-gradient(to right, #643e8b, #5b8bdf);
+  color: #fff;
+}
+
+.bg-gradient-left h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.card2 {
+  max-width: 500px;
+  width: 100%;
+  padding: 2rem;
+}
+
+.form-floating .form-control {
+  border-radius: 8px;
+}
+
+.form-floating label {
+  color: #495057;
+  font-weight: 500;
+}
+
+.alert {
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.carousel {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+.story-img-container:hover .card-img-top {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+
+.story-img-container:hover .rounded-circle {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
