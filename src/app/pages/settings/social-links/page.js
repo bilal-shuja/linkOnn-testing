@@ -15,9 +15,9 @@ export default function SocialLinks() {
     const [linkedin, setLinkedin] = useState("");
     const [youtube, setYoutube] = useState("");
 
-    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
-    const [feedbackMessage, setFeedbackMessage] = useState(''); // Message to display
-    const [confirmationVisible, setConfirmationVisible] = useState(false); // Show confirmation dialog
+    const [messageType, setMessageType] = useState('');
+    const [feedbackMessage, setFeedbackMessage] = useState('');
+    const [confirmationVisible, setConfirmationVisible] = useState(false);
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -31,8 +31,18 @@ export default function SocialLinks() {
         }
     }, []);
 
+    const validateURL = (url) => {
+        const urlPattern = /^(https?:\/\/)?([\w.-]+)+(:\d+)?(\/([\w/_-]*(\?\S+)?)?)?$/;
+        return urlPattern.test(url);
+    };
+
     const handleUpdate = () => {
-        setConfirmationVisible(true); // Show confirmation dialog
+        if (![facebook, twitter, instagram, linkedin, youtube].every(validateURL)) {
+            setMessageType('error');
+            setFeedbackMessage('Please enter valid URLs for all fields.');
+            return;
+        }
+        setConfirmationVisible(true);
     };
 
     const confirmSocialLinksUpdate = async () => {
@@ -68,17 +78,16 @@ export default function SocialLinks() {
             setMessageType('error');
             setFeedbackMessage("An error occurred while updating social links.");
         }
-        setConfirmationVisible(false); // Hide confirmation dialog
+        setConfirmationVisible(false);
     };
 
     const cancelSocialLinksUpdate = () => {
-        setConfirmationVisible(false); // Hide confirmation dialog without making changes
+        setConfirmationVisible(false);
     };
 
     return (
         <div>
             <Navbar />
-
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -90,96 +99,113 @@ export default function SocialLinks() {
                                 <div className="card-body">
                                     <h4 className="fs-5 fw-bold my-3">Social Settings</h4>
                                     <hr className="text-muted" />
-                                    <div>
-                                        <div className="mt-3 gap-4 d-flex flex-wrap">
-                                            <div className="col-12 col-md-6 mb-3">
-                                                <label className="form-label text-muted">Facebook</label>
-                                                <div className="input-group">
-                                                    <span className="input-group-text border-0">
-                                                        <i className="bi bi-facebook" aria-label="Facebook Icon"></i>
-                                                    </span>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="https://www.facebook.com/"
-                                                        value={facebook}
-                                                        onChange={(e) => setFacebook(e.target.value)}
-                                                        aria-invalid="false"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="col-12 col-md-6 mb-3">
-                                                <label className="form-label text-muted">Twitter</label>
-                                                <div className="input-group">
-                                                    <span className="input-group-text border-0">
-                                                        <i className="bi bi-twitter" aria-label="Twitter Icon"></i>
-                                                    </span>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="https://www.twitter.com/"
-                                                        value={twitter}
-                                                        onChange={(e) => setTwitter(e.target.value)}
-                                                        aria-invalid="false"
-                                                    />
-                                                </div>
+
+                                    {feedbackMessage && (
+                                        <div
+                                            className={`alert ${messageType === 'success'
+                                                ? 'alert-success'
+                                                : 'alert-danger'
+                                                } text-center`}
+                                        >
+                                            {feedbackMessage}
+                                        </div>
+
+                                    )}
+
+                                    <div className="mt-3 gap-4 d-flex flex-wrap">
+                                        {/* Facebook Input */}
+                                        <div className="col-12 col-md-6 mb-3">
+                                            <label className="form-label text-muted">Facebook</label>
+                                            <div className="input-group">
+                                                <span className="input-group-text border-0">
+                                                    <i className="bi bi-facebook"></i>
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="https://www.facebook.com/"
+                                                    value={facebook}
+                                                    onChange={(e) => setFacebook(e.target.value)}
+                                                />
                                             </div>
                                         </div>
-                                        <div className="mt-3 gap-4 d-flex flex-wrap">
-                                            <div className="col-12 col-md-6 mb-3">
-                                                <label className="form-label text-muted">Instagram</label>
-                                                <div className="input-group">
-                                                    <span className="input-group-text border-0">
-                                                        <i className="bi bi-instagram" aria-label="Instagram Icon"></i>
-                                                    </span>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="#"
-                                                        value={instagram}
-                                                        onChange={(e) => setInstagram(e.target.value)}
-                                                        aria-invalid="false"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="col-12 col-md-6 mb-3">
-                                                <label className="form-label text-muted">LinkedIn</label>
-                                                <div className="input-group">
-                                                    <span className="input-group-text border-0">
-                                                        <i className="bi bi-linkedin" aria-label="LinkedIn Icon"></i>
-                                                    </span>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="https://www.linkedin.com/"
-                                                        value={linkedin}
-                                                        onChange={(e) => setLinkedin(e.target.value)}
-                                                        aria-invalid="false"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="mt-3 gap-4">
-                                            <div className="col-12 col-md-6 mb-3">
-                                                <label className="form-label text-muted">YouTube</label>
-                                                <div className="input-group">
-                                                    <span className="input-group-text border-0">
-                                                        <i className="bi bi-youtube" aria-label="YouTube Icon"></i>
-                                                    </span>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="#"
-                                                        value={youtube}
-                                                        onChange={(e) => setYoutube(e.target.value)}
-                                                        aria-invalid="false"
-                                                    />
-                                                </div>
+
+                                        {/* Twitter Input */}
+                                        <div className="col-12 col-md-6 mb-3">
+                                            <label className="form-label text-muted">Twitter</label>
+                                            <div className="input-group">
+                                                <span className="input-group-text border-0">
+                                                    <i className="bi bi-twitter"></i>
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="https://www.twitter.com/"
+                                                    value={twitter}
+                                                    onChange={(e) => setTwitter(e.target.value)}
+                                                />
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Instagram and LinkedIn Inputs */}
+                                    <div className="mt-3 gap-4 d-flex flex-wrap">
+                                        <div className="col-12 col-md-6 mb-3">
+                                            <label className="form-label text-muted">Instagram</label>
+                                            <div className="input-group">
+                                                <span className="input-group-text border-0">
+                                                    <i className="bi bi-instagram"></i>
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="#"
+                                                    value={instagram}
+                                                    onChange={(e) => setInstagram(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-12 col-md-6 mb-3">
+                                            <label className="form-label text-muted">LinkedIn</label>
+                                            <div className="input-group">
+                                                <span className="input-group-text border-0">
+                                                    <i className="bi bi-linkedin"></i>
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="https://www.linkedin.com/"
+                                                    value={linkedin}
+                                                    onChange={(e) => setLinkedin(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* YouTube Input */}
+                                    <div className="mt-3 gap-4">
+                                        <div className="col-12 col-md-6 mb-3">
+                                            <label className="form-label text-muted">YouTube</label>
+                                            <div className="input-group">
+                                                <span className="input-group-text border-0">
+                                                    <i className="bi bi-youtube"></i>
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="#"
+                                                    value={youtube}
+                                                    onChange={(e) => setYoutube(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Save Button */}
                                     <div className="mt-4 d-flex justify-content-end">
-                                        <button className="btn btn-primary" onClick={handleUpdate}>Save Changes</button>
+                                        <button className="btn btn-primary" onClick={handleUpdate}>
+                                            Save Changes
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -187,6 +213,43 @@ export default function SocialLinks() {
                     </div>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            {confirmationVisible && (
+                <div className="modal show d-block">
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirm Update</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={cancelSocialLinksUpdate}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Are you sure you want to update your social links?</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={cancelSocialLinksUpdate}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={confirmSocialLinksUpdate}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-    )
+    );
 }

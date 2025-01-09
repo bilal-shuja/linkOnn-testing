@@ -1,10 +1,9 @@
 'use client'
 
-import Navbar from "@/app/assets/components/navbar/page"
-import SettingNavbar from "../settingNav"
+import Navbar from "@/app/assets/components/navbar/page";
+import SettingNavbar from "../settingNav";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 
@@ -13,6 +12,9 @@ export default function BlockUsers() {
     const [blockedUsers, setBlockedUsers] = useState([]);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [loading, setLoading] = useState(false); // Loading state for unblock action
+    const [confirmationVisible, setConfirmationVisible] = useState(false); // Modal visibility state
+    const [userToUnblock, setUserToUnblock] = useState(null); // User to unblock
     const api = createAPI();
 
     useEffect(() => {
@@ -32,23 +34,34 @@ export default function BlockUsers() {
         fetchBlockedUsers();
     }, []);
 
-    const unblockUser = async (user_id) => {
-        if (window.confirm('Are you sure you want to unblock this user?')) {
-            try {
-                const response = await api.post('/api/block-user', { user_id });
-                if (response.data.code == '200') {
-                    setSuccess("User unblocked successfully!");
-                    setBlockedUsers(blockedUsers.filter(user => user.id !== user_id));
-                } else {
-                    setError("Failed to unblock user");
-                }
-            } catch (error) {
-                setError("Error unblocking user");
+    const handleUnblockClick = (user_id) => {
+        setUserToUnblock(user_id);
+        setConfirmationVisible(true); // Show the confirmation modal
+    };
+
+    const unblockUser = async () => {
+        setLoading(true);
+        setConfirmationVisible(false); // Hide confirmation modal
+
+        try {
+            const response = await api.post('/api/block-user', { user_id: userToUnblock });
+            if (response.data.code == '200') {
+                setSuccess("User unblocked successfully!");
+                setBlockedUsers(blockedUsers.filter(user => user.id !== userToUnblock));
+            } else {
+                setError("Failed to unblock user");
             }
-        } else {
-            setError("Unblock action canceled.");
+        } catch (error) {
+            setError("Error unblocking user");
+        } finally {
+            setLoading(false);
         }
     };
+
+    const cancelUnblock = () => {
+        setConfirmationVisible(false); // Close the confirmation modal without unblocking
+    };
+
     return (
         <div>
             <Navbar />
@@ -63,6 +76,19 @@ export default function BlockUsers() {
                                 <div className="card-body">
                                     <h5 className="mb-4 my-3 fw-bold">Blocked Users</h5>
                                     <hr className="text-muted" />
+
+                                    {error && (
+                                        <div className="alert alert-danger text-center" role="alert">
+                                            {error}
+                                        </div>
+                                    )}
+
+                                    {success && (
+                                        <div className="alert alert-success text-center" role="alert">
+                                            {success}
+                                        </div>
+                                    )}
+
                                     {blockedUsers.length === 0 ? (
                                         <div className="my-sm-5 py-sm-5 text-center">
                                             <i className="display-1 text-muted bi bi-person-fill-slash"></i>
@@ -92,19 +118,20 @@ export default function BlockUsers() {
                                                                     className="rounded-circle"
                                                                     width={40}
                                                                     height={40}
-                                                                    style={{
-                                                                        objectFit: "cover",
-                                                                    }}
+                                                                    style={{ objectFit: "cover" }}
                                                                 />
-
                                                             </td>
                                                             <td>{user.gender}</td>
                                                             <td>
                                                                 <button
                                                                     className="btn btn-primary btn-sm"
-                                                                    onClick={() => unblockUser(user.id)}
+                                                                    onClick={() => handleUnblockClick(user.id)}
                                                                 >
-                                                                    Unblock
+                                                                    {loading && userToUnblock === user.id ? (
+                                                                        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                                    ) : (
+                                                                        "Unblock"
+                                                                    )}
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -119,6 +146,26 @@ export default function BlockUsers() {
                     </div>
                 </div>
             </div>
+
+            {confirmationVisible && (
+                <div className="modal show d-block" tabIndex="-1" role="dialog">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirm Unblock</h5>
+                                <button type="button" className="btn-close" aria-label="Close" onClick={cancelUnblock}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Are you sure you want to unblock this user? This action cannot be undone.</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={cancelUnblock}>Cancel</button>
+                                <button type="button" className="btn btn-danger" onClick={unblockUser}>Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-    )
+    );
 }

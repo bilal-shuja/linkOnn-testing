@@ -108,11 +108,11 @@ export default function Leftnav() {
 
           {people.length > 0 ? (
             people.map((person) => (
-              <div key={person.id} className="d-flex align-items-center justify-content-between mt-3 p-2">
+              <div key={person.id} className="d-flex align-items-center justify-content-between mt-2 p-2">
                 <div className="d-flex align-items-center">
                   <Image
                     src={person.avatar || '/default-avatar.png'}
-                    alt="User Avatar"
+                    alt="Avatar"
                     className="rounded-circle img-fluid"
                     width={40}
                     height={40}

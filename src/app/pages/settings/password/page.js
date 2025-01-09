@@ -12,15 +12,28 @@ export default function ChangePassword() {
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+    const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState(""); // 'success' or 'error'
+    const [loading, setLoading] = useState(false); // Button loading state
     const [confirmationVisible, setConfirmationVisible] = useState(false); // Show confirmation dialog
     const router = useRouter();
     const api = createAPI();
 
     const handleUpdatePassword = () => {
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            setMessageType("error");
+            setMessage("All fields are required.");
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setMessageType("error");
+            setMessage("New password must be at least 6 characters.");
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
-            setMessageType('error');
+            setMessageType("error");
             setMessage("New password and confirm password do not match.");
             return;
         }
@@ -29,6 +42,9 @@ export default function ChangePassword() {
     };
 
     const confirmPasswordChange = async () => {
+        setConfirmationVisible(false);
+        setLoading(true);
+
         try {
             const response = await api.post("/api/change-password", {
                 old_password: oldPassword,
@@ -36,32 +52,32 @@ export default function ChangePassword() {
                 confirm_password: confirmPassword,
             });
 
-            if (response.data.code == '200') {
-                setMessageType('success');
+            if (response.data.code === "200") {
+                setMessageType("success");
                 setMessage(response.data.message);
                 setTimeout(() => {
-                    router.push('/pages/newsfeed');
+                    router.push("/pages/newsfeed");
                 }, 2000);
             } else {
-                setMessageType('error');
+                setMessageType("error");
                 setMessage(response.data.message);
             }
         } catch (error) {
-            setMessageType('error');
+            console.error("Error updating password:", error);
+            setMessageType("error");
             setMessage("An error occurred while updating the password.");
+        } finally {
+            setLoading(false);
         }
-
-        setConfirmationVisible(false); // Hide the confirmation dialog
     };
 
     const cancelPasswordChange = () => {
-        setConfirmationVisible(false); // Hide the confirmation dialog without making changes
+        setConfirmationVisible(false);
     };
 
     return (
         <div>
             <Navbar />
-
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -75,9 +91,21 @@ export default function ChangePassword() {
                                     <h5 className="mb-4 my-3 fw-bold">Change your Password</h5>
                                     <hr className="text-muted" />
 
+                                    {message && (
+                                        <div
+                                            className={`alert ${messageType === "success" ? "alert-success" : "alert-danger"} text-center`}
+                                            role="alert"
+                                        >
+                                            {message}
+                                        </div>
+                                    )}
+
                                     <div className="my-3">
-                                        <label className="text-muted form-label px-1">Current Password</label>
+                                        <label htmlFor="oldPassword" className="text-muted form-label px-1">
+                                            Current Password
+                                        </label>
                                         <input
+                                            id="oldPassword"
                                             type="password"
                                             placeholder="Enter Old Password"
                                             className="form-control"
@@ -87,8 +115,11 @@ export default function ChangePassword() {
                                     </div>
 
                                     <div className="my-3">
-                                        <label className="text-muted form-label px-1">New Password</label>
+                                        <label htmlFor="newPassword" className="text-muted form-label px-1">
+                                            New Password
+                                        </label>
                                         <input
+                                            id="newPassword"
                                             type="password"
                                             placeholder="Enter New Password"
                                             className="form-control"
@@ -98,8 +129,11 @@ export default function ChangePassword() {
                                     </div>
 
                                     <div className="my-3">
-                                        <label className="text-muted form-label px-1">Confirm Password</label>
+                                        <label htmlFor="confirmPassword" className="text-muted form-label px-1">
+                                            Confirm Password
+                                        </label>
                                         <input
+                                            id="confirmPassword"
                                             type="password"
                                             placeholder="Confirm New Password"
                                             className="form-control"
@@ -109,8 +143,16 @@ export default function ChangePassword() {
                                     </div>
 
                                     <div className="mt-3 text-end my-4">
-                                        <button className="btn btn-primary rounded-1" onClick={handleUpdatePassword}>
-                                            Update Password
+                                        <button
+                                            className="btn btn-primary rounded-1"
+                                            onClick={handleUpdatePassword}
+                                            disabled={loading}
+                                        >
+                                            {loading ? (
+                                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            ) : (
+                                                "Update Password"
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -119,6 +161,43 @@ export default function ChangePassword() {
                     </div>
                 </div>
             </div>
+
+            {confirmationVisible && (
+                <div className="modal show d-block" tabIndex="-1" role="dialog">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirm Password Change</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    aria-label="Close"
+                                    onClick={cancelPasswordChange}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Are you sure you want to change your password?</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={cancelPasswordChange}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={confirmPasswordChange}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

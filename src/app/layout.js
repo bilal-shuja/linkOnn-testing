@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+// Load custom fonts
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -17,8 +18,9 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-  title: "Front-end",
+  title: "Link_On",
   description: "None",
+  // Consider adding more metadata like viewport settings or social meta tags if necessary
 };
 
 export default function RootLayout({ children }) {

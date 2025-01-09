@@ -4,7 +4,6 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
- 
 import Link from "next/link";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";

@@ -9,15 +9,17 @@ import useAuth from "@/app/lib/useAuth";
 export default function SessionsSett() {
     useAuth();
     const [sessions, setSessionsData] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [confirmationVisible, setConfirmationVisible] = useState(false);
     const [sessionToDelete, setSessionToDelete] = useState(null);
     const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+    const [messageType, setMessageType] = useState('');
 
     const api = createAPI();
 
     useEffect(() => {
         const fetchSessions = async () => {
+            setLoading(true);
             try {
                 const response = await api.get(`/api/get-sessions`);
                 if (response.data.code === "200") {
@@ -27,8 +29,11 @@ export default function SessionsSett() {
                     setMessage("Failed to fetch sessions");
                 }
             } catch (error) {
+                console.error("Error fetching sessions:", error.response || error.message);
                 setMessageType('error');
                 setMessage("Error fetching sessions");
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -58,6 +63,7 @@ export default function SessionsSett() {
                     setMessage("Failed to delete the session.");
                 }
             } catch (error) {
+                console.error("Error deleting session:", error.response || error.message);
                 setMessageType('error');
                 setMessage("An error occurred while deleting the session.");
             }
@@ -85,41 +91,79 @@ export default function SessionsSett() {
                                 <div className="card-body">
                                     <h5 className="mb-4 my-3 fw-bold">Manage Sessions</h5>
                                     <hr className="text-muted" />
-                                    <table className="table">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Sr</th>
-                                                <th scope="col">Device Model</th>
-                                                <th scope="col">IP Address</th>
-                                                <th scope="col">Session ID</th>
-                                                <th scope="col">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {sessions.length > 0 ? (
-                                                sessions.map((session, index) => (
-                                                    <tr key={session.id}>
-                                                        <th scope="row">{index + 1}</th>
-                                                        <td className="fw-semibold">{session.device_model}</td>
-                                                        <td>{session.ip_address}</td>
-                                                        <td>{session.session_id}</td>
-                                                        <td>
-                                                            <button
-                                                                className="btn btn-danger rounded-1"
-                                                                onClick={() => handleDelete(session.id)}
-                                                            >
-                                                                <i className="bi bi-trash me-1"></i> Delete
-                                                            </button>
+                                    {message && (
+                                        <div className={`alert ${messageType === 'success' ? 'alert-success' : 'alert-danger'} text-center`} role="alert">
+                                            {message}
+                                        </div>
+                                    )}
+                                    <div className="table-responsive">
+                                        <table className="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Sr</th>
+                                                    <th scope="col">Device Model</th>
+                                                    <th scope="col">IP Address</th>
+                                                    <th scope="col">Session ID</th>
+                                                    <th scope="col">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {loading ? (
+                                                    <tr>
+                                                        <td colSpan="5" className="text-center">
+                                                            <div className="spinner-border" role="status">
+                                                                <span className="visually-hidden">Loading...</span>
+                                                            </div>
                                                         </td>
                                                     </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan="5" className="text-center">No sessions available</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                                                ) : sessions.length > 0 ? (
+                                                    sessions.map((session, index) => (
+                                                        <tr key={session.id}>
+                                                            <th scope="row">{index + 1}</th>
+                                                            <td className="fw-semibold">{session.device_model}</td>
+                                                            <td>{session.ip_address}</td>
+                                                            <td>{session.session_id}</td>
+                                                            <td>
+                                                                <button
+                                                                    className="btn btn-danger rounded-1"
+                                                                    onClick={() => handleDelete(session.id)}
+                                                                >
+                                                                    <i className="bi bi-trash me-1"></i> Delete
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan="5" className="text-center">No sessions available</td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {confirmationVisible && (
+                                        <div className="modal show d-block">
+                                            <div className="modal-dialog">
+                                                <div className="modal-content">
+                                                    <div className="modal-header">
+                                                        <h5 className="modal-title">Confirm Delete</h5>
+                                                        <button type="button" className="btn-close" onClick={cancelDelete}></button>
+                                                    </div>
+                                                    <div className="modal-body">
+                                                        Are you sure you want to delete this session?
+                                                    </div>
+                                                    <div className="modal-footer">
+                                                        <button className="btn btn-secondary" onClick={cancelDelete}>
+                                                            Cancel
+                                                        </button>
+                                                        <button className="btn btn-danger" onClick={confirmDelete}>
+                                                            Confirm
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

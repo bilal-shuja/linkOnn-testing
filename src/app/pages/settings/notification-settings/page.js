@@ -10,7 +10,8 @@ export default function NotificationSettings() {
     useAuth();
     const api = createAPI();
 
-    const [notify_like, setLikedPosts] = useState(false);
+    // Notification state variables
+    const [notify_like, setNotifyLike] = useState(false);
     const [commentedPosts, setCommentedPosts] = useState(false);
     const [sharedPosts, setSharedPosts] = useState(false);
     const [friendRequests, setFriendRequests] = useState(false);
@@ -22,14 +23,14 @@ export default function NotificationSettings() {
 
     const [confirmationVisible, setConfirmationVisible] = useState(false);
     const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+    const [messageType, setMessageType] = useState('');
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
         if (data) {
             try {
                 const parsedData = JSON.parse(data);
-                setLikedPosts(parsedData.data.notify_like === "1");
+                setNotifyLike(parsedData.data.notify_like === "1");
                 setCommentedPosts(parsedData.data.notify_comment === "1");
                 setSharedPosts(parsedData.data.notify_share_post === "1");
                 setFriendRequests(parsedData.data.notify_accept_request === "1");
@@ -50,8 +51,6 @@ export default function NotificationSettings() {
 
     const handleUpdate = async () => {
         setConfirmationVisible(true); // Show confirmation dialog
-
-        // After confirmation, proceed with the update
     };
 
     const confirmUpdate = async () => {
@@ -68,20 +67,14 @@ export default function NotificationSettings() {
             formData.append("notify_profile_visit", profileVisits ? 1 : 0);
 
             const response = await api.post("/api/update-user-profile", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
+                headers: { "Content-Type": "multipart/form-data" }
             });
 
             if (response.data.code === "200") {
-                const userProfile = await api.get(
-                    "/api/get-user-profile?user_id=" + localStorage.getItem("userid")
-                );
-
+                const userProfile = await api.get("/api/get-user-profile?user_id=" + localStorage.getItem("userid"));
                 if (userProfile.data.code === "200") {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
-
                 setMessageType('success');
                 setMessage(response.data.message);
             } else {
@@ -116,6 +109,18 @@ export default function NotificationSettings() {
                                 <div className="card-body">
                                     <h5 className="mb-4 my-3 fw-bold">Notification Settings</h5>
                                     <hr className="text-muted" />
+                                    {message && (
+                                        <div
+                                            className={`alert ${messageType === 'success'
+                                                ? 'alert-success'
+                                                : 'alert-danger'
+                                                } text-center`}
+                                        >
+                                            {message}
+                                        </div>
+
+                                    )}
+
                                     <ul className="list-unstyled">
                                         {/* Liked My Posts */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
@@ -133,7 +138,7 @@ export default function NotificationSettings() {
                                                     type="checkbox"
                                                     role="switch"
                                                     checked={notify_like}
-                                                    onChange={() => handleToggle(setLikedPosts)}
+                                                    onChange={() => handleToggle(setNotifyLike)}
                                                     style={{ cursor: "pointer" }}
                                                 />
                                             </div>
@@ -294,13 +299,13 @@ export default function NotificationSettings() {
                                         </li>
 
                                         {/* Profile Visits */}
-                                        <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                        <li className="d-flex justify-content-between align-items-center py-2">
                                             <div className="d-flex align-items-center">
-                                                <i className="bi bi-person-circle me-3 fs-5 text-primary"></i>
+                                                <i className="bi bi-eye me-3 fs-5 text-primary"></i>
                                                 <div>
-                                                    <strong>Profile Visit</strong>
+                                                    <strong>Profile Visits</strong>
                                                     <br />
-                                                    <small className="text-muted">Receive notifications when someone visits your profile</small>
+                                                    <small className="text-muted">Get notifications when someone visits your profile</small>
                                                 </div>
                                             </div>
                                             <div className="form-check form-switch">
@@ -315,9 +320,32 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
                                     </ul>
+
+                                    {/* Save Changes button */}
                                     <div className="text-end mt-3">
                                         <button className="btn btn-primary" onClick={handleUpdate}>Save Changes</button>
                                     </div>
+
+                                    {/* Confirmation Modal */}
+                                    {confirmationVisible && (
+                                        <div className="modal fade show" tabIndex="-1" style={{ display: "block" }}>
+                                            <div className="modal-dialog">
+                                                <div className="modal-content">
+                                                    <div className="modal-header">
+                                                        <h5 className="modal-title">Confirm Update</h5>
+                                                        <button type="button" className="btn-close" onClick={cancelUpdate}></button>
+                                                    </div>
+                                                    <div className="modal-body">
+                                                        <p>Are you sure you want to save changes?</p>
+                                                    </div>
+                                                    <div className="modal-footer">
+                                                        <button type="button" className="btn btn-secondary" onClick={cancelUpdate}>Cancel</button>
+                                                        <button type="button" className="btn btn-primary" onClick={confirmUpdate}>Confirm</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

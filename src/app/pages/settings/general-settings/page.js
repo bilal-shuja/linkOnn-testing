@@ -27,6 +27,8 @@ export default function GeneralSett() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
+    const [confirmationVisible, setConfirmationVisible] = useState(false);
+
     useEffect(() => {
         const data = localStorage.getItem("userdata");
         if (data) {
@@ -63,57 +65,61 @@ export default function GeneralSett() {
         }
     };
 
-    const handleUpdate = async () => {
-        const confirmation = window.confirm(
-            "Are you sure you want to update the general settings? This action will apply the changes."
-        );
-
-        if (confirmation) {
-            try {
-                const formData = new FormData();
-                formData.append("first_name", first_name);
-                formData.append("last_name", last_name);
-                formData.append("about_you", about_you);
-                formData.append("gender", gender);
-                formData.append("address", address);
-                formData.append("phone", phone);
-                formData.append("city", city);
-                formData.append("relation_id", relation_id);
-                formData.append("working", working);
-
-                if (avatar) {
-                    formData.append("avatar", avatar);
-                }
-
-                if (cover) {
-                    formData.append("cover", cover);
-                }
-
-                const response = await api.post("/api/update-user-profile", formData, {
-                    headers: { "Content-Type": "multipart/form-data" },
-                });
-
-                if (response.data.code === '200') {
-                    const userProfile = await api.get(
-                        "/api/get-user-profile?user_id=" + localStorage.getItem("userid")
-                    );
-
-                    if (userProfile.data.code === "200") {
-                        localStorage.setItem("userdata", JSON.stringify(userProfile.data));
-                    }
-
-                    setSuccess(response.data.message);
-                } else {
-                    setError(response.data.message);
-                }
-            } catch (error) {
-                setError("An error occurred.");
-            }
-        } else {
-            setError("Action canceled.");
-        }
+    const handleUpdate = () => {
+        setConfirmationVisible(true);
     };
-    
+
+    const confirmUpdate = async () => {
+        try {
+            const formData = new FormData();
+            formData.append("first_name", first_name);
+            formData.append("last_name", last_name);
+            formData.append("about_you", about_you);
+            formData.append("gender", gender);
+            formData.append("address", address);
+            formData.append("phone", phone);
+            formData.append("city", city);
+            formData.append("relation_id", relation_id);
+            formData.append("working", working);
+
+            if (avatar) {
+                formData.append("avatar", avatar);
+            }
+
+            if (cover) {
+                formData.append("cover", cover);
+            }
+
+            const response = await api.post("/api/update-user-profile", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            if (response.data.code === '200') {
+                const userProfile = await api.get(
+                    "/api/get-user-profile?user_id=" + localStorage.getItem("userid")
+                );
+
+                if (userProfile.data.code === "200") {
+                    localStorage.setItem("userdata", JSON.stringify(userProfile.data));
+                }
+
+                setSuccess(response.data.message);
+                setError(null);
+            } else {
+                setError(response.data.message);
+                setSuccess(null);
+            }
+        } catch (error) {
+            setError("An error occurred.");
+            setSuccess(null);
+        }
+        setConfirmationVisible(false);
+    };
+
+    const cancelUpdate = () => {
+        setConfirmationVisible(false);
+    };
+
     return (
         <div>
             <Navbar />
@@ -129,6 +135,8 @@ export default function GeneralSett() {
                                     <h4 className="fs-5 fw-bold my-3">Update Profile</h4>
                                     <hr />
 
+                                    {success && <div className="alert alert-success text-center">{success}</div>}
+                                    {error && <div className="alert alert-danger text-center">{error}</div>}
 
                                     <div className="mt-3">
                                         <label className="form-label text-muted px-2">Profile Avatar</label>
@@ -142,7 +150,6 @@ export default function GeneralSett() {
                                                     width={100}
                                                     height={100}
                                                 />
-
                                             </div>
                                         ) : avatar && (
                                             <div className="mt-2">
@@ -153,11 +160,9 @@ export default function GeneralSett() {
                                                     width={100}
                                                     height={100}
                                                 />
-
                                             </div>
                                         )}
                                     </div>
-
 
                                     <div className="mt-5">
                                         <label className="form-label px-2 text-secondary">Profile Cover</label>
@@ -171,7 +176,6 @@ export default function GeneralSett() {
                                                     width={200}
                                                     height={200}
                                                 />
-
                                             </div>
                                         ) : cover && (
                                             <div className="mt-2">
@@ -182,11 +186,9 @@ export default function GeneralSett() {
                                                     width={200}
                                                     height={200}
                                                 />
-
                                             </div>
                                         )}
                                     </div>
-
 
                                     <div className="mt-5 d-flex gap-3">
                                         <div className="w-50">
@@ -259,6 +261,43 @@ export default function GeneralSett() {
                         </div>
                     </div>
                 </div>
+
+                {/* Confirmation Modal */}
+                {confirmationVisible && (
+                    <div className="modal show d-block">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Confirm Update</h5>
+                                    <button
+                                        type="button"
+                                        className="btn-close"
+                                        onClick={cancelUpdate}
+                                    ></button>
+                                </div>
+                                <div className="modal-body">
+                                    <p>Are you sure you want to update your profile?</p>
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={cancelUpdate}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        onClick={confirmUpdate}
+                                    >
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )

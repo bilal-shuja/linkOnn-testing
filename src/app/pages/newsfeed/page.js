@@ -7,7 +7,6 @@ import Link from "next/link";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
- 
 import("bootstrap/dist/js/bootstrap.bundle.min.js");
 import { useRouter } from "next/navigation";
 import Storycreate from "@/app/assets/components/createstory/page";

@@ -37,7 +37,7 @@ export default function PrivacySettings() {
     }, []);
 
     const handlePrivacyChange = (setter) => (e) => {
-        setter(e.target.checked);
+        setter(e.target.value);
     };
 
     const handleUpdate = () => {
@@ -47,12 +47,12 @@ export default function PrivacySettings() {
     const confirmPrivacyChange = async () => {
         try {
             const formData = new FormData();
-            formData.append("privacy_friends", friendRequest ? 1 : 0);
-            formData.append("privacy_message", message ? 1 : 0);
-            formData.append("privacy_view_email", viewEmail ? 1 : 0);
-            formData.append("privacy_view_phone", viewPhone ? 1 : 0);
-            formData.append("privacy_see_friend", seeFriends ? 1 : 0);
-            formData.append("privacy_birthday", birthday ? 1 : 0);
+            formData.append("privacy_friends", friendRequest);
+            formData.append("privacy_message", message);
+            formData.append("privacy_view_email", viewEmail);
+            formData.append("privacy_view_phone", viewPhone);
+            formData.append("privacy_see_friend", seeFriends);
+            formData.append("privacy_birthday", birthday);
 
             const response = await api.post("/api/update-user-profile", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
@@ -100,7 +100,11 @@ export default function PrivacySettings() {
                                 <div className="card-body">
                                     <h5 className="mb-4 fw-bold my-3">Privacy Settings</h5>
                                     <hr className="text-muted" />
-
+                                    {messageType && (
+                                        <div className={`alert alert-${messageType === 'success' ? 'success' : 'danger'} text-center`} role="alert">
+                                            {feedbackMessage}
+                                        </div>
+                                    )}
                                     {/* Privacy Setting Options */}
                                     <div className="d-flex justify-content-between align-items-center py-3 gap-5">
                                         <div className="d-flex align-items-center w-50">
@@ -243,6 +247,28 @@ export default function PrivacySettings() {
                     </div>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            {confirmationVisible && (
+                <div className="modal fade show" tabIndex="-1" style={{ display: "block" }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirm Changes</h5>
+                                <button type="button" className="btn-close" onClick={cancelPrivacyChange}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Are you sure you want to save the changes to your privacy settings?</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={cancelPrivacyChange}>Cancel</button>
+                                <button type="button" className="btn btn-primary" onClick={confirmPrivacyChange}>Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

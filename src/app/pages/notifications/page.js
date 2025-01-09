@@ -60,9 +60,9 @@ export default function Notifications() {
             <div className="col-md-3 p-3 rounded">
               <Rightnav />
             </div>
-            <div className="col-md-9 p-3 min-vh-50">
-              <div className="card shadow-lg border-0 h-50">
-                <div className="card-body d-flex flex-column h-50">
+            <div className="col-md-9 p-3 ">
+              <div className="card shadow-lg border-0 ">
+                <div className="card-body d-flex flex-column">
                   <ul className="mt-2">
                     <div className="d-flex justify-content-between align-items-center">
                       <div className="d-flex align-items-center">

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic"; // Import dynamic for SSR handling
 import createAPI from "@/app/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
@@ -22,7 +21,6 @@ export default function Navbar() {
 
   const router = useRouter();
 
-  // Fetch notifications only on the client-side
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -31,19 +29,18 @@ export default function Navbar() {
         if (response.data.code === "200") {
           setNotifications(response.data.data);
         } else {
-          setError(response.data.message); // Replace alertify with error state
+          setError(response.data.message);
         }
       } catch (error) {
-        setError("Error fetching notifications"); // Replace alertify with error state
+        setError("Error fetching notifications");
       } finally {
         setLoadingNotifications(false);
       }
     };
 
     fetchNotifications();
-  }, []); // Runs only on mount (client-side)
+  }, []);
 
-  // Fetch chats only on the client-side
   useEffect(() => {
     const fetchChats = async () => {
       try {
@@ -63,9 +60,8 @@ export default function Navbar() {
     };
 
     fetchChats();
-  }, []); // Runs only on mount (client-side)
+  }, []);
 
-  // Ensure to access localStorage only on the client-side
   useEffect(() => {
     if (typeof window !== "undefined") {
       const data = localStorage.getItem("userdata");
@@ -73,9 +69,9 @@ export default function Navbar() {
         setUserdata(JSON.parse(data));
       }
     }
-  }, []); // Runs only on mount (client-side)
+  }, []);
 
-  // Logout function with client-side localStorage manipulation
+
   const handleLogout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("token");
@@ -86,25 +82,24 @@ export default function Navbar() {
     router.push("/sign-in");
   };
 
-  // Toggle for offcanvas (for mobile menu, or similar purposes)
+
   const toggleOffcanvas = () => {
     setIsOffcanvasOpen(!isOffcanvasOpen);
   };
 
-  // If userdata is null, return nothing
   if (!userdata) return null;
 
-  // Mark all notifications as read
+
   const handleMarkAllAsRead = async () => {
     try {
       const response = await api.post("/api/notifications/mark-all-as-read");
       if (response.data.code === "200") {
-        // Remove alertify and use state or other methods to notify success
+
       } else {
-        setError(response.data.message); // Replace alertify with error state
+        setError(response.data.message);
       }
     } catch (error) {
-      setError("Error occurred while marking notifications as read"); // Replace alertify with error state
+      setError("Error occurred while marking notifications as read");
     }
   };
 
