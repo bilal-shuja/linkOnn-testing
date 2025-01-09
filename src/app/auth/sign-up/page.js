@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/auth/axios";
@@ -17,18 +17,36 @@ export default function SignUp() {
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState("");
   const [username, setUserName] = useState("");
-  const [isClient, setIsClient] = useState(false);
 
   const router = useRouter();
+
+  // Refs for each form field
+  const firstNameRef = useRef(null);
+  const lastNameRef = useRef(null);
+  const usernameRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const passwordConfirmRef = useRef(null);
+  const dobRef = useRef(null);
+  const genderRef = useRef(null);
 
   // Toggle password visibility
   const togglePasswordVisibility = () => {
     setPasswordVisible((prev) => !prev);
   };
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  // Handle arrow key press for navigating between inputs
+  const handleArrowKeyPress = (e, currentRef, nextRef, prevRef) => {
+    if (e.key === "ArrowDown") {
+      if (nextRef?.current) {
+        nextRef.current.focus(); // Move to the next field
+      }
+    } else if (e.key === "ArrowUp") {
+      if (prevRef?.current) {
+        prevRef.current.focus(); // Move to the previous field
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,10 +101,6 @@ export default function SignUp() {
     }
   };
 
-  // if (!isClient) {
-  //   return <div>Loading...</div>;
-  // }
-
   return (
     <div className="min-vh-100 d-flex">
       {/* Left Side */}
@@ -110,10 +124,7 @@ export default function SignUp() {
             <h1 className="h3 fw-bold text-primary">Sign Up</h1>
             <p className="text-muted">
               Already have an account?
-              <Link
-                href="/auth/sign-in"
-                className="text-decoration-none text-primary mx-2"
-              >
+              <Link href="/auth/sign-in" className="text-decoration-none text-primary mx-2">
                 Sign in here
               </Link>
             </p>
@@ -129,6 +140,8 @@ export default function SignUp() {
                 placeholder="First Name"
                 value={first_name}
                 onChange={(e) => setFirstName(e.target.value)}
+                ref={firstNameRef}
+                onKeyDown={(e) => handleArrowKeyPress(e, firstNameRef, lastNameRef, null)} // Arrow down to next, Arrow up to previous
               />
               <label htmlFor="firstName">First Name</label>
             </div>
@@ -141,6 +154,8 @@ export default function SignUp() {
                 placeholder="Last Name"
                 value={last_name}
                 onChange={(e) => setLastName(e.target.value)}
+                ref={lastNameRef}
+                onKeyDown={(e) => handleArrowKeyPress(e, lastNameRef, usernameRef, firstNameRef)} // Arrow down to next, Arrow up to previous
               />
               <label htmlFor="lastName">Last Name</label>
             </div>
@@ -153,6 +168,8 @@ export default function SignUp() {
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUserName(e.target.value)}
+                ref={usernameRef}
+                onKeyDown={(e) => handleArrowKeyPress(e, usernameRef, emailRef, lastNameRef)} // Arrow down to next, Arrow up to previous
               />
               <label htmlFor="username">Username</label>
             </div>
@@ -165,12 +182,13 @@ export default function SignUp() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                ref={emailRef}
+                onKeyDown={(e) => handleArrowKeyPress(e, emailRef, passwordRef, usernameRef)} // Arrow down to next, Arrow up to previous
               />
               <label htmlFor="email">Email Address</label>
             </div>
-            <p className="text-muted">
-              We wll never share your email with anyone else.
-            </p>
+
+            <p className="text-muted">We will never share your email with anyone else.</p>
 
             <div className="form-floating mb-3 position-relative">
               <input
@@ -180,6 +198,8 @@ export default function SignUp() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                ref={passwordRef}
+                onKeyDown={(e) => handleArrowKeyPress(e, passwordRef, passwordConfirmRef, emailRef)} // Arrow down to next, Arrow up to previous
               />
               <label htmlFor="password">Password</label>
               <button
@@ -187,10 +207,7 @@ export default function SignUp() {
                 className="btn position-absolute top-50 end-0 translate-middle-y"
                 onClick={togglePasswordVisibility}
               >
-                <i
-                  className={`fa ${passwordVisible ? "fa-eye-slash" : "fa-eye"
-                    }`}
-                ></i>
+                <i className={`fa ${passwordVisible ? "fa-eye-slash" : "fa-eye"}`}></i>
               </button>
             </div>
 
@@ -202,6 +219,8 @@ export default function SignUp() {
                 placeholder="Confirm Password"
                 value={password_confirm}
                 onChange={(e) => setPassword_Confirm(e.target.value)}
+                ref={passwordConfirmRef}
+                onKeyDown={(e) => handleArrowKeyPress(e, passwordConfirmRef, dobRef, passwordRef)} // Arrow down to next, Arrow up to previous
               />
               <label htmlFor="passwordConfirm">Confirm Password</label>
             </div>
@@ -213,6 +232,8 @@ export default function SignUp() {
                 id="dob"
                 value={dob}
                 onChange={(e) => setDob(e.target.value)}
+                ref={dobRef}
+                onKeyDown={(e) => handleArrowKeyPress(e, dobRef, genderRef, passwordConfirmRef)} // Arrow down to next, Arrow up to previous
               />
               <label htmlFor="dob">Date of Birth</label>
             </div>
@@ -223,6 +244,8 @@ export default function SignUp() {
                 id="gender"
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
+                ref={genderRef}
+                onKeyDown={(e) => handleArrowKeyPress(e, genderRef, null, dobRef)} // Arrow down to next, Arrow up to previous
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -231,60 +254,26 @@ export default function SignUp() {
             </div>
 
             <div className="form-check mb-3">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                id="keepSignedIn"
-              />
+              <input type="checkbox" className="form-check-input" id="keepSignedIn" />
               <label className="form-check-label" htmlFor="keepSignedIn">
                 Keep me signed in
               </label>
             </div>
 
             <div className="d-grid mb-3">
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg rounded-2"
-              >
+              <button type="submit" className="btn btn-primary btn-lg rounded-2">
                 Sign me up
               </button>
             </div>
 
             <div className="text-center mt-3">
-              <Link
-                href="/LINKS"
-                className="text-decoration-none me-3 text-muted"
-              >
+              <Link href="/LINKS" className="text-decoration-none me-3 text-muted">
                 Terms
               </Link>
-              <Link
-                href="/LINKS"
-                className="text-decoration-none me-3 text-muted"
-              >
-                About
-              </Link>
-              <Link
-                href="/LINKS"
-                className="text-decoration-none me-3 text-muted"
-              >
+              <Link href="/LINKS" className="text-decoration-none me-3 text-muted">
                 Privacy
               </Link>
-              <Link href="/LINKS" className="text-decoration-none text-muted">
-                Data Deletion
-              </Link>
             </div>
-
-            <p className="mt-3 text-center text-muted">
-              © 2022{" "}
-              <Link
-                href="https://www.socioon.com/"
-                target="_blank"
-                className="text-decoration-none text-primary"
-              >
-                Socioon
-              </Link>
-              . All rights reserved.
-            </p>
           </form>
         </div>
       </div>
