@@ -1,53 +1,45 @@
-"use client"; // Ensures this code runs only in the client environment
+"use client";
 
-import dynamic from "next/dynamic";
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
-  // It's already SSR-unfriendly, so no changes needed for this.
 import Link from "next/link";
 import useAuth from "@/app/lib/useAuth";
 
-// Dynamically import components that depend on the browser environment
-const Navbar = dynamic(() => import("@/app/assets/components/navbar/page"), { ssr: false });
-const Rightnav = dynamic(() => import("@/app/assets/components/rightnav/page"), { ssr: false });
+import Navbar from "@/app/assets/components/navbar/page";
+import Rightnav from "@/app/assets/components/rightnav/page";
 
 export default function Wallet() {
   useAuth();
   const [error, setError] = useState(null);
   const [balance, setBalance] = useState(null);
   const [earnings, setEarnings] = useState({});
-  const [loading, setLoading] = useState(true); // To track loading state
+  const [loading, setLoading] = useState(true);
 
   const api = createAPI();
 
-  // Fetch wallet data only after the component is mounted client-side
   useEffect(() => {
-    // Check if we are on the client-side (not SSR)
     if (typeof window !== "undefined") {
       const fetchData = async () => {
-        setLoading(true); // Start loading
+        setLoading(true);
         try {
           const response = await api.get("/api/user-wallet");
-          if (response.data.code === "200") {
+          if (response.data.status === "200") {
             setBalance(response.data.amount);
-            setEarnings(response.data.earning || {}); // Assuming earnings data comes as an object
+            setEarnings(response.data.earning || {});
           } else {
             setError("Failed to fetch wallet data.");
-            alertify.error(response.data.message); // Handle error from API
           }
         } catch (err) {
           setError("Error fetching data.");
-          alertify.error("Error fetching data.");
         } finally {
-          setLoading(false); // Stop loading
+          setLoading(false);
         }
       };
 
-      fetchData(); // Call the fetchData function
+      fetchData();
     }
-  }, []); // Only run once on client-side after the component mounts
+  }, []);
 
-  // Earnings categories for display
   const earningsCategories = [
     { label: "Like Earnings", key: "like_earnings", className: "text-success" },
     { label: "Comment Earnings", key: "comment_earnings", className: "text-success" },
@@ -62,7 +54,6 @@ export default function Wallet() {
     </div>
   );
 
-  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
@@ -100,7 +91,7 @@ export default function Wallet() {
                     </div>
                     <div>
                       <Link href="/pages/Wallet/deposit-amount" className="btn btn-primary">
-                        <i className="bi bi-cash" aria-label="add"></i>&nbsp;&nbsp;Web.deposit
+                        <i className="bi bi-cash" aria-label="add"></i>&nbsp;&nbsp;Deposit
                       </Link>
                     </div>
                   </div>
@@ -146,7 +137,7 @@ export default function Wallet() {
                         <div className="bg-light p-3 rounded">
                           <h6 className="mb-2 text-secondary">{category.label}</h6>
                           <h5 className={`${category.className} mb-0 fw-bold`}>
-                            {earnings === null
+                            {earnings[category.key] === undefined
                               ? loadingSpinner
                               : `$${earnings[category.key]}`}
                           </h5>

@@ -655,12 +655,9 @@ export default function Newsfeed() {
     }
   };
 
-
-
   const handleEmojiButtonClick = () => {
     setShowEmojiPicker((prev) => !prev);
   };
-
 
   const handleEmojiSelect = (emoji) => {
     setPostText((prevText) => prevText + emoji.emoji);
@@ -673,7 +670,7 @@ export default function Newsfeed() {
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">
-            <div className="col-md-3 p-3 rounded">
+            <div className="col-md-3 rounded">
               <Rightnav />
             </div>
 
@@ -1753,28 +1750,29 @@ export default function Newsfeed() {
                       )}
                     </div>
 
-                    <div className="d-flex justify-content-between align-items-center mb-2 mt-5 px-3">
-                      <div className="d-flex align-items-center">
+                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
+                      <div className="d-flex align-items-center mb-2 mb-md-0">
                         <span className="me-2">
-                          {post.reaction ? post.reaction.count || 0 : 0}
+                          {post.reaction ? post.reaction.count || 0 : 0 }
                         </span>
                         <i className="bi bi-hand-thumbs-up"></i>
                       </div>
-                      <div className="d-flex align-items-center text-muted">
-                        <span className="me-3">
+                      <div className="d-flex flex-wrap align-items-center text-muted">
+                        <span className="me-3 d-flex align-items-center">
                           <i className="bi bi-eye me-1"></i>
                           {post.view_count || 0}
                         </span>
-                        <span className="me-3">
+                        <span className="me-3 d-flex align-items-center">
                           <i className="bi bi-chat-dots me-1"></i>
                           {post.comment_count || 0} comments
                         </span>
-                        <span>
+                        <span className="d-flex align-items-center">
                           <i className="bi bi-share me-1"></i>
                           {post.share_count || 0} Shares
                         </span>
                       </div>
                     </div>
+
                     <hr className="my-1" />
 
                     <div className="d-flex justify-content-between">
@@ -1965,9 +1963,9 @@ export default function Newsfeed() {
                                             alt="Profile"
                                             className="rounded-circle me-1 mt-2"
                                             width={40}
-                                            height={40} 
+                                            height={40}
                                             style={{
-                                              objectFit: "cover",  
+                                              objectFit: "cover",
                                             }}
                                           />
 

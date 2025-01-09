@@ -126,8 +126,11 @@ export default function Navbar() {
             aria-expanded="false"
             aria-label="Toggle navigation"
           >
-            <span className="navbar-toggler-icon"></span>
+            <span className="icon">
+              <i className="bi-gear"></i>
+            </span>
           </button>
+
 
           <div className="collapse navbar-collapse" id="navbarNav">
             <div className="d-flex flex-column flex-lg-row align-items-center justify-content-center w-75">
