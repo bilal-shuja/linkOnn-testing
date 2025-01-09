@@ -1,7 +1,7 @@
 "use client"; // Ensure this is a client-side component
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/auth/axios";
 
@@ -15,19 +15,43 @@ export default function ConfirmForgot() {
   const [success, setSuccess] = useState("");
   const router = useRouter();
 
+  const emailRef = useRef(null);
+  const resetCodeRef = useRef(null);
+  const passwordRef = useRef(null);
+  const confirmPasswordRef = useRef(null);
+
   const togglePasswordVisibility = () => {
     setPasswordVisible((prev) => !prev);
   };
 
   useEffect(() => {
-    // Ensuring the code inside runs only in the browser
     if (typeof window !== "undefined") {
       const savedEmail = localStorage.getItem("email");
       if (savedEmail) {
         setEmail(savedEmail);
       }
     }
-  }, []); // This will run only once after the component mounts
+  }, []);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "ArrowDown") {
+      if (document.activeElement === emailRef.current) {
+        resetCodeRef.current.focus();
+      } else if (document.activeElement === resetCodeRef.current) {
+        passwordRef.current.focus();
+      } else if (document.activeElement === passwordRef.current) {
+        confirmPasswordRef.current.focus();
+      }
+    } else if (event.key === "ArrowUp") {
+      if (document.activeElement === confirmPasswordRef.current) {
+        passwordRef.current.focus();
+      } else if (document.activeElement === passwordRef.current) {
+        resetCodeRef.current.focus();
+      } else if (document.activeElement === resetCodeRef.current) {
+        emailRef.current.focus();
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -107,6 +131,8 @@ export default function ConfirmForgot() {
                 className="form-control"
                 value={email}
                 readOnly
+                ref={emailRef}
+                onKeyDown={handleKeyDown}
               />
             </div>
 
@@ -117,6 +143,8 @@ export default function ConfirmForgot() {
                 placeholder="Reset Code"
                 value={reset_code}
                 onChange={(e) => setResetCode(e.target.value)}
+                ref={resetCodeRef}
+                onKeyDown={handleKeyDown}
               />
               <label htmlFor="reset_code">Reset Code</label>
             </div>
@@ -129,6 +157,8 @@ export default function ConfirmForgot() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                ref={passwordRef}
+                onKeyDown={handleKeyDown}
               />
               <label htmlFor="password">Password</label>
               <button
@@ -149,6 +179,8 @@ export default function ConfirmForgot() {
                 placeholder="Confirm Password"
                 value={confirm_password}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                ref={confirmPasswordRef}
+                onKeyDown={handleKeyDown}
               />
               <label htmlFor="passwordConfirm">Confirm Password</label>
             </div>
@@ -156,7 +188,7 @@ export default function ConfirmForgot() {
             <div className="d-grid">
               <button
                 type="submit"
-                className="btn btn-lg btn-primary rounded-0"
+                className="btn btn-lg btn-primary rounded-2"
               >
                 Reset Password
               </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/app/lib/auth/axios";
@@ -16,9 +16,24 @@ export default function Login() {
   const [lon, setLon] = useState(null);
   const router = useRouter();
 
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "ArrowDown") {
+      if (document.activeElement === emailRef.current) {
+        passwordRef.current.focus();
+      }
+    } else if (event.key === "ArrowUp") {
+      if (document.activeElement === passwordRef.current) {
+        emailRef.current.focus();
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,7 +75,6 @@ export default function Login() {
       const response = await api.post("/api/login", { email, password, lat, lon });
 
       if (response.status === 200 && response.data.token) {
-        // Save token and user info to localStorage only on client-side
         if (isClient) {
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("userid", response.data.user_id);
@@ -95,11 +109,6 @@ export default function Login() {
   const togglePasswordVisibility = () => {
     setPasswordVisible((prev) => !prev);
   };
-
-  // if (!isClient) {
-  //   return <div>Loading...</div>;
-  // }
-
 
   return (
     <div className="min-vh-100 d-flex">
@@ -138,7 +147,9 @@ export default function Login() {
                 id="emailInput"
                 placeholder="name@example.com"
                 value={email}
+                ref={emailRef}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
               <label htmlFor="emailInput">Email address</label>
             </div>
@@ -150,7 +161,9 @@ export default function Login() {
                 id="passwordInput"
                 placeholder="Password"
                 value={password}
+                ref={passwordRef}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
               <label htmlFor="passwordInput">Password</label>
               <button
@@ -188,7 +201,7 @@ export default function Login() {
             <div className="d-grid">
               <button
                 type="submit"
-                className="btn btn-primary btn-lg rounded-0"
+                className="btn btn-primary btn-lg rounded-2"
               >
                 Login
               </button>

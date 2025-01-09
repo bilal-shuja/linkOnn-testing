@@ -103,7 +103,7 @@ export default function ForgotPassword() {
             </div>
 
             <div className="d-grid mb-3">
-              <button type="submit" className="btn btn-lg btn-primary rounded-0">
+              <button type="submit" className="btn btn-lg btn-primary rounded-2">
                 Reset Password
               </button>
             </div>

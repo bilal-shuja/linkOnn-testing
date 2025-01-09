@@ -244,7 +244,7 @@ export default function SignUp() {
             <div className="d-grid mb-3">
               <button
                 type="submit"
-                className="btn btn-primary btn-lg rounded-0"
+                className="btn btn-primary btn-lg rounded-2"
               >
                 Sign me up
               </button>
