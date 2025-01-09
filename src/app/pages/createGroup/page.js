@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
+import useAuth from "@/app/lib/useAuth";
 
 export default function GroupForm() {
+  useAuth();
   const router = useRouter();
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");

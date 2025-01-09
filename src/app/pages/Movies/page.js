@@ -6,8 +6,10 @@ import Link from "next/link";
 import createAPI from "@/app/lib/axios";
  
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function MoviesPage() {
+  useAuth();
   const api = createAPI();
   const [movies, setMovies] = useState([]);
   const [movieLoading, setMovieLoading] = useState(false);

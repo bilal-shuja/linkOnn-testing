@@ -6,8 +6,10 @@ import Link from "next/link";
 import createAPI from "@/app/lib/axios";
  
 import { useRouter } from "next/navigation";
+import useAuth from "@/app/lib/useAuth";
 
 export default function ApplyJob() {
+  useAuth();
   const [phone, setPhone] = useState("");
   const [position, setPosition] = useState("");
   const [company, setCompany] = useState("");

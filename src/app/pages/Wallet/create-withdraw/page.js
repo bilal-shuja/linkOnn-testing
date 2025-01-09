@@ -4,8 +4,10 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
+import useAuth from "@/app/lib/useAuth";
 
 export default function CreateWithdraw() {
+    useAuth();
     const [error, setError] = useState(null);
     const [balance, setBalance] = useState(null);
     const [withdrawMethod, setWithdrawMethod] = useState("");

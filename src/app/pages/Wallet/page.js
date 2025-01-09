@@ -5,12 +5,14 @@ import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
   // It's already SSR-unfriendly, so no changes needed for this.
 import Link from "next/link";
+import useAuth from "@/app/lib/useAuth";
 
 // Dynamically import components that depend on the browser environment
 const Navbar = dynamic(() => import("@/app/assets/components/navbar/page"), { ssr: false });
 const Rightnav = dynamic(() => import("@/app/assets/components/rightnav/page"), { ssr: false });
 
 export default function Wallet() {
+  useAuth();
   const [error, setError] = useState(null);
   const [balance, setBalance] = useState(null);
   const [earnings, setEarnings] = useState({});

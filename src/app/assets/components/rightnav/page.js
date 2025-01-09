@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function Rightnav() {
+  useAuth();
   const [userdata, setUserdata] = useState(null);
   const [loading, setLoading] = useState(true); // Added loading state
   const [error, setError] = useState(null); // Added error state

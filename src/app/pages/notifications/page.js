@@ -7,8 +7,10 @@ import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
  
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function Notifications() {
+  useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);

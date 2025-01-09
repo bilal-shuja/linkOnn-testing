@@ -1,15 +1,14 @@
 import axios from "axios";
 
 const createAPI = () => {
-  // Ensure that localStorage is only accessed on the client-side
   if (typeof window === "undefined") {
-    return null;  // Return null during SSR to avoid errors
+    return null; 
   }
 
   const token = localStorage.getItem("token");
 
   if (!token) {
-    return null;  // Return null if no token is available
+    return null; 
   }
 
   const api = axios.create({

@@ -3,12 +3,14 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
+import useAuth from "@/app/lib/useAuth";
 
 // Dynamically import components to avoid SSR issues
 const Navbar = dynamic(() => import("@/app/assets/components/navbar/page"), { ssr: false });
 const Rightnav = dynamic(() => import("@/app/assets/components/rightnav/page"), { ssr: false });
 
 export default function TransferAmount() {
+  useAuth();
   const [error, setError] = useState(null);
   const [balance, setBalance] = useState(null);
   const [amount, setAmount] = useState("");

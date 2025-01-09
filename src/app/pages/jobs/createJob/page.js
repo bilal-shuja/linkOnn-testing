@@ -6,8 +6,10 @@ import React, { useState } from "react";
 import createAPI from "@/app/lib/axios";
  
 import { useRouter } from "next/navigation";
+import useAuth from "@/app/lib/useAuth";
 
 export default function Createjob() {
+    useAuth();
     const router = useRouter();
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState("");

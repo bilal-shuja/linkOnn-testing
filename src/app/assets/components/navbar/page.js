@@ -6,10 +6,12 @@ import dynamic from "next/dynamic"; // Import dynamic for SSR handling
 import createAPI from "@/app/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 const api = createAPI();
 
 export default function Navbar() {
+  useAuth();
   const [userdata, setUserdata] = useState(null);
   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
   const [chats, setChats] = useState([]);

@@ -6,8 +6,10 @@ import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function Events() {
+  useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [eventLoading, setEventLoading] = useState(false);
   const [events, setEvents] = useState([]);

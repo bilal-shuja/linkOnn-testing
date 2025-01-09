@@ -7,8 +7,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import moment from "moment";
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function Blogs() {
+  useAuth();
   const [error, setError] = useState(null);
   const [blogs, setBlogs] = useState([]);
   const [recentBlogs, setRecentBlogs] = useState([]);

@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image"; 
+import useAuth from "@/app/lib/useAuth";
 
 export default function Storycreate() {
+    useAuth();
     const [userdata, setUserdata] = useState(null);
 
     useEffect(() => {

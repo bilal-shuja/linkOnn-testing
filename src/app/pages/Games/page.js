@@ -7,8 +7,10 @@ import createAPI from "@/app/lib/axios";
  
 import Link from "next/link";
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function GamesPage() {
+    useAuth();
     const [gamesData, setGamesData] = useState([]);
     const [gameloading, setGameloading] = useState(true);
     const [error, setError] = useState(null);

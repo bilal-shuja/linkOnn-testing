@@ -7,8 +7,10 @@ import createAPI from "@/app/lib/axios";
  
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function Pages() {
+  useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [suggesPLoading, setSuggesPLoading] = useState(false);
   const [myPLoading, setMyPLoading] = useState(false);

@@ -5,8 +5,10 @@ import React, { useState } from "react";
 import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
+import useAuth from "@/app/lib/useAuth";
 
 export default function DeleteAcc() {
+    useAuth();
     const router = useRouter();
     const api = createAPI();
 

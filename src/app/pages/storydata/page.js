@@ -7,9 +7,11 @@ import createAPI from "@/app/lib/axios";
  
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 
 export default function Storyform() {
+    useAuth();
     const router = useRouter();
     const [files, setFiles] = useState(null);
     const [caption, setCaption] = useState("");

@@ -6,8 +6,10 @@ import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
  
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function FriendsPage() {
+  useAuth();
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [friendsloading, setfriendsLoading] = useState(false);

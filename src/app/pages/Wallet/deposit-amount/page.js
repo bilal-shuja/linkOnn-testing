@@ -4,8 +4,10 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { useState } from "react";
 import createAPI from "@/app/lib/axios";
+import useAuth from "@/app/lib/useAuth";
 
 export default function DepositAmount() {
+    useAuth();
     const [depositMethod, setDepositMethod] = useState("");
     const [amount, setAmount] = useState("");
     const [loading, setLoading] = useState(false);  // Loading state for form submission

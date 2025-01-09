@@ -13,8 +13,10 @@ import { useRouter } from "next/navigation";
 import Storycreate from "@/app/assets/components/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 export default function Newsfeed() {
+  useAuth();
   const router = useRouter();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);

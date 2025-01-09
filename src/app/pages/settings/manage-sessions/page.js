@@ -4,8 +4,10 @@ import Navbar from "@/app/assets/components/navbar/page";
 import SettingNavbar from "../settingNav";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
+import useAuth from "@/app/lib/useAuth";
 
 export default function SessionsSett() {
+    useAuth();
     const [sessions, setSessionsData] = useState([]);
     const [confirmationVisible, setConfirmationVisible] = useState(false);
     const [sessionToDelete, setSessionToDelete] = useState(null);

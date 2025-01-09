@@ -8,10 +8,12 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import useAuth from "@/app/lib/useAuth";
 
 // Removed dynamic import of alertifyjs
 
 export default function VideoFeed() {
+    useAuth();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
