@@ -1,13 +1,11 @@
 'use client';
 
-import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import useAuth from "@/app/lib/useAuth";
-
-// Dynamically import components to avoid SSR issues
-const Navbar = dynamic(() => import("@/app/assets/components/navbar/page"), { ssr: false });
-const Rightnav = dynamic(() => import("@/app/assets/components/rightnav/page"), { ssr: false });
+import Navbar from "@/app/assets/components/navbar/page";
+import Rightnav from "@/app/assets/components/rightnav/page";
+import Select from 'react-select';
 
 export default function TransferAmount() {
   useAuth();
@@ -15,11 +13,12 @@ export default function TransferAmount() {
   const [balance, setBalance] = useState(null);
   const [amount, setAmount] = useState("");
   const [transferError, setTransferError] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state for balance
-  const [message, setMessage] = useState(""); // State for success/error message
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
   const api = createAPI();
 
-  // Fetch wallet balance when the component mounts
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -31,7 +30,7 @@ export default function TransferAmount() {
         }
       } catch (err) {
         setError("Error fetching balance.");
-        setMessage("Error fetching balance."); // Set the error message
+        setMessage("Error fetching balance.");
       } finally {
         setLoading(false);
       }
@@ -40,7 +39,34 @@ export default function TransferAmount() {
     fetchData();
   }, []);
 
-  // Client-side transfer handling
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        
+        const formData = new FormData();
+        formData.append("type", "people");
+        formData.append("limit" , '22')
+        formData.append("search_string" , "");
+
+        const response = await api.post("/api/search-user", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        if (response.data.code === "200" && Array.isArray(response.data.data)) {
+          setUsers(response.data.data);
+        } else {
+          setError("Error fetching users.");
+          setMessage("No users available.");
+        }
+      } catch (err) {
+        setError("Error fetching users.");
+        setMessage("Error fetching users.");
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const handleTransfer = async (e) => {
     e.preventDefault();
 
@@ -57,36 +83,34 @@ export default function TransferAmount() {
     }
 
     try {
-      const response = await api.post("/api/transfer-amount", { amount });
+      const response = await api.post("/api/transfer-amount", { amount, user_id: selectedUser?.value });
 
-      if (response.data.code === "200") {
+      if (response.data.status === "200") {
         setTransferError(null);
-        setMessage("Transfer successful!"); // Set success message
+        setMessage(response.data.message);
         setBalance(balance - amount);
         setAmount("");
+        setSelectedUser(null);
       } else {
         setTransferError(response.data.message);
-        setMessage(response.data.message); // Set error message from response
+        setMessage(response.data.message);
       }
     } catch (err) {
       setTransferError("Error transferring amount.");
-      setMessage("Error transferring amount."); // Set error message
+      setMessage("Error transferring amount.");
     }
   };
 
-  // Loading spinner
   const loadingSpinner = (
     <div className="spinner-grow" role="status">
       <span className="visually-hidden">Loading...</span>
     </div>
   );
 
-  // Render loading spinner if balance is being fetched
   if (loading) {
     return <div className="d-flex justify-content-center mt-3">{loadingSpinner}</div>;
   }
 
-  // Display error message if there was an error fetching balance
   if (error) {
     return (
       <div className="alert alert-danger" role="alert">
@@ -94,6 +118,11 @@ export default function TransferAmount() {
       </div>
     );
   }
+
+  const userOptions = users.map(user => ({
+    value: user.id,
+    label: user.username
+  }));
 
   return (
     <div>
@@ -105,7 +134,6 @@ export default function TransferAmount() {
               <Rightnav />
             </div>
             <div className="col-md-9 p-3 mt-4">
-              {/* Card for displaying balance */}
               <div className="card shadow-lg border-0 mb-4 p-1">
                 <div className="card-body p-4">
                   <div className="card shadow-sm border-0 p-4">
@@ -117,43 +145,56 @@ export default function TransferAmount() {
                 </div>
               </div>
 
-              {/* Card for transferring amount */}
               <div className="card shadow-lg border-0 mb-4 p-1">
                 <div className="card-body p-4">
                   <div className="card shadow-sm border-0 p-4">
                     <h5 className="card-title fw-bold text-dark">Transfer Amount</h5>
                     <hr className="text-muted" />
 
-                    {/* Transfer Form */}
                     <form onSubmit={handleTransfer}>
-                      {/* Amount input */}
+                      <div className="mb-3">
+                        <label htmlFor="username" className="form-label">
+                          User Name
+                        </label>
+                        <Select
+                          options={userOptions}
+                          value={selectedUser}
+                          onChange={setSelectedUser}
+                          isSearchable
+                          placeholder="Select a User"
+                          required
+                        />
+                      </div>
+
                       <div className="mb-3">
                         <label htmlFor="amount" className="form-label">
-                          Amount to Transfer
+                          Amount
                         </label>
                         <input
                           type="number"
                           id="amount"
+                          placeholder="Transfer Amount"
                           className="form-control"
                           value={amount}
                           onChange={(e) => setAmount(e.target.value)}
                           min="1"
                           required
-                          step="0.01"
                         />
                       </div>
 
-                      {/* Error message for invalid transfers */}
+                      {message && (
+                        <div className="alert alert-success text-center">{message}</div>
+                      )}
+                     
                       {transferError && (
-                        <div className="alert alert-danger">{transferError}</div>
+                        <div className="alert alert-danger text-center">{transferError}</div>
                       )}
 
-                      {/* Submit button */}
                       <div className="d-flex justify-content-end">
                         <button
                           type="submit"
                           className="btn btn-primary"
-                          disabled={loading}
+                          disabled={loading || !selectedUser}
                         >
                           {loading ? "Processing..." : "Transfer"}
                         </button>
