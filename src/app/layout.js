@@ -1,8 +1,12 @@
+// src/app/layout.js
+"use client"; // This is crucial for client-side execution of Stripe Elements
 import localFont from "next/font/local";
 import "./globals.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { Elements } from '@stripe/react-stripe-js'; // Import the Elements provider
+import { loadStripe } from '@stripe/stripe-js'; 
 
 // Load custom fonts
 const geistSans = localFont({
@@ -17,17 +21,17 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata = {
-  title: "Link_On",
-  description: "None",
-  // Consider adding more metadata like viewport settings or social meta tags if necessary
-};
+// Stripe key for loading Elements
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        {/* Wrap with Elements provider for Stripe */}
+        <Elements stripe={stripePromise}>
+          {children}
+        </Elements>
       </body>
     </html>
   );

@@ -21,7 +21,7 @@ export default function WithdrawReqs() {
         setBalance(balanceResponse.data.amount);
 
         const withdrawResponse = await api.post("/api/withdraw-requset/list");
-        
+
         if (withdrawResponse.data.code === "400" && withdrawResponse.data.message === "Api.withdraw_requests_not_found") {
           setWithdrawals([]); // Set withdrawals to empty array when no requests are found
           setMessage("No withdrawal requests found."); // Optionally set a message for empty state
@@ -113,13 +113,20 @@ export default function WithdrawReqs() {
                               <td>
                                 <span
                                   className={`badge ${withdrawal.status === "Pending"
-                                      ? "bg-primary"
-                                      : withdrawal.status === "Api.status_approve"
-                                        ? "bg-success"
-                                        : "bg-danger"
+                                    ? "bg-primary"
+                                    : withdrawal.status === "Api.status_approve"
+                                      ? "bg-success"
+                                      : "bg-danger"
                                     }`}
                                 >
-                                  {withdrawal.status}
+                                  {
+                                    withdrawal.status === "Pending"
+                                      ? "Pending"
+                                      : withdrawal.status === "Api.status_approve"
+                                        ? "Approved"
+                                        : null
+                                  }
+
                                 </span>
                               </td>
                             </tr>
