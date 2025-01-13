@@ -91,3 +91,30 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
+.chat-container {
+  background-color: #f8f9fa;
+}
+
+.chat-header h6 {
+  font-size: 1rem;
+}
+
+.chat-messages {
+  font-size: 0.875rem;
+}
+
+.input-group input {
+  border-right: 0;
+}
+
+.input-group button {
+  border-left: 0;
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.clickable-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

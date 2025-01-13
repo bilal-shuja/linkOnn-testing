@@ -75,7 +75,7 @@ export default function Depositamount() {
                                         <div>
                                             <h5 className="text-dark fw-bold">Total Balance</h5>
                                             <h4 className="text-dark fw-bold">
-                                                {balance === null ? loadingSpinner : `$${balance}`}
+                                            {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
                                             </h4>
                                         </div>
                                     </div>

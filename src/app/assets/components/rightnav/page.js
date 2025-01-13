@@ -30,7 +30,7 @@ export default function Leftnav() {
           <button
             className="navbar-toggler"
             type="button"
-            onClick={toggleOffcanvas} 
+            onClick={toggleOffcanvas}
             aria-controls="offcanvasLeft"
           >
             <span className="navbar-toggler-icon"></span>
@@ -50,14 +50,14 @@ export default function Leftnav() {
               <button
                 type="button"
                 className="btn-close"
-                onClick={toggleOffcanvas} 
+                onClick={toggleOffcanvas}
                 aria-label="Close"
               ></button>
             </div>
             <div className="card mb-3 shadow-lg border-0">
               <div className="card-body">
                 <div className="list-group list-group-flush">
-                  {[ 
+                  {[
                     { href: "/pages/newsfeed", icon: "home.svg", label: "News Feed" },
                     { href: "/pages/page", icon: "page.svg", label: "Pages" },
                     { href: "/pages/groups", icon: "group.svg", label: "Groups" },
@@ -72,8 +72,8 @@ export default function Leftnav() {
                     { href: "/pages/Blogs", icon: "blog.svg", label: "Blogs/Articles" },
                     { href: "/pages/Marketplace", icon: "market.svg", label: "Marketplace" },
                     { href: "/pages/Blood", icon: "directory.svg", label: "Blood" },
-                    { href: "#", icon: "boost.svg", label: "Post Ads Requests" },
-                    { href: "#", icon: "saved.svg", label: "Saved Posts" },
+                    { href: "/pages/postAdReq", icon: "boost.svg", label: "Post Ads" },
+                    { href: "/pages/savedposts", icon: "saved.svg", label: "Saved Posts" },
                     { href: "#", icon: "more.svg", label: "Explore" },
                   ].map((item, index) => (
                     <Link

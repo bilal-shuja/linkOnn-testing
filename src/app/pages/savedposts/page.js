@@ -8,9 +8,9 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import("bootstrap/dist/js/bootstrap.bundle.min.js");
 
-
-export default function VideoFeed() {
+export default function Savedposts() {
     useAuth();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -28,17 +28,15 @@ export default function VideoFeed() {
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
     const [message, setMessage] = useState("");
+    const [showList, setShowList] = useState(false);
+    const [donate, setDonate] = useState("");
 
     const api = createAPI();
 
     const fetchPosts = async (isInitialLoad = true) => {
         try {
             setLoading(true);
-            const response = await api.post("/api/post/newsfeed", {
-                limit,
-                last_post_id: lastPostId,
-                post_type: 2,
-            });
+            const response = await api.get("/api/post/saved");
 
             if (response.data && Array.isArray(response.data.data)) {
                 const newPosts = response.data.data;
@@ -341,33 +339,45 @@ export default function VideoFeed() {
             alert("Error while reacting to the Post");
         }
     };
-    const handlePostDelete = async (postId) => {
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this post? This action cannot be undone."
-        );
 
-        if (confirmDelete) {
-            try {
-                const response = await api.post("/api/post/action", {
-                    post_id: postId,
-                    action: "delete",
-                });
+    const donateAmount = (e) => {
+        setDonate(e.target.value);
+    };
 
-                if (response.data.code == 200) {
-                    setPosts((prevPosts) =>
-                        prevPosts.filter((post) => post.id !== postId)
-                    );
-                    alert("Post successfully deleted");
-                } else {
-                    alert("Failed to delete the post.");
-                }
-            } catch (error) {
-                alert("An error occurred while deleting the post.");
+    const handleDonationsend = async (postDonationId) => {
+        try {
+            const response = await api.post("/api/donate", {
+                fund_id: postDonationId,
+                amount: donate,
+            });
+            if (response.data.code == "200") {
+                alert(response.data.message);
+            } else {
+                alert(response.data.message);
             }
-        } else {
-            alert("Cancel");
+        } catch (error) {
+            alert("Error while donating Fund.");
         }
     };
+
+    const handleVote = async (optionId, pollId, postId) => {
+        try {
+            const response = await api.post("/api/post/poll-vote", {
+                poll_option_id: optionId,
+                poll_id: pollId,
+                post_id: postId,
+            });
+
+            if (response.data.status == "200") {
+                alert(response.data.message);
+            } else {
+                alert(response.data.message);
+            }
+        } catch (error) {
+            alert("An error occurred while voting. Please try again.");
+        }
+    };
+
 
     return (
         <div>
@@ -395,6 +405,7 @@ export default function VideoFeed() {
                                     <div className="card-body">
                                         <div className="d-flex align-items-center justify-content-between">
                                             <div className="d-flex align-items-center">
+
                                                 <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <Link href="#">
                                                         <Image
@@ -429,19 +440,38 @@ export default function VideoFeed() {
                                                 <div className="mx-2">
                                                     <h6 className="card-title">
                                                         {post.user.first_name} {post.user.last_name}
-                                                        {post.post_location &&
-                                                            post.post_location !== "" && (
-                                                                <span className="text-primary">
-                                                                    <small className="text-dark"> is in </small>
-                                                                    {post.post_location}
-                                                                </span>
-                                                            )}
+                                                        {post.post_location && post.post_location !== "" && (
+                                                            <span className="text-primary">
+                                                                <small className="text-dark"> is in </small>
+                                                                {post.post_location}
+                                                            </span>
+                                                        )}
                                                     </h6>
-                                                    <small className="text-muted lead-font-size">
-                                                        {post.created_human}
+                                                    <small className="text-secondary">
+                                                        {post.created_human} -
+                                                        {post.privacy === '1' && (
+                                                            <i className="bi bi-globe-asia-australia mx-1 text-primary"></i>
+                                                        )}
+
+                                                        {post.privacy === '2' && (
+                                                            <i className=" bi bi-people-fill mx-1 text-primary"></i>
+                                                        )}
+
+                                                        {post.privacy === '4' && (
+                                                            <i className=" bi bi-people mx-1 text-primary"></i>
+                                                        )}
+
+                                                        {post.privacy === '5' && (
+                                                            <i className=" bi bi-briefcase mx-1 text-primary"></i>
+                                                        )}
+
+                                                        {post.privacy === '3' && (
+                                                            <i className=" bi bi-lock-fill mx-1 text-primary"></i>
+                                                        )}
                                                     </small>
                                                 </div>
                                             </div>
+
                                             <div>
                                                 <div className="dropstart">
                                                     <button
@@ -462,7 +492,7 @@ export default function VideoFeed() {
                                                                 className="text-decoration-none dropdown-item text-secondary"
                                                                 href="#"
                                                             >
-                                                                <i className="bi bi-bookmark pe-2"></i> Save
+                                                                <i className="bi bi-bookmark pe-2"></i> Unsave
                                                                 post
                                                             </Link>
                                                         </li>
@@ -503,9 +533,226 @@ export default function VideoFeed() {
                                         </div>
                                         <hr className="my-2 text-muted" />
 
-                                        <p> {post.post_text} </p>
+                                        {post.post_type !== "donation" && (
+                                            <p
+                                                className="mt-4"
+                                                dangerouslySetInnerHTML={{ __html: post.post_text }}
+                                            />
+                                        )}
 
                                         <div className="d-flex justify-content-center flex-wrap mb-3">
+                                            {post.poll && post.poll.poll_options && (
+                                                <div className="w-100">
+                                                    <ul className="list-unstyled">
+                                                        {post.poll.poll_options.map((option) => {
+                                                            const totalVotes =
+                                                                post.poll.poll_total_votes || 0;
+                                                            const percentage =
+                                                                totalVotes > 0
+                                                                    ? Math.round(
+                                                                        (option.no_of_votes / totalVotes) * 100
+                                                                    )
+                                                                    : 0;
+
+                                                            return (
+                                                                <li key={option.id} className="mb-3 w-100">
+                                                                    <div className="d-flex align-items-center justify-content-between">
+                                                                        <div
+                                                                            className="progress flex-grow-1"
+                                                                            style={{
+                                                                                height: "30px",
+                                                                                cursor: "pointer",
+                                                                            }}
+                                                                            onClick={() =>
+                                                                                handleVote(
+                                                                                    option.id,
+                                                                                    post.poll.id,
+                                                                                    post.id
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <div
+                                                                                className="progress-bar"
+                                                                                role="progressbar"
+                                                                                style={{
+                                                                                    width: `${percentage}%`,
+                                                                                    backgroundColor: "#66b3ff",
+                                                                                }}
+                                                                                aria-valuenow={percentage}
+                                                                                aria-valuemin="0"
+                                                                                aria-valuemax="100"
+                                                                            >
+                                                                                <div
+                                                                                    className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                                                    style={{
+                                                                                        position: "absolute",
+                                                                                        overflow: "hidden",
+                                                                                        textOverflow: "ellipsis",
+                                                                                        whiteSpace: "nowrap",
+                                                                                    }}
+                                                                                >
+                                                                                    {option.option_text}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <span className="px-3">{percentage}%</span>
+                                                                    </div>
+                                                                </li>
+                                                            );
+                                                        })}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="container mt-5">
+                                            {post.donation && (
+                                                <div>
+                                                    <Image
+                                                        src={post.donation.image}
+                                                        alt={post.donation.title}
+                                                        className="img-fluid"
+                                                        width={500}
+                                                        height={300}
+                                                        style={{
+                                                            objectFit: "cover",
+                                                        }}
+                                                    />
+
+                                                    <div className="card-body text-center">
+                                                        <h5 className="card-title">
+                                                            {post.donation.title}
+                                                        </h5>
+                                                        <p className="card-text">
+                                                            {post.donation.description}
+                                                        </p>
+                                                        <div className="progress mb-3">
+                                                            <div
+                                                                className="progress-bar"
+                                                                role="progressbar"
+                                                                style={{
+                                                                    width: `${(post.donation.collected_amount /
+                                                                        post.donation.amount) *
+                                                                        100
+                                                                        }%`,
+                                                                }}
+                                                                aria-valuenow={post.donation.collected_amount}
+                                                                aria-valuemin="0"
+                                                                aria-valuemax={post.donation.amount}
+                                                            ></div>
+                                                        </div>
+                                                        <div className="d-flex align-items-center justify-content-between">
+                                                            <p className="text-muted">
+                                                                {post.donation.collected_amount} Collected
+                                                            </p>
+                                                            <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+                                                            <button
+                                                                className="btn btn-primary btn-sm"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#DonateModal"
+                                                            >
+                                                                Donate
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div
+                                            className="modal fade"
+                                            id="DonateModal"
+                                            tabIndex="-1"
+                                            aria-labelledby="ModalLabel"
+                                            aria-hidden="true"
+                                        >
+                                            <div className="modal-dialog modal-dialog-centered">
+                                                <div className="modal-content">
+                                                    <div className="modal-header">
+                                                        <h5
+                                                            className="modal-title fw-semibold"
+                                                            id="fundModalLabel"
+                                                        >
+                                                            Donate Amount
+                                                        </h5>
+                                                        <button
+                                                            type="button"
+                                                            className="btn-close"
+                                                            data-bs-dismiss="modal"
+                                                            aria-label="Close"
+                                                        ></button>
+                                                    </div>
+                                                    <div className="modal-body">
+                                                        <div>
+                                                            <label className="form-label">Amount</label>
+                                                            <input
+                                                                type="number"
+                                                                className="form-control"
+                                                                value={donate}
+                                                                onChange={donateAmount}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="modal-footer">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-primary"
+                                                            onClick={() =>
+                                                                handleDonationsend(post.donation.id)
+                                                            }
+                                                        >
+                                                            Save changes
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-dark"
+                                                            data-bs-dismiss="modal"
+                                                        >
+                                                            Close
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="d-flex justify-content-center flex-wrap mb-3">
+                                            {post.images &&
+                                                post.images.length > 0 &&
+                                                post.images.map((image, index) => (
+                                                    <Image
+                                                        key={index}
+                                                        src={image.media_path}
+                                                        alt={`Post image ${index + 1}`}
+                                                        className="img-fluid mt-1"
+                                                        width={500}
+                                                        height={300}
+                                                        style={{
+                                                            objectFit: "cover",
+                                                        }}
+                                                    />
+
+                                                ))}
+
+                                            {post.event && post.event.cover && (
+                                                <div>
+                                                    <Image
+                                                        src={post.event.cover}
+                                                        alt="Event Cover"
+                                                        className="img-fluid mt-1"
+                                                        width={500}
+                                                        height={300}
+                                                        style={{
+                                                            objectFit: "cover",
+                                                        }}
+                                                    />
+
+                                                    <button className="badge btn-primary rounded-pill mt-3">
+                                                        {post.event.start_date}
+                                                    </button>
+                                                    <h5 className="fw-bold mt-2">{post.event.name}</h5>
+                                                </div>
+                                            )}
+
                                             {post.video && (
                                                 <div
                                                     className="media-container mt-1"
@@ -527,30 +774,40 @@ export default function VideoFeed() {
                                                     </video>
                                                 </div>
                                             )}
+
+                                            {post.audio && (
+                                                <div className="media-container w-100">
+                                                    <audio controls className="w-100">
+                                                        <source src={post.audio.media_path} />
+                                                        Your browser does not support the audio tag.
+                                                    </audio>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        <div className="d-flex justify-content-between align-items-center mb-2 mt-5 px-3">
-                                            <div className="d-flex align-items-center">
+                                        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
+                                            <div className="d-flex align-items-center mb-2 mb-md-0">
                                                 <span className="me-2">
                                                     {post.reaction ? post.reaction.count || 0 : 0}
                                                 </span>
                                                 <i className="bi bi-hand-thumbs-up"></i>
                                             </div>
-                                            <div className="d-flex align-items-center text-muted">
-                                                <span className="me-3">
+                                            <div className="d-flex flex-wrap align-items-center text-muted">
+                                                <span className="me-3 d-flex align-items-center">
                                                     <i className="bi bi-eye me-1"></i>
                                                     {post.view_count || 0}
                                                 </span>
-                                                <span className="me-3">
+                                                <span className="me-3 d-flex align-items-center">
                                                     <i className="bi bi-chat-dots me-1"></i>
                                                     {post.comment_count || 0} comments
                                                 </span>
-                                                <span>
+                                                <span className="d-flex align-items-center">
                                                     <i className="bi bi-share me-1"></i>
                                                     {post.share_count || 0} Shares
                                                 </span>
                                             </div>
                                         </div>
+
                                         <hr className="my-1" />
 
                                         <div className="d-flex justify-content-between">
@@ -866,6 +1123,7 @@ export default function VideoFeed() {
                                     </div>
                                 </div>
                             ))}
+
                             <div className="d-grid gap-2 col-3 mx-auto mt-4">
                                 {noMorePosts ? (
                                     <button className="btn btn-primary" disabled>

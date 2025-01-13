@@ -76,7 +76,7 @@ export default function WithdrawReqs() {
                   <div className="card shadow-sm border-0 p-4">
                     <h5 className="text-dark fw-bold">Total Balance</h5>
                     <h4 className="text-dark fw-bold">
-                      {balance === null ? loadingSpinner : `$${balance}`}
+                    {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
                     </h4>
                   </div>
                 </div>

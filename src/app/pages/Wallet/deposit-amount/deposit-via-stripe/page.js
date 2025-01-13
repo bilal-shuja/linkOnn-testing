@@ -1,110 +1,112 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js"; // Import Stripe components
-import { loadStripe } from "@stripe/stripe-js"; // Stripe.js library
-import Navbar from "@/app/assets/components/navbar/page";
-import Rightnav from "@/app/assets/components/rightnav/page";
-import createAPI from "@/app/lib/axios";
+import { useState, useEffect } from 'react';
+import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import Navbar from '@/app/assets/components/navbar/page';
+import Rightnav from '@/app/assets/components/rightnav/page';
+import createAPI from '@/app/lib/axios';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
-export default function Wallet() {
+export default function Stripe() {
   const [error, setError] = useState(null);
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const stripe = useStripe(); // Stripe instance
-  const elements = useElements(); // Elements instance
+  const stripe = useStripe();
+  const elements = useElements();
   const api = createAPI();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
-    if (!stripe || !elements) {
-      // Make sure Stripe.js has loaded 
+
+    // Validate the amount
+    if (!amount || amount <= 0) {
+      setError('Please enter a valid amount.');
       return;
     }
-  
+
+    if (!stripe || !elements) {
+      setError('Stripe has not loaded yet.');
+      return;
+    }
+
     try {
-      // Fetch the amount from the form input or use a predefined value
-      const amountInCents = amount * 100; // amount in cents
-  
-      // Make an API request to create a PaymentIntent on the backend
-      const response = await api.post('/api/create-payment-intent', {
-        amount: amountInCents, // pass the amount to your backend API
-      });
-  
-      if (response.data.error) {
-        setError(response.data.error);
+      // Create a Stripe token from the CardElement
+      const { token, error: stripeError } = await stripe.createToken(elements.getElement(CardElement));
+
+      if (stripeError) {
+        setError(stripeError.message);
         return;
       }
-  
-      const clientSecret = response.data.clientSecret; // The clientSecret from the backend
-  
-      // Confirm the card payment using the client secret
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        },
+
+      // Send the token to Stripe API and process payment
+      const charge = await stripe.charges.create({
+        amount: amount * 100, // Amount in cents
+        currency: 'usd',
+        source: token.id,
+        description: 'Deposit Funds',
       });
-  
-      if (error) {
-        setError(error.message); // Show error if any from Stripe
+
+      if (charge.status === 'succeeded') {
+        // After successful payment, call the deposit API with the transaction ID
+        setPaymentSuccess(true);
+        alert('Payment successful!');
+
+        // Call your custom API to log the transaction after successful payment
+        await handleDepositSuccess(charge.id);
       } else {
-        if (paymentIntent.status === 'succeeded') {
-          setPaymentSuccess(true); // Set payment success state to true
-          alert("Payment successful!");
-  
-          // Now that payment is successful, call the API with gateway_id and transaction_id
-          const transactionId = paymentIntent.id; // Get transaction ID from Stripe response
-  
-          try {
-            // Make API call to add funds to the user's wallet
-            const apiResponse = await api.post('/api/deposite/add-fund', {
-              gateway_id: 2, // Gateway ID as per your requirement
-              transaction_id: transactionId, // Stripe transaction ID
-            });
-  
-            if (apiResponse.data.status === "200") {
-              // Handle success (e.g., show confirmation message)
-              console.log("Funds added successfully.");
-            } else {
-              // Handle error response
-              setError("Failed to add funds.");
-            }
-          } catch (err) {
-            // Handle API error
-            setError("Error adding funds.");
-          }
-        }
+        setError('Payment failed.');
       }
     } catch (err) {
-      setError("Error processing payment.");
+      setError('Error processing payment.');
     }
   };
-  
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const fetchData = async () => {
-        setLoading(true);
-        try {
-          const response = await api.get("/api/user-wallet");
-          if (response.data.status === "200") {
-            setBalance(response.data.amount);
-          } else {
-            setError("Failed to fetch wallet data.");
-          }
-        } catch (err) {
-          setError("Error fetching data.");
-        } finally {
-          setLoading(false);
-        }
-      };
 
-      fetchData();
+  const handleDepositSuccess = async (transactionId) => {
+    try {
+      // Send the form data to your /api/deposite/add-fund endpoint
+      const formData = new FormData();
+      formData.append('gateway_id', '2'); // Stripe gateway ID
+      formData.append('transaction_id', transactionId); // Transaction ID from Stripe
+
+      const response = await api.post('/api/deposite/add-fund', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.status === '200') {
+        alert('Deposit completed successfully');
+      } else {
+        setError('Failed to complete the deposit.');
+      }
+    } catch (err) {
+      console.error('Error processing deposit:', err);
+      setError('Error processing deposit.');
     }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get('/api/user-wallet');
+        if (response.data.status === '200') {
+          setBalance(response.data.amount);
+        } else {
+          setError('Failed to fetch wallet data.');
+        }
+      } catch (err) {
+        setError('Error fetching data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const loadingSpinner = (
@@ -115,7 +117,7 @@ export default function Wallet() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
         {loadingSpinner}
       </div>
     );
@@ -143,7 +145,7 @@ export default function Wallet() {
                 <div className="card-body">
                   <h5 className="text-dark fw-bold">Total Balance</h5>
                   <h4 className="text-dark fw-bold">
-                    {balance === null ? loadingSpinner : `$${balance}`}
+                    {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
                   </h4>
                 </div>
               </div>
@@ -192,3 +194,4 @@ export default function Wallet() {
     </div>
   );
 }
+  

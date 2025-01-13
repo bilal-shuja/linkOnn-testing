@@ -487,32 +487,31 @@ export default function Newsfeed() {
   };
 
   const handlePostDelete = async (postId) => {
-    alertify.confirm(
-      "Confirm Delete",
-      "Are you sure you want to delete this post? This action cannot be undone.",
-      async function () {
-        try {
-          const response = await api.post("/api/post/action", {
-            post_id: postId,
-            action: "delete",
-          });
-
-          if (response.data.code == 200) {
-            setPosts((prevPosts) =>
-              prevPosts.filter((post) => post.id !== postId)
-            );
-            alertify.success("Post successfully deleted");
-          } else {
-            alertify.error("Failed to delete the post.");
-          }
-        } catch (error) {
-          alertify.error("An error occurred while deleting the post.");
-        }
-      },
-      function () {
-        alertify.error("Cancel");
-      }
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this post? This action cannot be undone."
     );
+
+    if (confirmDelete) {
+      try {
+        const response = await api.post("/api/post/action", {
+          post_id: postId,
+          action: "delete",
+        });
+
+        if (response.data.code == 200) {
+          setPosts((prevPosts) =>
+            prevPosts.filter((post) => post.id !== postId)
+          );
+          alert("Post successfully deleted"); // Success alert
+        } else {
+          alert("Failed to delete the post."); // Error alert
+        }
+      } catch (error) {
+        alert("An error occurred while deleting the post."); // Error alert
+      }
+    } else {
+      alert("Cancel"); // Alert if the user cancels the deletion
+    }
   };
 
   const handleVote = async (optionId, pollId, postId) => {
@@ -1753,7 +1752,7 @@ export default function Newsfeed() {
                     <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
                       <div className="d-flex align-items-center mb-2 mb-md-0">
                         <span className="me-2">
-                          {post.reaction ? post.reaction.count || 0 : 0 }
+                          {post.reaction ? post.reaction.count || 0 : 0}
                         </span>
                         <i className="bi bi-hand-thumbs-up"></i>
                       </div>
