@@ -16,7 +16,7 @@ export default function BloodReqs() {
 
     const fetchDonors = async () => {
         try {
-            const response = await api.post(`/api/get-blood-request`);
+            const response = await api.post(`/api/get-blood-request`, { limit: 20 });
             if (response.data.code === "200") {
                 setBloodreqs(response.data.data);
             } else {
@@ -37,6 +37,29 @@ export default function BloodReqs() {
             setUserdata(JSON.parse(data));
         }
     }, []);
+
+    const handleDeleteReq = async (requestId) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this request?");
+
+        if (confirmDelete) {
+            const updatedBloodReqs = bloodreqs.filter(req => req.id !== requestId);
+            setBloodreqs(updatedBloodReqs);
+
+            try {
+                const response = await api.post(`/api/delete-bloodrequest`, { request_id: requestId });
+
+                if (response.data.code === "200") {
+                    alert(response.data.message);
+                } else {
+                    alert(response.data.message);
+                    fetchDonors();
+                }
+            } catch (error) {
+                alert("Error deleting request");
+                fetchDonors();
+            }
+        }
+    };
 
     if (!userdata) {
         return null;
@@ -62,7 +85,9 @@ export default function BloodReqs() {
                                         height={300}
                                         className="rounded-3"
                                     />
-                                    <Link href="/pages/Blood/addbloodreq" className="float-end btn btn-success btn-xs"><i className="bi bi-plus-circle"></i></Link>
+                                    <Link href="/pages/Blood/addbloodreq" className="float-end btn btn-success btn-xs">
+                                        <i className="bi bi-plus-circle"></i>
+                                    </Link>
                                 </div>
 
                                 <div className="mt-4 mx-4">
@@ -84,11 +109,21 @@ export default function BloodReqs() {
                                                     <td>{req.phone}</td>
                                                     <td>{req.location}</td>
                                                     <td>{req.blood_group}</td>
-                                                    <td>{req.is_urgent_need === "1" ? "Yes" : "No"}</td>
+                                                    <td>
+                                                        {req.is_urgent_need === "1" ? (
+                                                            <span className="badge rounded-pill bg-success">Yes</span>
+                                                        ) : (
+                                                            <span className="badge rounded-pill bg-danger">No</span>
+                                                        )}
+                                                    </td>
+
                                                     <td>
                                                         <div>
                                                             {userdata.data.id === req.user_id ? (
-                                                                <button className="btn btn-danger">
+                                                                <button
+                                                                    className="btn btn-danger"
+                                                                    onClick={() => handleDeleteReq(req.id)}
+                                                                >
                                                                     <i className="bi bi-trash3"></i> Delete
                                                                 </button>
                                                             ) : (

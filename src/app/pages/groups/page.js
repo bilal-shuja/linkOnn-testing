@@ -16,51 +16,77 @@ export default function Groups() {
   const [myGroups, setMyGroups] = useState([]);
   const [suggestedPage, setSuggestedPage] = useState(1);
   const [myGroupsPage, setMyGroupsPage] = useState(1);
+  const [totalSuggested, setTotalSuggested] = useState(0);
+  const [totalMyGroups, setTotalMyGroups] = useState(0);
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const itemsPerPage = 6; // Number of groups per page
+  const itemsPerPage = 6;
   const router = useRouter();
 
   const api = createAPI();
 
-  // Reusable fetch function for groups
-  const fetchGroups = async (type, page) => {
+  const fetchSuggestedGroups = async (page) => {
     const offset = (page - 1) * itemsPerPage;
-    setLoading((prev) => ({ ...prev, [type]: true }));
+    setLoading((prev) => ({ ...prev, suggested: true }));
 
     try {
-      const endpoint = type === "suggested" ? "/api/all-groups" : "/api/user-groups";
-      const response = await api.post(endpoint, {
+      const response = await api.post("/api/all-groups", {
         offset,
         limit: itemsPerPage,
       });
 
       if (response.data.code === "200") {
-        type === "suggested" ? setGroups(response.data.data) : setMyGroups(response.data.data);
+        setGroups(response.data.data);
+        setTotalSuggested(response.data.total); 
       } else {
         setErrorMessage(response.data.message);
       }
     } catch (error) {
-      setErrorMessage(`Error fetching ${type === "suggested" ? "Suggested" : "My"} Groups`);
+      setErrorMessage("Error fetching suggested groups");
     } finally {
-      setLoading((prev) => ({ ...prev, [type]: false }));
+      setLoading((prev) => ({ ...prev, suggested: false }));
+    }
+  };
+
+  const fetchMyGroups = async (page) => {
+    const offset = (page - 1) * itemsPerPage;
+    setLoading((prev) => ({ ...prev, myGroups: true }));
+
+    try {
+      const response = await api.get("/api/user-groups", {
+        offset,
+        limit: itemsPerPage,
+      });
+
+      if (response.data.code === "200") {
+        setMyGroups(response.data.data);
+        setTotalMyGroups(response.data.total);
+      } else {
+        setErrorMessage(response.data.message);
+      }
+    } catch (error) {
+      setErrorMessage("Error fetching my groups");
+    } finally {
+      setLoading((prev) => ({ ...prev, myGroups: false }));
     }
   };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Fetch Suggested Groups and My Groups only on the client-side
-      fetchGroups("suggested", suggestedPage);
-      fetchGroups("myGroups", myGroupsPage);
+      fetchSuggestedGroups(suggestedPage);
+      fetchMyGroups(myGroupsPage);
     }
   }, [suggestedPage, myGroupsPage]);
 
   const handlePageChange = (type, page) => {
-    type === "suggested" ? setSuggestedPage(page) : setMyGroupsPage(page);
+    if (type === "suggested") {
+      setSuggestedPage(page);
+    } else {
+      setMyGroupsPage(page);
+    }
   };
 
   const handleDeleteGroup = async (groupId) => {
-    // Confirm deletion without alertify
     const confirmDelete = window.confirm("Are you sure you want to delete this group?");
     if (!confirmDelete) return;
 
@@ -88,6 +114,9 @@ export default function Groups() {
     }
   };
 
+  const suggestedTotalPages = totalSuggested ? Math.ceil(totalSuggested / itemsPerPage) : 0;
+  const myGroupsTotalPages = totalMyGroups ? Math.ceil(totalMyGroups / itemsPerPage) : 0;
+
   return (
     <div>
       <Navbar />
@@ -113,7 +142,7 @@ export default function Groups() {
                       aria-selected={activeTab === 0}
                       onClick={() => {
                         setActiveTab(0);
-                        fetchGroups("suggested", suggestedPage);
+                        fetchSuggestedGroups(suggestedPage); 
                       }}
                     >
                       All Groups
@@ -128,7 +157,7 @@ export default function Groups() {
                       aria-selected={activeTab === 1}
                       onClick={() => {
                         setActiveTab(1);
-                        fetchGroups("myGroups", myGroupsPage);
+                        fetchMyGroups(myGroupsPage);
                       }}
                     >
                       My Groups
@@ -147,10 +176,7 @@ export default function Groups() {
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4>All Groups</h4>
                         <div className="d-flex align-items-center">
-                          <select
-                            className="form-select me-2"
-                            style={{ width: "150px" }}
-                          >
+                          <select className="form-select me-2" style={{ width: "150px" }}>
                             <option>Newest</option>
                             <option>Alphabetical</option>
                           </select>
@@ -193,35 +219,49 @@ export default function Groups() {
                               {groups.map((group) => (
                                 <div key={group.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
-                                    <Image
-                                      src={group.avatar || "https://via.placeholder.com/150"}
-                                      alt="Group Image"
-                                      className="card-img-top rounded-circle mx-auto mt-3"
-                                      width={80}
-                                      height={80}
-                                      style={{
-                                        objectFit: "cover",
-                                      }}
-                                    />
+                                    {group.avatar ? (
+                                      <Image
+                                        src={group.avatar}
+                                        alt="Group Image"
+                                        className="card-img-top mx-auto mt-3"
+                                        width={80}
+                                        height={80}
+                                        style={{ objectFit: "cover" }}
+                                      />
+                                    ) : (
+                                      <div
+                                        style={{
+                                          backgroundColor: "black",
+                                          color: "white",
+                                          width: "80px",
+                                          height: "80px",
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          alignItems: "center",
+                                          fontSize: "12px",
+                                          fontWeight: "bold",
+                                        }}
+                                        className="card-img-top mx-auto mt-3"
+                                      >
+                                        No image
+                                      </div>
+                                    )}
+
                                     <div className="card-body">
-                                      <h5 className="card-title mb-1">
-                                        {group.group_title}
-                                      </h5>
+                                      <h5 className="card-title mb-1">{group.group_title}</h5>
                                       <p className="text-muted align-items-center">
                                         <i className="bi bi-globe pe-2"></i>
                                         {group.category}
                                       </p>
                                       <div className="d-flex justify-content-around align-items-center border-bottom">
                                         <div className="text-center">
-                                          <p className="fs-5 text-dark fw-semibold mb-0">
-                                            {group.members_count}
-                                          </p>
-                                          <p className=" mb-1">Members</p>
+                                          <p className="fs-5 text-dark fw-semibold mb-0">{group.members_count}</p>
+                                          <p className="mb-1">Members</p>
                                         </div>
                                       </div>
                                       <button className="btn btn-outline-success mt-3">
                                         <i className="bi bi-check-circle-fill pe-2"></i>
-                                        {group.is_joined == 1 ? "Joined" : "Join"}
+                                        {group.is_joined === 1 ? "Joined" : "Join"}
                                       </button>
                                     </div>
                                   </div>
@@ -232,7 +272,6 @@ export default function Groups() {
                         </div>
                       )}
 
-                      {/* Suggested Groups Pagination */}
                       <div className="d-flex justify-content-center mt-4">
                         <ul className="pagination">
                           <li
@@ -245,23 +284,21 @@ export default function Groups() {
                               Previous
                             </button>
                           </li>
-                          {[...Array(Math.ceil(groups.length / itemsPerPage))].map(
-                            (_, index) => (
-                              <li
-                                key={index}
-                                className={`page-item ${suggestedPage === index + 1 ? "active" : ""}`}
+                          {[...Array(suggestedTotalPages)].map((_, index) => (
+                            <li
+                              key={index}
+                              className={`page-item ${suggestedPage === index + 1 ? "active" : ""}`}
+                            >
+                              <button
+                                className="page-link"
+                                onClick={() => handlePageChange("suggested", index + 1)}
                               >
-                                <button
-                                  className="page-link"
-                                  onClick={() => handlePageChange("suggested", index + 1)}
-                                >
-                                  {index + 1}
-                                </button>
-                              </li>
-                            )
-                          )}
+                                {index + 1}
+                              </button>
+                            </li>
+                          ))}
                           <li
-                            className={`page-item ${suggestedPage === Math.ceil(groups.length / itemsPerPage) ? "disabled" : ""}`}
+                            className={`page-item ${suggestedPage === suggestedTotalPages ? "disabled" : ""}`}
                           >
                             <button
                               className="page-link"
@@ -276,7 +313,6 @@ export default function Groups() {
                   </div>
                 </div>
 
-                {/* My Groups Pagination */}
                 <div
                   className={`tab-pane fade ${activeTab === 1 ? "show active" : ""}`}
                   id="my-groups"
@@ -309,36 +345,48 @@ export default function Groups() {
                             myGroups.map((group) => (
                               <div key={group.id} className="col-md-4 mb-4">
                                 <div className="card text-center">
-                                  <Image
-                                    src={group.avatar || "https://via.placeholder.com/150"}
-                                    alt="Group Image"
-                                    className="card-img-top rounded-circle mx-auto mt-3"
-                                    width={80}
-                                    height={80}
-                                    style={{
-                                      objectFit: "cover",
-                                    }}
-                                  />
+                                  {group.avatar ? (
+                                    <Image
+                                      src={group.avatar}
+                                      alt="Group Image"
+                                      className="card-img-top mx-auto mt-3"
+                                      width={80}
+                                      height={80}
+                                      style={{ objectFit: "cover" }}
+                                    />
+                                  ) : (
+                                    <div
+                                      style={{
+                                        backgroundColor: "black",
+                                        color: "white",
+                                        width: "80px",
+                                        height: "80px",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        fontSize: "12px",
+                                        fontWeight: "bold",
+                                      }}
+                                      className="card-img-top mx-auto mt-3"
+                                    >
+                                      No image
+                                    </div>
+                                  )}
+
                                   <div className="card-body">
-                                    <h5 className="card-title mb-1">
-                                      {group.group_title}
-                                    </h5>
+                                    <h5 className="card-title mb-1">{group.group_title}</h5>
                                     <p className="text-muted align-items-center">
                                       <i className="bi bi-globe pe-2"></i>
                                       {group.category}
                                     </p>
                                     <div className="d-flex justify-content-around align-items-center border-bottom">
                                       <div className="text-center">
-                                        <p className="fs-5 text-dark fw-semibold mb-0">
-                                          {group.members_count}
-                                        </p>
-                                        <p className=" mb-1">Members</p>
+                                        <p className="fs-5 text-dark fw-semibold mb-0">{group.members_count}</p>
+                                        <p className="mb-1">Members</p>
                                       </div>
                                     </div>
                                     <div className="d-flex justify-content-around mt-3">
-                                      <button className="btn btn-sm btn-primary">
-                                        Edit Group
-                                      </button>
+                                      <button className="btn btn-sm btn-primary">Edit Group</button>
                                       <button
                                         className="btn btn-sm btn-danger"
                                         onClick={() => handleDeleteGroup(group.id)}

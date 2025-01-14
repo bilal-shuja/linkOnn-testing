@@ -5,44 +5,82 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 import React, { useState, useEffect } from "react";
+import createAPI from "@/app/lib/axios";
 
 export default function Becomedonor() {
     useAuth();
-    
-    // Define state for form fields
     const [isChecked, setIsChecked] = useState(false);
     const [bloodGroup, setBloodGroup] = useState('');
     const [location, setLocation] = useState('');
     const [phone, setPhone] = useState('');
     const [donationDate, setDonationDate] = useState('');
     const [userdata, setUserdata] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const api = createAPI();
 
-    // Load userdata from localStorage
     useEffect(() => {
         const data = localStorage.getItem("userdata");
         if (data) {
             const parsedData = JSON.parse(data);
             setUserdata(parsedData);
-            // Set initial state values from userdata
             setBloodGroup(parsedData.data.blood_group);
             setLocation(parsedData.data.address);
             setPhone(parsedData.data.phone);
             setDonationDate(parsedData.data.donation_date);
-            
-            // Set the initial state of the switch based on donation_available
             setIsChecked(parsedData.data.donation_available === '1');
         }
     }, []);
 
-    // Handle switch change for availability
     const handleSwitchChange = (event) => {
         setIsChecked(event.target.checked);
     };
 
-    // Handle form submission
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        // Handle form submission logic here
+
+        if (!bloodGroup || !location || !phone || !donationDate) {
+            setErrorMessage('Please fill in all fields before submitting.');
+            return;
+        }
+
+        setLoading(true);
+        setErrorMessage('');
+
+        try {
+            await updateBlood();
+        } catch (error) {
+            setErrorMessage('There was an error submitting your details. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updateBlood = async () => {
+        try {
+            const formData = new FormData();
+            formData.append("blood_group", bloodGroup);
+            formData.append("address", location);
+            formData.append("phone", phone);
+            formData.append("donation_date", donationDate);
+            formData.append("donation_available", isChecked ? '1' : '0');
+
+            const response = await api.post("/api/update-user-profile", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            if (response.data.code == '200') {
+                const userProfile = await api.get("/api/get-user-profile?user_id=" + localStorage.getItem("userid"));
+
+                if (userProfile.data.code === "200") {
+                    localStorage.setItem("userdata", JSON.stringify(userProfile.data));
+                }
+            } else {
+                setErrorMessage('Failed to update profile. Please try again.');
+            }
+        } catch (error) {
+            setErrorMessage('There was an error updating your profile.');
+        }
     };
 
     if (!userdata) {
@@ -77,11 +115,13 @@ export default function Becomedonor() {
                                             <h3 className="fw-bold text-success">Become a Donor</h3>
                                             <p className="text-muted mb-4">Help save lives by donating blood. Please fill out the form below.</p>
 
+                                            {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+
                                             <div className="mb-3">
                                                 <label className="form-label" htmlFor="bloodGroup">Blood Group</label>
-                                                <select 
-                                                    id="bloodGroup" 
-                                                    className="form-select" 
+                                                <select
+                                                    id="bloodGroup"
+                                                    className="form-select"
                                                     aria-label="Select Blood Group"
                                                     value={bloodGroup}
                                                     onChange={(e) => setBloodGroup(e.target.value)}
@@ -100,10 +140,10 @@ export default function Becomedonor() {
 
                                             <div className="mb-3">
                                                 <label className="form-label" htmlFor="location">Location</label>
-                                                <input 
-                                                    id="location" 
-                                                    className="form-control" 
-                                                    type="text" 
+                                                <input
+                                                    id="location"
+                                                    className="form-control"
+                                                    type="text"
                                                     placeholder="Enter your location"
                                                     value={location}
                                                     onChange={(e) => setLocation(e.target.value)}
@@ -112,10 +152,10 @@ export default function Becomedonor() {
 
                                             <div className="mb-3">
                                                 <label className="form-label" htmlFor="phone">Phone Number</label>
-                                                <input 
-                                                    id="phone" 
-                                                    className="form-control" 
-                                                    type="text" 
+                                                <input
+                                                    id="phone"
+                                                    className="form-control"
+                                                    type="text"
                                                     placeholder="Enter your phone number"
                                                     value={phone}
                                                     onChange={(e) => setPhone(e.target.value)}
@@ -124,10 +164,10 @@ export default function Becomedonor() {
 
                                             <div className="mb-3">
                                                 <label className="form-label" htmlFor="donationDate">Donation Date</label>
-                                                <input 
-                                                    id="donationDate" 
-                                                    className="form-control" 
-                                                    type="date" 
+                                                <input
+                                                    id="donationDate"
+                                                    className="form-control"
+                                                    type="date"
                                                     value={donationDate}
                                                     onChange={(e) => setDonationDate(e.target.value)}
                                                 />
@@ -146,8 +186,8 @@ export default function Becomedonor() {
                                                 </label>
                                             </div>
 
-                                            <button type="submit" className="btn btn-success py-2">
-                                                Submit
+                                            <button type="submit" className="btn btn-success py-2" disabled={loading}>
+                                                {loading ? 'Submitting...' : 'Submit'}
                                             </button>
                                         </form>
                                     </div>

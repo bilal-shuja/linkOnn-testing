@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from 'next/image';
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
   const [userInfo, setUserInfo] = useState({
     name: "John Doe",
     avatar: "https://via.placeholder.com/150",
@@ -123,11 +125,12 @@ export default function Chat() {
               }`}
             >
               {msg.sender !== "me" && (
-                <img
+                <Image
                   src={msg.avatar}
+                  width={30}
+                  height={30}
                   alt="Avatar"
                   className="rounded-circle me-2"
-                  style={{ width: "30px", height: "30px" }}
                 />
               )}
               <div

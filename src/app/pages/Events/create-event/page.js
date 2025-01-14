@@ -1,4 +1,4 @@
-"use client"; // Ensures this code runs only in the client environment
+"use client";
 
 import { useState, useEffect } from "react";
 import Navbar from "@/app/assets/components/navbar/page";
@@ -19,11 +19,10 @@ export default function Eventform() {
   const [startTime, setStartTime] = useState("");
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [image, setImage] = useState(null); // Fixed to store a single file
+  const [image, setImage] = useState(null); 
 
   const api = createAPI();
 
-  // Handlers for input changes
   const handleNameChange = (e) => setEventName(e.target.value);
   const handleLocationChange = (e) => setEventLocation(e.target.value);
   const handleDescriptionChange = (e) => setDescription(e.target.value);
@@ -32,15 +31,13 @@ export default function Eventform() {
   const handleEndDate = (e) => setEndDate(e.target.value);
   const handleEndTime = (e) => setEndTime(e.target.value);
 
-  // Image file change handler
   const handleFileChange = (e) => {
     const files = e.target.files;
     if (files.length > 0) {
-      setImage(files[0]); // Store the selected file (single file)
+      setImage(files[0]);
     }
   };
 
-  // Event addition logic
   const addEvent = async () => {
     if (!eventName || !eventLocation || !startDate || !startTime || !endDate || !endTime) {
       setError("Please fill in all fields!");
@@ -71,7 +68,7 @@ export default function Eventform() {
       formData.append("end_date", endDate);
       formData.append("end_time", endTime);
       if (image) {
-        formData.append("cover", image); // Attach the image file
+        formData.append("cover", image);
       }
 
       const response = await api.post("/api/add-event", formData, {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import Navbar from "@/app/assets/components/navbar/page";
@@ -14,37 +14,35 @@ export default function GroupForm() {
   const [success, setSuccess] = useState("");
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
-  const [avatar, setAvatar] = useState(null);  // Updated to null (not array)
-  const [cover, setCover] = useState(null);    // Updated to null (not array)
+  const [avatar, setAvatar] = useState(null);  
+  const [cover, setCover] = useState(null);   
   const [category, setCategory] = useState("");
   const [privacy, setPrivacy] = useState("");
-  const [isClient, setIsClient] = useState(false);  // Track if we're on the client-side
 
   const api = createAPI();
 
-  useEffect(() => {
-    // This will only run on the client-side
-    setIsClient(true);
-  }, []);
+  // Handle input field changes
+  const handleGroupNameChange = (e) => setGroupName(e.target.value);
+  const handleDescriptionChange = (e) => setDescription(e.target.value);
+  const handleCategoryChange = (e) => setCategory(e.target.value);
+  const handlePrivacyChange = (e) => setPrivacy(e.target.value);
 
+  // Handle file changes
   const handleAvatarChange = (e) => {
-    if (isClient) {
-      const files = e.target.files;
-      if (files.length > 0) {
-        setAvatar(files[0]);
-      }
+    const files = e.target.files;
+    if (files.length > 0) {
+      setAvatar(files[0]);
     }
   };
 
   const handleCoverChange = (e) => {
-    if (isClient) {
-      const files = e.target.files;
-      if (files.length > 0) {
-        setCover(files[0]);
-      }
+    const files = e.target.files;
+    if (files.length > 0) {
+      setCover(files[0]);
     }
   };
 
+  // Add group
   const addGroup = async () => {
     if (!groupName || !description || !category) {
       setError("Please fill in all fields!");
@@ -67,15 +65,15 @@ export default function GroupForm() {
       });
 
       if (response.data.code === "200") {
-        setError(""); // Clear previous error
+        setError("");
         setGroupName("");
         setCategory("");
         setPrivacy("");
         setDescription("");
-        setAvatar(null); // Reset to null instead of array
-        setCover(null);   // Reset to null instead of array
+        setAvatar(null); 
+        setCover(null); 
         setSuccess(response.data.message);
-        router.push("/groups"); // Corrected path to groups page
+        router.push("/pages/groups");
       } else {
         setError("Error from server: " + response.data.message);
       }
@@ -89,10 +87,6 @@ export default function GroupForm() {
     }
   };
 
-  // Render the form only when on the client side
-  if (!isClient) {
-    return <div>Loading...</div>;
-  }
   return (
     <div>
       <Navbar />
@@ -107,13 +101,11 @@ export default function GroupForm() {
                 <div className="card-body">
                   <h5 className="fw-bold mt-2 fs-4">Create a Group</h5>
 
-                  {/* Success or error message */}
                   {success && (
                     <div className="alert alert-success mt-2">{success}</div>
                   )}
                   {error && <p className="text-center text-danger">{error}</p>}
 
-                  {/* Group Details */}
                   <div className="mt-4">
                     <label className="form-label mx-1 text-muted">
                       Group Title
@@ -132,7 +124,6 @@ export default function GroupForm() {
                     </label>
                   </div>
 
-                  {/* Category & Privacy */}
                   <div className="mt-4 d-flex gap-3">
                     <div className="w-50">
                       <label className="form-label text-muted px-1">
@@ -184,7 +175,6 @@ export default function GroupForm() {
                     </div>
                   </div>
 
-                  {/* Group Media: Profile & Cover */}
                   <div className="mt-4 d-flex gap-3">
                     <div className="w-50">
                       <label className="form-label text-muted px-1">
@@ -210,7 +200,6 @@ export default function GroupForm() {
                     </div>
                   </div>
 
-                  {/* Group Description */}
                   <div className="mt-4">
                     <label className="form-label mx-1 text-muted">
                       About the Group
@@ -229,7 +218,6 @@ export default function GroupForm() {
                     </label>
                   </div>
 
-                  {/* Submit Button */}
                   <div className="mt-4 d-flex justify-content-end">
                     <button className="btn btn-primary" onClick={addGroup}>
                       Create Group

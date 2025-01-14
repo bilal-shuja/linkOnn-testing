@@ -11,55 +11,82 @@ import useAuth from "@/app/lib/useAuth";
 export default function Events() {
   useAuth();
   const [activeTab, setActiveTab] = useState(0);
-  const [eventLoading, setEventLoading] = useState(false);
+  const [eventLoading, setEventLoading] = useState({ allEvents: false, myEvents: false });
   const [events, setEvents] = useState([]);
   const [myEvents, setMyEvents] = useState([]);
   const [suggestedPage, setSuggestedPage] = useState(1);
   const [myEventsPage, setMyEventsPage] = useState(1);
-  const [errorMessage, setErrorMessage] = useState("");  // State for error message
-  const [successMessage, setSuccessMessage] = useState("");  // State for success message
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const itemsPerPage = 6;
   const router = useRouter();
 
   const api = createAPI();
 
-  // Reusable fetch function for fetching events
-  const fetchEvents = async (page, type) => {
+  const fetchAllEvents = async (page) => {
     const offset = (page - 1) * itemsPerPage;
-    setEventLoading(true);
+    setEventLoading((prev) => ({ ...prev, allEvents: true }));
 
     try {
       const response = await api.post("/api/get-events", {
-        fetch: type,
+        fetch: "events",
         offset: offset,
         limit: itemsPerPage,
       });
 
-      if (response.data.code === "200") {
-        if (type === "events") {
-          setEvents(response.data.data);
-        } else {
-          setMyEvents(response.data.data);
-        }
-        setErrorMessage(""); // Clear any previous error messages
+      if (response.data.code == "200") {
+        setEvents(response.data.data);
+        setErrorMessage("");
       } else {
         setErrorMessage(response.data.message);
-        setSuccessMessage(""); // Clear any success messages
+        setSuccessMessage("");
       }
     } catch (error) {
       setErrorMessage("Error fetching events");
-      setSuccessMessage(""); // Clear any success messages
+      setSuccessMessage("");
     } finally {
-      setEventLoading(false);
+      setEventLoading((prev) => ({ ...prev, allEvents: false }));
+    }
+  };
+
+  const fetchMyEvents = async (page) => {
+    const offset = (page - 1) * itemsPerPage;
+    setEventLoading((prev) => ({ ...prev, myEvents: true }));
+
+    try {
+      const response = await api.post("/api/get-events", {
+        fetch: "myevents",
+        offset: offset,
+        limit: itemsPerPage,
+      });
+
+      if (response.data.code == "200") {
+        setMyEvents(response.data.data);
+        setErrorMessage("");
+      } else {
+        setErrorMessage(response.data.message);
+        setSuccessMessage("");
+      }
+    } catch (error) {
+      setErrorMessage("Error fetching events");
+      setSuccessMessage("");
+    } finally {
+      setEventLoading((prev) => ({ ...prev, myEvents: false }));
     }
   };
 
   useEffect(() => {
-    fetchEvents(suggestedPage, "events");
-    fetchEvents(myEventsPage, "myevents");
-  }, [suggestedPage, myEventsPage]);
+    if (activeTab === 0) {
+      fetchAllEvents(suggestedPage);
+    }
+  }, [suggestedPage, activeTab]);
 
-  // Handle page changes for suggested and my events
+  useEffect(() => {
+    if (activeTab === 1) {
+      fetchMyEvents(myEventsPage);
+    }
+  }, [myEventsPage, activeTab]);
+
   const handlePageChange = (page, type) => {
     if (type === "events") {
       setSuggestedPage(page);
@@ -113,7 +140,7 @@ export default function Events() {
                       aria-selected={activeTab === 0}
                       onClick={() => {
                         setActiveTab(0);
-                        fetchEvents(suggestedPage, "events");
+                        fetchAllEvents(suggestedPage);
                       }}
                     >
                       All Events
@@ -128,7 +155,7 @@ export default function Events() {
                       aria-selected={activeTab === 1}
                       onClick={() => {
                         setActiveTab(1);
-                        fetchEvents(myEventsPage, "myevents");
+                        fetchMyEvents(myEventsPage);
                       }}
                     >
                       My Events
@@ -137,7 +164,7 @@ export default function Events() {
                 </ul>
               </div>
 
-              {/* Error and Success Message */}
+
               {errorMessage && (
                 <div className="alert alert-danger mt-3">{errorMessage}</div>
               )}
@@ -146,7 +173,7 @@ export default function Events() {
               )}
 
               <div className="tab-content mt-5">
-                {/* All Events Tab */}
+
                 <div
                   className={`tab-pane fade ${activeTab === 0 ? "show active" : ""}`}
                   id="suggested"
@@ -166,7 +193,7 @@ export default function Events() {
                       </div>
                       <hr className="text-muted" />
 
-                      {eventLoading ? (
+                      {eventLoading.allEvents ? (
                         <div className="d-flex justify-content-center">
                           <div
                             className="spinner-border text-primary"
@@ -198,7 +225,7 @@ export default function Events() {
                                     <Image
                                       src={event.cover || "https://via.placeholder.com/150"}
                                       alt="Event Image"
-                                      className="card-img-top rounded-circle mx-auto mt-3"
+                                      className="card-img-top mx-auto mt-3"
                                       width={80}
                                       height={80}
                                       style={{
@@ -226,7 +253,7 @@ export default function Events() {
                         </div>
                       )}
 
-                      {/* Pagination */}
+
                       <div className="d-flex justify-content-center mt-4">
                         <ul className="pagination">
                           <li
@@ -270,7 +297,6 @@ export default function Events() {
                   </div>
                 </div>
 
-                {/* My Events Tab */}
                 <div
                   className={`tab-pane fade ${activeTab === 1 ? "show active" : ""}`}
                   id="my-events"
@@ -288,7 +314,7 @@ export default function Events() {
                       </div>
                       <hr className="text-muted" />
 
-                      {eventLoading ? (
+                      {eventLoading.myEvents ? (
                         <div className="d-flex justify-content-center">
                           <div
                             className="spinner-border text-primary"
@@ -320,7 +346,7 @@ export default function Events() {
                                     <Image
                                       src={event.cover || "https://via.placeholder.com/150"}
                                       alt="Event Image"
-                                      className="card-img-top rounded-circle mx-auto mt-3"
+                                      className="card-img-top mx-auto mt-3"
                                       width={80}
                                       height={80}
                                       style={{
@@ -349,7 +375,6 @@ export default function Events() {
                         </div>
                       )}
 
-                      {/* Pagination */}
                       <div className="d-flex justify-content-center mt-4">
                         <ul className="pagination">
                           <li
