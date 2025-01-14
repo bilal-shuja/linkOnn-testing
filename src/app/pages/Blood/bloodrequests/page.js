@@ -91,53 +91,55 @@ export default function BloodReqs() {
                                 </div>
 
                                 <div className="mt-4 mx-4">
-                                    <table className="table table-bordered table-hover table-striped table-responsive">
-                                        <thead className="table-secondary">
-                                            <tr>
-                                                <th>User Name</th>
-                                                <th>Phone Number</th>
-                                                <th>Location</th>
-                                                <th>Blood Group</th>
-                                                <th>Urgent Need</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {bloodreqs.map((req) => (
-                                                <tr key={req.id}>
-                                                    <td>{req.user.username}</td>
-                                                    <td>{req.phone}</td>
-                                                    <td>{req.location}</td>
-                                                    <td>{req.blood_group}</td>
-                                                    <td>
-                                                        {req.is_urgent_need === "1" ? (
-                                                            <span className="badge rounded-pill bg-success">Yes</span>
-                                                        ) : (
-                                                            <span className="badge rounded-pill bg-danger">No</span>
-                                                        )}
-                                                    </td>
-
-                                                    <td>
-                                                        <div>
-                                                            {userdata.data.id === req.user_id ? (
-                                                                <button
-                                                                    className="btn btn-danger"
-                                                                    onClick={() => handleDeleteReq(req.id)}
-                                                                >
-                                                                    <i className="bi bi-trash3"></i> Delete
-                                                                </button>
-                                                            ) : (
-                                                                <button className="btn btn-success">
-                                                                    <i className="bi bi-chat-dots"></i> Message
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </td>
+                                    <div className="table-responsive">
+                                        <table className="table table-bordered table-hover table-striped">
+                                            <thead className="table-secondary">
+                                                <tr>
+                                                    <th>User Name</th>
+                                                    <th>Phone Number</th>
+                                                    <th>Location</th>
+                                                    <th>Blood Group</th>
+                                                    <th>Urgent Need</th>
+                                                    <th>Action</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {bloodreqs.map((req) => (
+                                                    <tr key={req.id}>
+                                                        <td>{req.user.username}</td>
+                                                        <td>{req.phone}</td>
+                                                        <td>{req.location}</td>
+                                                        <td>{req.blood_group}</td>
+                                                        <td>
+                                                            {req.is_urgent_need === "1" ? (
+                                                                <span className="badge rounded-pill bg-success">Yes</span>
+                                                            ) : (
+                                                                <span className="badge rounded-pill bg-danger">No</span>
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            <div>
+                                                                {userdata.data.id === req.user_id ? (
+                                                                    <button
+                                                                        className="btn btn-danger"
+                                                                        onClick={() => handleDeleteReq(req.id)}
+                                                                    >
+                                                                        <i className="bi bi-trash3"></i> Delete
+                                                                    </button>
+                                                                ) : (
+                                                                    <button className="btn btn-success">
+                                                                        <i className="bi bi-chat-dots"></i> Message
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>

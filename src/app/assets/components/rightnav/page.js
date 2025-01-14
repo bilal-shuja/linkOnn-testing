@@ -70,11 +70,12 @@ export default function Leftnav() {
                     { href: "/pages/Friends", icon: "friend.svg", label: "Friends" },
                     { href: "/pages/Packages", icon: "offer.svg", label: "Packages" },
                     { href: "/pages/Blogs", icon: "blog.svg", label: "Blogs/Articles" },
+                    { href: "/pages/Poke", icon: "poke.svg", label: "Poke" },
                     { href: "/pages/Marketplace", icon: "market.svg", label: "Marketplace" },
                     { href: "/pages/Blood", icon: "directory.svg", label: "Blood" },
                     { href: "/pages/postAdReq", icon: "boost.svg", label: "Post Ads" },
                     { href: "/pages/savedposts", icon: "saved.svg", label: "Saved Posts" },
-                    { href: "#", icon: "more.svg", label: "Explore" },
+                    { href: "/pages/Explore", icon: "more.svg", label: "Explore" },
                   ].map((item, index) => (
                     <Link
                       key={index}

@@ -51,7 +51,7 @@ export default function FindDonors() {
                                         height={300}
                                         className="rounded-3"
                                     />
-                                     <Link href="/pages/Blood/becomedonor" className="float-end btn btn-success btn-xs"><i className="bi bi-plus-circle"></i></Link>
+                                    <Link href="/pages/Blood/becomedonor" className="float-end btn btn-success btn-xs"><i className="bi bi-plus-circle"></i></Link>
                                 </div>
 
                                 <div className="d-flex justify-content-center mt-3">
@@ -74,29 +74,33 @@ export default function FindDonors() {
                                 </div>
 
                                 <div className="mt-4 mx-4">
-                                    <table className="table table-bordered table-hover table-striped table-responsive">
-                                        <thead className="table-secondary">
-                                            <tr>
-                                                <th>User Name</th>
-                                                <th>Email</th>
-                                                <th>Blood Group</th>
-                                                <th>Phone Number</th>
-                                                <th>Location</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {donors.map(donor => (
-                                                <tr key={donor.id}>
-                                                    <td>{donor.username}</td>
-                                                    <td>{donor.email}</td>
-                                                    <td>{donor.blood_group}</td>
-                                                    <td>{donor.phone}</td>
-                                                    <td>{donor.address}</td>
+                                    <div className="table-responsive">
+                                        <table className="table table-bordered table-hover table-striped">
+                                            <thead className="table-secondary">
+                                                <tr>
+                                                    <th>User Name</th>
+                                                    <th>Email</th>
+                                                    <th>Blood Group</th>
+                                                    <th>Phone Number</th>
+                                                    <th>Location</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {donors.map(donor => (
+                                                    <tr key={donor.id}>
+                                                        <td>{donor.username}</td>
+                                                        <td>{donor.email}</td>
+                                                        <td>{donor.blood_group}</td>
+                                                        <td>{donor.phone}</td>
+                                                        <td>{donor.address}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
+
+
                             </div>
                         </div>
                     </div>
