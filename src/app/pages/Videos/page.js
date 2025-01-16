@@ -341,7 +341,7 @@ export default function VideoFeed() {
             alert("Error while reacting to the Post");
         }
     };
-    
+
     const handlePostDelete = async (postId) => {
         const confirmDelete = window.confirm(
             "Are you sure you want to delete this post? This action cannot be undone."

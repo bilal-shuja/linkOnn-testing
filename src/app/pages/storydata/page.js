@@ -4,7 +4,7 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
- 
+
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
@@ -58,7 +58,7 @@ export default function Storyform() {
                 getVideoDuration(uploadedFile).then((duration) => {
                     if (duration > 30) {
                         setErrorMessage("The video duration exceeds the maximum allowed duration of 30 seconds.");
-                        alertify.error("The video duration exceeds the maximum allowed duration of 30 seconds.");
+                        alert("The video duration exceeds the maximum allowed duration of 30 seconds.");
                         setFiles(null);
                     } else {
                         setErrorMessage("");
@@ -66,12 +66,12 @@ export default function Storyform() {
                     }
                 }).catch(() => {
                     setErrorMessage("Unable to determine video duration.");
-                    alertify.error("Unable to determine video duration.");
+                    alert("Unable to determine video duration.");
                     setFiles(null);
                 });
             } else {
                 setErrorMessage("Only image or video files are allowed.");
-                alertify.error("Only image or video files are allowed.");
+                alert("Only image or video files are allowed.");
                 setFiles(null);
             }
         }
@@ -94,7 +94,7 @@ export default function Storyform() {
 
     const addStory = async () => {
         if (!files) {
-            alertify.error("Please upload a valid media file.");
+            alert("Please upload a valid media file.");
             return;
         }
 
@@ -120,10 +120,10 @@ export default function Storyform() {
             });
 
             if (response.data.code === "200") {
-                alertify.success(response.data.message);
+                alert(response.data.message);
                 router.push("/newsfeed");
             } else {
-                alertify.error("Error from server: " + response.data.message);
+                alert("Error from server: " + response.data.message);
             }
         } catch (error) {
             console.error("Error creating story:", error);
@@ -131,30 +131,26 @@ export default function Storyform() {
     };
 
     const handleDeleteStory = async (story_id) => {
-        alertify.confirm(
-            "Confirm Delete",
-            async function () {
-                try {
-                    const response = await api.post("/api/story/delete-story", {
-                        story_id
-                    });
+        const confirmDelete = window.confirm("Are you sure you want to delete this story?");
 
-                    if (response.data.code == '200') {
-                        alertify.success("Story deleted.");
-                        setStories(prevStories => prevStories.filter(story => story.id !== story_id));
+        if (confirmDelete) {
+            try {
+                const response = await api.post("/api/story/delete-story", { story_id });
 
-                    } else {
-                        alertify.error(response.data.message || "Failed to delete story.");
-                    }
-                } catch (error) {
-                    alertify.error("An error occurred while deleting the story.");
+                if (response.data.code == '200') {
+                    alert("Story deleted.");
+                    setStories(prevStories => prevStories.filter(story => story.id !== story_id));
+                } else {
+                    alert(response.data.message || "Failed to delete story.");
                 }
-            },
-            function () {
-                alertify.error("Cancel");
+            } catch (error) {
+                alert("An error occurred while deleting the story.");
             }
-        );
+        } else {
+            alert("Cancel");
+        }
     };
+
 
 
     useEffect(() => {
@@ -302,10 +298,10 @@ export default function Storyform() {
                                                                                 src={story.media}
                                                                                 alt="Story media"
                                                                                 className="img-thumbnail"
-                                                                                width={75} 
+                                                                                width={75}
                                                                                 height={75}
                                                                                 style={{
-                                                                                    objectFit: "cover", 
+                                                                                    objectFit: "cover",
                                                                                 }}
                                                                             />
 

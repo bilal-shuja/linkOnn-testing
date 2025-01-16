@@ -7,7 +7,7 @@ import Link from "next/link";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
-import("bootstrap/dist/js/bootstrap.bundle.min.js");
+// import("bootstrap/dist/js/bootstrap.bundle.min.js");
 import { useRouter } from "next/navigation";
 import Storycreate from "@/app/assets/components/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
@@ -180,7 +180,7 @@ export default function Newsfeed() {
     const comment = commentText[postId] || "";
 
     if (!comment || comment.trim() === "") {
-      alertify.error("Comment cannot be empty.");
+      alert("Comment cannot be empty.");
       return;
     }
 
@@ -204,16 +204,16 @@ export default function Newsfeed() {
             [postId]: updatedComments,
           };
         });
-        alertify.success(response.data.message);
+        alert(response.data.message);
         setCommentText((prevText) => ({
           ...prevText,
           [postId]: "",
         }));
       } else {
-        alertify.error(response.data.message || "Failed to add the comment.");
+        alert(response.data.message || "Failed to add the comment.");
       }
     } catch (error) {
-      alertify.error("An error occurred while adding the comment.");
+      alert("An error occurred while adding the comment.");
       console.error(error);
     } finally {
       setLoading(false);
@@ -248,63 +248,60 @@ export default function Newsfeed() {
   };
 
   const handleCommentDelete = async (comment_id, postId) => {
-    alertify.confirm(
-      "Confirm Delete",
-      async function () {
-        alertify.success("Comment deleted.");
+    const isConfirmed = window.confirm("Confirm Delete");
 
-        setComments((prevComments) => {
-          const updatedComments = prevComments[postId].filter(
-            (comment) => comment.id !== comment_id
-          );
-          return {
-            ...prevComments,
-            [postId]: updatedComments,
-          };
+    if (isConfirmed) {
+      alert("Comment deleted.");
+
+      setComments((prevComments) => {
+        const updatedComments = prevComments[postId].filter(
+          (comment) => comment.id !== comment_id
+        );
+        return {
+          ...prevComments,
+          [postId]: updatedComments,
+        };
+      });
+
+      try {
+        const response = await api.post("/api/post/comments/delete", {
+          comment_id,
         });
 
-        try {
-          const response = await api.post("/api/post/comments/delete", {
-            comment_id,
-          });
-
-          if (response.data.code == "200") {
-          } else {
-            alertify.error(response.data.message);
-          }
-        } catch (error) {
-          alertify.error("An error occurred while deleting the comment.");
+        if (response.data.code === "200") {
+        } else {
+          alert(response.data.message);
         }
-      },
-      function () {
-        alertify.error("Cancel");
+      } catch (error) {
+        alert("An error occurred while deleting the comment.");
       }
-    );
+    } else {
+      alert("Cancel");
+    }
   };
 
+
   const handleCommentreplyDelete = async (reply_id) => {
-    alertify.confirm(
-      "Confirm Delete",
-      async function () {
-        alertify.success("Comment reply deleted.");
+    const isConfirmed = window.confirm("Confirm Delete");
 
-        try {
-          const response = await api.post("/api/post/comments/delete-reply", {
-            reply_id,
-          });
+    if (isConfirmed) {
+      alert("Comment reply deleted.");
 
-          if (response.data.code == "200") {
-          } else {
-            alertify.error(response.data.code);
-          }
-        } catch (error) {
-          alertify.error("An error occurred while deleting the comment.");
+      try {
+        const response = await api.post("/api/post/comments/delete-reply", {
+          reply_id,
+        });
+
+        if (response.data.code === "200") {
+        } else {
+          alert(response.data.code);
         }
-      },
-      function () {
-        alertify.error("Cancel");
+      } catch (error) {
+        alert("An error occurred while deleting the comment.");
       }
-    );
+    } else {
+      alert("Cancel");
+    }
   };
 
   const handleCommentTextChange = (e, postId) => {
@@ -415,7 +412,7 @@ export default function Newsfeed() {
         setDonationTitle("");
         setDonationDescription("");
         setDonationImage([]);
-        alertify.success(response.data.message);
+        setSuccess(response.data.message);
       } else {
         setError("Error from server: " + response.data.message);
         setSuccess("");
@@ -523,12 +520,12 @@ export default function Newsfeed() {
       });
 
       if (response.data.status == "200") {
-        alertify.success(response.data.message);
+        alert(response.data.message);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("An error occurred while voting. Please try again.");
+      alert("An error occurred while voting. Please try again.");
     }
   };
 
@@ -551,10 +548,10 @@ export default function Newsfeed() {
           [commentId]: !prevState[commentId],
         }));
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("An error occurred while fetching replies.");
+      alert("An error occurred while fetching replies.");
     }
   };
 
@@ -573,16 +570,16 @@ export default function Newsfeed() {
       });
 
       if (response.data.code == "200") {
-        alertify.success("Reply added successfully!");
+        alert("Reply added successfully!");
         setCommentreplyText((prevState) => ({
           ...prevState,
           [commentId]: "",
         }));
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("An error occurred while adding the reply");
+      alert("An error occurred while adding the reply");
     }
   };
 
@@ -593,12 +590,12 @@ export default function Newsfeed() {
         post_id: postId,
       });
       if (response.data.code == "200") {
-        alertify.success(response.data.message);
+        alert(response.data.message);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("Error while reacting to the comment");
+      alert("Error while reacting to the comment");
     }
   };
 
@@ -608,12 +605,12 @@ export default function Newsfeed() {
         comment_reply_id: replyId,
       });
       if (response.data.code == "200") {
-        alertify.success(response.data.message);
+        alert(response.data.message);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("Error while reacting to the comment reply");
+      alert("Error while reacting to the comment reply");
     }
   };
 
@@ -625,12 +622,12 @@ export default function Newsfeed() {
         reaction_type: 1,
       });
       if (response.data.code == "200") {
-        alertify.success(response.data.message);
+        alert(response.data.message);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("Error while reacting to the Post");
+      alert("Error while reacting to the Post");
     }
   };
 
@@ -645,12 +642,12 @@ export default function Newsfeed() {
         amount: donate,
       });
       if (response.data.code == "200") {
-        alertify.success(response.data.message);
+        alert(response.data.message);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("Error while donating Fund.");
+      alert("Error while donating Fund.");
     }
   };
 
@@ -1688,7 +1685,7 @@ export default function Newsfeed() {
                             src={image.media_path}
                             alt={`Post image ${index + 1}`}
                             className="img-fluid mt-1"
-                            width={500}
+                            width={600}
                             height={300}
                             style={{
                               objectFit: "cover",
@@ -1710,10 +1707,41 @@ export default function Newsfeed() {
                             }}
                           />
 
+                          <h5 className="fw-bold mt-2">{post.event.name}</h5>
                           <button className="badge btn-primary rounded-pill mt-3">
                             {post.event.start_date}
                           </button>
-                          <h5 className="fw-bold mt-2">{post.event.name}</h5>
+                        </div>
+                      )}
+
+                      {post.product && (
+                        <div>
+                          <Image
+                            src={post.product.images[0].image}
+                            alt="Product"
+                            className="img-fluid"
+                            width={600}
+                            height={400}
+                            style={{
+                              objectFit: "cover",
+                            }}
+                          />
+                          <div className="row mt-3">
+                            <div className="col-md-9">
+                              <p></p>
+                              <h6><b>{post.product.product_name}</b></h6>
+                              <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
+                              <br />
+                              <span><b>Category: </b>{post.product.category}</span>
+                              <br />
+                              <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
+                            </div>
+                            <div className="col-md-3 mt-4">
+                              <Link href="#" >
+                                <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
+                              </Link>
+                            </div>
+                          </div>
                         </div>
                       )}
 

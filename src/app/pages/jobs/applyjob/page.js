@@ -32,7 +32,7 @@ export default function ApplyJob() {
     if (files.length > 0) {
       const file = files[0];
       if (file.size > 5000000) {
-        alertify.error("File size exceeds 5MB limit");
+        alert("File size exceeds 5MB limit");
         setCv(null); 
       } else {
         setCv(file);
@@ -53,7 +53,7 @@ export default function ApplyJob() {
 
   const applyJob = async (jobId) => {
     if (!cv || !phone || !position) {
-      alertify.error("Please fill in all fields!");
+      alert("Please fill in all fields!");
       setError("Please fill in all fields!");
       return;
     }
@@ -83,11 +83,11 @@ export default function ApplyJob() {
         setCompany("");
         setCv(null); 
         setError(""); 
-        alertify.success(response.data.message);
+        alert(response.data.message);
         router.push("/pages/jobs");
       } else {
         setError("Error from server: " + response.data.message);
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       setLoading(false); 
@@ -96,7 +96,7 @@ export default function ApplyJob() {
       } else {
         setError("An unexpected error occurred");
       }
-      alertify.error(error.message);
+      alert(error.message);
     }
   };
 

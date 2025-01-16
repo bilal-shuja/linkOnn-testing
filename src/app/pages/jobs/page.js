@@ -147,7 +147,7 @@ export default function JobsPage() {
 
               <div className="col-md-9">
                 <div className="d-flex flex-column">
-                  <ul className="nav nav-pills bg-light d-flex justify-content-evenly" id="myTab" role="tablist">
+                  <ul className="nav nav-pills nav-fill bg-light d-flex justify-content-evenly" id="myTab" role="tablist">
                     <li className="nav-item" role="presentation">
                       <button
                         className={`nav-link ${activeTab === 0 ? "active" : ""}`}

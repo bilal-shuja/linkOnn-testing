@@ -208,21 +208,24 @@ export default function Navbar() {
                           <Image
                             src={notification.notifier.avatar}
                             alt={notification.notifier.first_name}
-                            width={40}
-                            height={40}
+                            width={50}
+                            height={50}
                             className="rounded-circle me-2"
                             unoptimized={true}
                           />
                           <div
-                            className="text-truncate"
+                            className="text-truncate mx-2"
                             style={{ maxWidth: "calc(100% - 50px)" }}
                           >
                             <p className="mb-0 text-wrap">
                               <strong>
                                 {notification.notifier.first_name}
-                              </strong>{" "}
+                              </strong>
+                            </p>
+                            <p className="mb-0 text-wrap">
                               {notification.text}
                             </p>
+
                             <small>{notification.created_human}</small>
                           </div>
                         </div>

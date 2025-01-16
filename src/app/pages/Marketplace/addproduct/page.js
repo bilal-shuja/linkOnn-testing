@@ -33,7 +33,6 @@ export default function AddProductForm() {
     const handleLocationChange = (e) => setLocation(e.target.value);
     const handleTypeChange = (e) => setType(e.target.value);
 
-
     const handleFileChange = (e) => {
         const files = e.target.files;
         if (files.length > 0) {
@@ -42,8 +41,7 @@ export default function AddProductForm() {
     };
 
     const addProduct = async () => {
-        // Basic form validation
-        if (!productName || !category || !price || !stock) {
+        if (!productName || !category || !price || !stock || !image ) {
             setError("Please fill in all required fields!");
             return;
         }
@@ -69,7 +67,7 @@ export default function AddProductForm() {
             formData.append("location", location)
             formData.append("type", type)
             if (image) {
-                formData.append("images", image);
+                formData.append("images[]", image);
             }
 
             const response = await api.post("/api/add-product", formData, {
@@ -81,7 +79,7 @@ export default function AddProductForm() {
             if (response.data.code === "200") {
                 setError("");
                 setSuccess(response.data.message);
-                router.push("/product-list");
+                router.push("/pages/Marketplace");
             } else {
                 setError("Error from server: " + response.data.message);
             }

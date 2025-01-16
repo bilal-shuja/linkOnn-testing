@@ -12,6 +12,10 @@ export default function MarketPlace() {
         router.push('/pages/Marketplace/addproduct');
     };
 
+    const handleMyProducts = () => {
+        router.push('/pages/Marketplace/myproducts');
+    };
+
     return (
         <div>
             <Navbar />
@@ -26,7 +30,7 @@ export default function MarketPlace() {
                                 <button className="btn btn-primary me-2" onClick={handleAddProduct}>
                                     Add New Product
                                 </button>
-                                <button className="btn btn-primary">My Products</button>
+                                <button className="btn btn-primary"  onClick={handleMyProducts}>My Products</button>
                             </div>
                         </div>
 

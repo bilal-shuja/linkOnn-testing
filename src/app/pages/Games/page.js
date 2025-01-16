@@ -23,11 +23,11 @@ export default function GamesPage() {
             if (response.data.code == "200") {
                 setGamesData(response.data.data);
             } else {
-                alertify.error(response.data.message);
+                alert(response.data.message);
             }
         } catch (error) {
             setError("Error fetching game data");
-            alertify.error("Error fetching game data");
+            alert("Error fetching game data");
         } finally {
             setGameloading(false);
         }

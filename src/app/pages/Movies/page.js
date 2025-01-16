@@ -34,7 +34,7 @@ export default function MoviesPage() {
         console.log("No movies found");
       }
     } catch (error) {
-      alertify.error("Error fetching Movies");
+      alert("Error fetching Movies");
     } finally {
       setMovieLoading(false);
     }

@@ -32,11 +32,11 @@ export default function Leftnav() {
         const lastFiveBlogs = response.data.data.slice(0, 5);
         setBlogs(lastFiveBlogs);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       setError("Catch Error");
-      alertify.error("Error fetching blogs");
+      alert("Error fetching blogs");
     } finally {
       setLoading(false);
     }
@@ -51,11 +51,11 @@ export default function Leftnav() {
       if (response.data.code === "200") {
         setPeople(response.data.data);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       setError("Error fetching recommendations");
-      alertify.error("Error fetching recommendations");
+      alert("Error fetching recommendations");
     } finally {
       setPeopleLoading(false);
     }
@@ -67,12 +67,12 @@ export default function Leftnav() {
       const response = await api.post("/api/make-friend", { friend_two: personId });
       if (response.data.code === "200") {
         fetchPeopleRecommendations();
-        alertify.success(isPending ? "Friend request canceled" : "Friend request sent");
+        alert(isPending ? "Friend request canceled" : "Friend request sent");
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("Error updating friend request");
+      alert("Error updating friend request");
     }
   };
 

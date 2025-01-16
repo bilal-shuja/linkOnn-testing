@@ -42,12 +42,12 @@ export default function Notifications() {
     try {
       const response = await api.post("/api/notifications/delete-all");
       if (response.data.code == "200") {
-        alertify.success(response.data.message);
+        alert(response.data.message);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("catch error");
+      alert("catch error");
     }
   };
 

@@ -29,11 +29,11 @@ export default function FriendsPage() {
       if (response.data.code == "200") {
         setFriends(response.data.data);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       setError("Failed to load friends.");
-      alertify.error("Error fetching friends");
+      alert("Error fetching friends");
     } finally {
       setfriendsLoading(false);
     }
@@ -46,11 +46,11 @@ export default function FriendsPage() {
       if (response.data.code == "200") {
         setFriendRequests(response.data.data);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       setError("Failed to load friend requests.");
-      alertify.error("Error fetching friend requests");
+      alert("Error fetching friend requests");
     } finally {
       setgetReqLoading(false);
     }
@@ -64,7 +64,7 @@ export default function FriendsPage() {
       if (response.data.code == "200") {
         setPeople(response.data.data);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       setError("Error fetching recommendations");
@@ -81,7 +81,7 @@ export default function FriendsPage() {
       if (response.data.code == "200") {
         setSentRequests(response.data.data);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       setError("Error fetching sent requests");
@@ -105,14 +105,14 @@ export default function FriendsPage() {
 
       if (response.data.code == "200") {
         fetchPeopleRecommendations();
-        alertify.success(
+        alert(
           isPending ? "Friend request canceled" : "Friend request sent"
         );
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("Error updating friend request");
+      alert("Error updating friend request");
     }
   };
 
@@ -129,43 +129,42 @@ export default function FriendsPage() {
             friend.id === friendId ? { ...friend, role: newRole } : friend
           )
         );
-        alertify.success(response.data.message);
+        alert(response.data.message);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       console.error("Error updating role:", error);
-      alertify.error("An error occurred while updating the role.");
+      alert("An error occurred while updating the role.");
     }
   };
 
   const handleUnfriend = (friendId) => {
-    alertify.confirm(
-      "Unfriend",
-      "Are you sure you want to unfriend this person?",
-      async function () {
+    const confirmUnfriend = window.confirm("Are you sure you want to unfriend this person?");
+  
+    if (confirmUnfriend) {
+      async function unfriend() {
         try {
           const response = await api.post("/api/unfriend", { user_id: friendId });
-
+  
           if (response.data.code === "200") {
-            alertify.success("Successfully unfriended!");
+            console.log("Successfully unfriended!");
             setFriends((prevFriends) =>
               prevFriends.filter((friend) => friend.id !== friendId)
             );
           } else {
-            alertify.error(response.data.message);
+            console.error(response.data.message);
           }
         } catch (error) {
-          alertify.error("Error unfriending the person");
-          console.error("Error unfriending:", error);
+          console.error("Error unfriending the person:", error);
         }
-      },
-      function () {
-        alertify.error("Unfriend action canceled");
       }
-    );
+      unfriend();
+    } else {
+      console.log("Unfriend action canceled");
+    }
   };
-
+  
   const handleFriendRequestAction = async (userId, action) => {
     try {
       const response = await api.post("/api/friend-request-action", {
@@ -174,14 +173,14 @@ export default function FriendsPage() {
       });
 
       if (response.data.code == "200") {
-        alertify.success(response.data.message);
+        alert(response.data.message);
         fetchFriendRequests();
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       console.error("Error processing friend request action:", error);
-      alertify.error("An error occurred while processing the friend request.");
+      alert("An error occurred while processing the friend request.");
     }
   };
 
@@ -195,7 +194,7 @@ export default function FriendsPage() {
               <Rightnav />
             </div>
             <div className="col-md-6 p-3">
-              <ul className="nav nav-pills bg-white" id="myTab" role="tablist">
+              <ul className="nav nav-pills nav-fill bg-white" id="myTab" role="tablist">
                 <li className="nav-item" role="presentation">
                   <button
                     className={`nav-link ${activeTab === "friends" ? "active" : ""

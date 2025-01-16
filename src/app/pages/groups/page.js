@@ -129,7 +129,7 @@ export default function Groups() {
             <div className="col-md-9 p-3">
               <div className="d-flex flex-column">
                 <ul
-                  className="nav nav-pills bg-white d-flex justify-content-evenly"
+                  className="nav nav-pills nav-fill bg-white d-flex justify-content-evenly"
                   id="myTab"
                   role="tablist"
                 >

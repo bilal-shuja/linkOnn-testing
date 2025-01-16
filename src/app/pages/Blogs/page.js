@@ -25,9 +25,8 @@ export default function Blogs() {
         const lastFiveBlogs = response.data.data.slice(0, 5);
         setRecentBlogs(lastFiveBlogs);
       } else {
-        // Make sure alertify is only called on the client-side
         if (typeof window !== "undefined") {
-          alertify.error(response.data.message);
+          alert(response.data.message);
         }
       }
     } catch (error) {
@@ -41,9 +40,8 @@ export default function Blogs() {
       if (response.data.code == "200") {
         setBlogs(response.data.data);
       } else {
-        // Make sure alertify is only called on the client-side
         if (typeof window !== "undefined") {
-          alertify.error(response.data.message);
+          alert(response.data.message);
         }
       }
     } catch (error) {

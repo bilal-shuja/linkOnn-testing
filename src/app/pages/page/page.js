@@ -4,7 +4,7 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
- 
+
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
@@ -27,10 +27,10 @@ export default function Pages() {
       if (response.data.code == "200") {
         setPages(response.data.data);
       } else {
-        alertify.error(response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
-      alertify.error("Error fetching Suggested Pages");
+      alert("Error fetching Suggested Pages");
     } finally {
       setSuggesPLoading(false);
     }
@@ -46,23 +46,22 @@ export default function Pages() {
         console.log("No pages found");
       }
     } catch (error) {
-      alertify.error("Error fetching My Pages");
+      alert("Error fetching My Pages");
     } finally {
       setMyPLoading(false);
     }
   };
 
-  // Using useEffect to ensure the code runs only on the client side.
   useEffect(() => {
     fetchSuggestedPages();
     fetchMyPages();
   }, []);
 
   const handleDeletePage = (pageId) => {
-    alertify.confirm(
-      "Delete Page",
-      "Are you sure you want to delete this page?",
-      async function () {
+    const confirmDelete = window.confirm("Are you sure you want to delete this page?");
+
+    if (confirmDelete) {
+      async function deletePage() {
         try {
           const formData = new FormData();
           formData.append("page_id", pageId);
@@ -75,28 +74,29 @@ export default function Pages() {
           });
 
           if (response.data.code === "200") {
-            alertify.success(response.data.message);
+            alert(response.data.message);
             setMyPages((prevPages) =>
               prevPages.filter((page) => page.id !== pageId)
             );
           } else {
-            alertify.error(response.data.message);
+            alert(response.data.message);
           }
         } catch (error) {
-          alertify.error("Error deleting page");
+          alert("Error deleting page");
         }
-      },
-      function () {
-        alertify.error("Deleting Page canceled");
       }
-    );
+      deletePage();
+    } else {
+      alert("Deleting Page canceled");
+    }
   };
 
+
   const handleLikeUnlikePage = (pageId) => {
-    alertify.confirm(
-      "Confirm Action",
-      "Are you sure you want to perform this action ?",
-      async () => {
+    const confirmAction = window.confirm("Are you sure you want to perform this action?");
+
+    if (confirmAction) {
+      async function likeUnlikePage() {
         try {
           const formData = new FormData();
           formData.append("page_id", pageId);
@@ -108,7 +108,7 @@ export default function Pages() {
           });
 
           if (response.data.code == "200") {
-            alertify.success(response.data.message);
+            alert(response.data.message);
 
             setMyPages((prevPages) =>
               prevPages.map((page) =>
@@ -116,18 +116,18 @@ export default function Pages() {
               )
             );
           } else {
-            alertify.error(response.data.message);
+            alert(response.data.message);
           }
         } catch (error) {
-          alertify.error("Error liking/unliking the page");
+          alert("Error liking/unliking the page");
         }
-      },
-      function () {
-        alertify.error("Action cancelled");
       }
-    );
+      likeUnlikePage();
+    } else {
+      alert("Action cancelled");
+    }
   };
-  
+
   return (
     <div>
       <Navbar />
@@ -140,7 +140,7 @@ export default function Pages() {
             <div className="col-md-9 p-3">
               <div className="d-flex flex-column">
                 <ul
-                  className="nav nav-pills bg-white d-flex justify-content-evenly"
+                  className="nav nav-pills nav-fill bg-white d-flex justify-content-evenly"
                   id="myTab"
                   role="tablist"
                 >
@@ -327,10 +327,10 @@ export default function Pages() {
                                     src={page.avatar || "https://via.placeholder.com/150"}
                                     alt="Page Image"
                                     className="card-img-top rounded-circle mx-auto mt-3"
-                                    width={80} 
-                                    height={80}  
+                                    width={80}
+                                    height={80}
                                     style={{
-                                      objectFit: "cover",  
+                                      objectFit: "cover",
                                     }}
                                   />
 

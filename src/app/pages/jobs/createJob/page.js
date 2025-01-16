@@ -82,10 +82,10 @@ export default function Createjob() {
 
             if (response.data.code == '200') {
                 setSuccess("Job created successfully!");
-                alertify.success(response.data.message);
+                alert(response.data.message);
                 setTimeout(() => router.push("/pages/jobs"), 2000);
             } else {
-                alertify.error(response.data.message);
+                alert(response.data.message);
             }
         } catch (error) {
             setError("Failed to create job. Please try again.");

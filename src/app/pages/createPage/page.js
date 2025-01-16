@@ -54,9 +54,8 @@ export default function Pageform() {
 
   const addPage = async () => {
     if (!pageName || !description || !category) {
-      // Make sure alertify runs only on the client side
       if (typeof window !== "undefined") {
-        alertify.error("Please fill in all fields!");
+        alert("Please fill in all fields!");
       }
       setError("Please fill in all fields!");
       return;
@@ -86,9 +85,8 @@ export default function Pageform() {
         setError("");
         setSuccess(response.data.message);
         router.push("/pages/page");
-        // Make sure alertify runs only on the client side
         if (typeof window !== "undefined") {
-          alertify.success(response.data.message);
+          alert(response.data.message);
         }
       } else {
         setError("Error from server: " + response.data.message);
@@ -103,9 +101,8 @@ export default function Pageform() {
     }
   };
 
-  // Ensure the page is only rendered on the client
   if (!isClient) {
-    return <div>Loading...</div>; // Or any fallback UI for loading
+    return <div>Loading...</div>; 
   }
 
   return (
