@@ -4,7 +4,6 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
@@ -17,7 +16,6 @@ export default function Pages() {
   const [pages, setPages] = useState([]);
   const [myPages, setMyPages] = useState([]);
   const router = useRouter();
-
   const api = createAPI();
 
   const fetchSuggestedPages = async () => {
@@ -90,7 +88,6 @@ export default function Pages() {
       alert("Deleting Page canceled");
     }
   };
-
 
   const handleLikeUnlikePage = (pageId) => {
     const confirmAction = window.confirm("Are you sure you want to perform this action?");
@@ -237,9 +234,9 @@ export default function Pages() {
                                     <Image
                                       src={page.avatar || "https://via.placeholder.com/150"}
                                       alt="Profile"
-                                      className="card-img-top rounded-circle mx-auto mt-3"
+                                      className="card-img-top mx-auto mt-3"
                                       width={80}
-                                      height={80}
+                                      height={200}
                                       style={{
                                         objectFit: "cover",
                                       }}
@@ -326,9 +323,9 @@ export default function Pages() {
                                   <Image
                                     src={page.avatar || "https://via.placeholder.com/150"}
                                     alt="Page Image"
-                                    className="card-img-top rounded-circle mx-auto mt-3"
+                                    className="card-img-top mx-auto mt-3"
                                     width={80}
-                                    height={80}
+                                    height={200}
                                     style={{
                                       objectFit: "cover",
                                     }}

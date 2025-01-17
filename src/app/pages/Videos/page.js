@@ -8,7 +8,7 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
-
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function VideoFeed() {
     useAuth();
@@ -28,7 +28,7 @@ export default function VideoFeed() {
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
     const [message, setMessage] = useState("");
-
+    const notify = () => toast("This is a notification!");
     const api = createAPI();
 
     const fetchPosts = async (isInitialLoad = true) => {
@@ -334,8 +334,11 @@ export default function VideoFeed() {
 
             if (response.data.code == "200") {
                 alert(response.data.message);
+                toast.success(response.data.message);
+                
             } else {
                 alert(`Error: ${response.data.message}`);
+                toast.error(response.data.message)
             }
         } catch (error) {
             alert("Error while reacting to the Post");
@@ -561,7 +564,7 @@ export default function VideoFeed() {
                                             >
                                                 <i className="bi bi-emoji-smile me-2"></i> Reaction
                                             </button>
-
+                                          
                                             <button
                                                 className="btn border-0 d-flex align-items-center"
                                                 onClick={() => handleCommentToggle(post.id)}

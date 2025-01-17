@@ -6,6 +6,7 @@ import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function DeleteAcc() {
     useAuth();
@@ -41,6 +42,7 @@ export default function DeleteAcc() {
                     router.push('/auth/sign-in');
                 }, 2000);
             } else {
+                toast.error(response.data.message)
                 setMessageType('error');
                 setMessage(response.data.message);
             }

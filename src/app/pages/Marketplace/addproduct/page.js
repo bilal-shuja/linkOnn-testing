@@ -76,10 +76,10 @@ export default function AddProductForm() {
                 },
             });
 
-            if (response.data.code === "200") {
+            if (response.data.code == "200") {
                 setError("");
                 setSuccess(response.data.message);
-                router.push("/pages/Marketplace");
+                router.push("/pages/Marketplace/myproducts");
             } else {
                 setError("Error from server: " + response.data.message);
             }

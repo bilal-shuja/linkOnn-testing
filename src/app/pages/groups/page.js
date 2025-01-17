@@ -37,7 +37,7 @@ export default function Groups() {
 
       if (response.data.code === "200") {
         setGroups(response.data.data);
-        setTotalSuggested(response.data.total); 
+        setTotalSuggested(response.data.total);
       } else {
         setErrorMessage(response.data.message);
       }
@@ -142,7 +142,7 @@ export default function Groups() {
                       aria-selected={activeTab === 0}
                       onClick={() => {
                         setActiveTab(0);
-                        fetchSuggestedGroups(suggestedPage); 
+                        fetchSuggestedGroups(suggestedPage);
                       }}
                     >
                       All Groups
@@ -225,7 +225,7 @@ export default function Groups() {
                                         alt="Group Image"
                                         className="card-img-top mx-auto mt-3"
                                         width={80}
-                                        height={80}
+                                        height={200}
                                         style={{ objectFit: "cover" }}
                                       />
                                     ) : (
@@ -233,8 +233,8 @@ export default function Groups() {
                                         style={{
                                           backgroundColor: "black",
                                           color: "white",
-                                          width: "80px",
-                                          height: "80px",
+                                          width: "200px",
+                                          height: "200px",
                                           display: "flex",
                                           justifyContent: "center",
                                           alignItems: "center",
@@ -351,7 +351,7 @@ export default function Groups() {
                                       alt="Group Image"
                                       className="card-img-top mx-auto mt-3"
                                       width={80}
-                                      height={80}
+                                      height={200}
                                       style={{ objectFit: "cover" }}
                                     />
                                   ) : (
@@ -359,8 +359,8 @@ export default function Groups() {
                                       style={{
                                         backgroundColor: "black",
                                         color: "white",
-                                        width: "80px",
-                                        height: "80px",
+                                        width: "200px",
+                                        height: "200px",
                                         display: "flex",
                                         justifyContent: "center",
                                         alignItems: "center",

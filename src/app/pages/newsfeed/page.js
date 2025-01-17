@@ -1026,7 +1026,7 @@ export default function Newsfeed() {
                         style={{
                           position: 'absolute',
                           top: '50px',
-                          left: '300px',
+                          left: '100px',
                           zIndex: '1000',
                         }}
                       >
@@ -1135,7 +1135,6 @@ export default function Newsfeed() {
                     </button>
 
                     <div>
-                      {/* Poll Button */}
                       <button
                         className="btn btn-light text-secondary align-items-center mt-2"
                         data-bs-toggle="modal"
@@ -1145,7 +1144,6 @@ export default function Newsfeed() {
                         Poll
                       </button>
 
-                      {/* Modal */}
                       <div
                         className="modal fade"
                         id="pollModal"
@@ -1155,7 +1153,6 @@ export default function Newsfeed() {
                       >
                         <div className="modal-dialog modal-dialog-centered">
                           <div className="modal-content">
-                            {/* Modal Header */}
                             <div className="modal-header">
                               <h5 className="modal-title" id="pollModalLabel">
                                 Create Poll
@@ -1199,7 +1196,6 @@ export default function Newsfeed() {
                                     }}
                                   />
 
-                                  {/* "+" Button only for Option 1 */}
                                   {index === 0 && (
                                     <button
                                       className="btn btn-success btn-sm me-2"
@@ -1209,7 +1205,6 @@ export default function Newsfeed() {
                                     </button>
                                   )}
 
-                                  {/* "-" Button except for Option 1 and Option 2 */}
                                   {index > 1 && (
                                     <button
                                       className="btn btn-danger btn-sm"

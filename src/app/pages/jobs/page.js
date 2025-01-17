@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
-import Image from "next/image"; // Import next/image for image optimization
+import Image from "next/image";
 
 export default function JobsPage() {
   const [activeTab, setActiveTab] = useState(0);
@@ -13,9 +13,9 @@ export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [myJobs, setMyJobs] = useState([]);
   const [jobLoading, setJobLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null); // State for error messages
+  const [errorMessage, setErrorMessage] = useState(null); 
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false); // State to check if we're on the client side
+  const [isClient, setIsClient] = useState(false); 
 
   const categories = [
     "All", "Healthcares Jobs", "Government Jobs", "Science and Research Jobs", "Information Technology Jobs",
@@ -30,7 +30,7 @@ export default function JobsPage() {
 
   const fetchJobs = async () => {
     setJobLoading(true);
-    setErrorMessage(null); // Reset error message before fetching
+    setErrorMessage(null);
     try {
       const response = await api.post("/api/get-jobs", {
         type: "all",
@@ -49,7 +49,7 @@ export default function JobsPage() {
 
   const fetchMyJobs = async () => {
     setJobLoading(true);
-    setErrorMessage(null); // Reset error message before fetching
+    setErrorMessage(null);
     try {
       const response = await api.post("/api/get-jobs", {
         type: "my",
@@ -66,14 +66,14 @@ export default function JobsPage() {
     }
   };
 
-  // Ensure that this runs only on the client side
+  
   useEffect(() => {
-    setIsClient(true); // Update state to true when mounted
+    setIsClient(true);
   }, []);
 
-  // Only run the job fetching logic on the client side
+
   useEffect(() => {
-    if (!isClient) return; // Skip running on the server
+    if (!isClient) return; 
     if (activeTab === 0) {
       fetchJobs();
     } else {
@@ -83,12 +83,11 @@ export default function JobsPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // This code will run only on the client-side after mounting
-      import("bootstrap/dist/js/bootstrap.bundle.min.js"); // Dynamically import Bootstrap JS
+      import("bootstrap/dist/js/bootstrap.bundle.min.js"); 
     }
-  }, []); // Run once on client mount
+  }, []); 
 
-  if (!isClient) return null; // Prevent rendering on the server
+  if (!isClient) return null; 
 
   return (
     <div>

@@ -164,7 +164,7 @@ export default function Navbar() {
                 />
               </button>
 
-              <div className="dropdown mx-3 dropstart">
+              <div className="dropdown mx-3 dropstart dropdown-bell">
                 <Image
                   src="/assets/images/newicons/bell.svg"
                   alt="icon"
@@ -192,10 +192,7 @@ export default function Navbar() {
                   <hr className="text-muted my-2" />
                   {loadingNotifications && (
                     <div className="d-flex justify-content-center">
-                      <div
-                        className="spinner-border text-primary"
-                        role="status"
-                      >
+                      <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
                       </div>
                     </div>
@@ -218,13 +215,9 @@ export default function Navbar() {
                             style={{ maxWidth: "calc(100% - 50px)" }}
                           >
                             <p className="mb-0 text-wrap">
-                              <strong>
-                                {notification.notifier.first_name}
-                              </strong>
+                              <strong>{notification.notifier.first_name}</strong>
                             </p>
-                            <p className="mb-0 text-wrap">
-                              {notification.text}
-                            </p>
+                            <p className="mb-0 text-wrap">{notification.text}</p>
 
                             <small>{notification.created_human}</small>
                           </div>
@@ -235,9 +228,7 @@ export default function Navbar() {
                     <li className="dropdown-item text-center">
                       <div className="d-flex flex-column align-items-center py-3">
                         <i className="bi bi-bell-slash fs-4 text-muted mb-2"></i>
-                        <p className="mb-0 text-muted">
-                          No notifications found.
-                        </p>
+                        <p className="mb-0 text-muted">No notifications found.</p>
                       </div>
                     </li>
                   )}
@@ -253,6 +244,7 @@ export default function Navbar() {
                   </div>
                 </ul>
               </div>
+
 
               <Link
                 href="/pages/settings/general-settings"

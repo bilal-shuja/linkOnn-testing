@@ -4,12 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
-import { useState } from "react";
 
 export default function Leftnav() {
   useAuth();
   const router = useRouter();
-  const [isOffcanvasOpen, setOffcanvasOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -19,10 +17,6 @@ export default function Leftnav() {
     router.push("/auth/sign-in");
   };
 
-  const toggleOffcanvas = () => {
-    setOffcanvasOpen(!isOffcanvasOpen);
-  };
-
   return (
     <div className="position-sticky top-0">
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -30,31 +24,17 @@ export default function Leftnav() {
           <button
             className="navbar-toggler"
             type="button"
-            onClick={toggleOffcanvas}
-            aria-controls="offcanvasLeft"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div
-            className={`offcanvas offcanvas-start ${isOffcanvasOpen ? "show" : ""}`}
-            tabIndex="-1"
-            id="offcanvasLeft"
-            aria-labelledby="offcanvasLeftLabel"
-            data-bs-backdrop="false"
-            style={{ zIndex: 1050 }}
-          >
-            <div className="offcanvas-header">
-              <h5 className="offcanvas-title" id="offcanvasLeftLabel">
-                Menu
-              </h5>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={toggleOffcanvas}
-                aria-label="Close"
-              ></button>
-            </div>
-            <div className="card mb-3 shadow-lg border-0">
+
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <div className="card mb-3 shadow-lg border-0 w-100">
               <div className="card-body">
                 <div className="list-group list-group-flush">
                   {[
@@ -106,7 +86,7 @@ export default function Leftnav() {
                   </Link>
 
                   <div className="mt-3">
-                    <div className="d-flex justify-content-around">
+                    {/* <div className="d-flex justify-content-around">
                       <Link href="#" className="text-decoration-none text-secondary">
                         About Us
                       </Link>
@@ -124,10 +104,10 @@ export default function Leftnav() {
                       <Link href="#" className="text-decoration-none text-secondary">
                         Privacy Policy
                       </Link>
-                    </div>
+                    </div> */}
                     <div className="text-center mt-2">
                       <Link href="#" className="text-decoration-none text-secondary">
-                        ©2024 linkon
+                        ©2025 linkon
                       </Link>
                     </div>
                   </div>
