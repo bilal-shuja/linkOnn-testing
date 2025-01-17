@@ -5,16 +5,14 @@ import SettingNavbar from "../settingNav";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import useAuth from "@/app/lib/useAuth";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";  // Import the custom hook
+import { toast } from 'react-toastify';  // Import toastify
 
 export default function SessionsSett() {
     useAuth();
     const [sessions, setSessionsData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [confirmationVisible, setConfirmationVisible] = useState(false);
     const [sessionToDelete, setSessionToDelete] = useState(null);
-    const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState('');
-
     const api = createAPI();
 
     useEffect(() => {
@@ -25,13 +23,11 @@ export default function SessionsSett() {
                 if (response.data.code === "200") {
                     setSessionsData(response.data.data);
                 } else {
-                    setMessageType('error');
-                    setMessage("Failed to fetch sessions");
+                    toast.error("Failed to fetch sessions");
                 }
             } catch (error) {
                 console.error("Error fetching sessions:", error.response || error.message);
-                setMessageType('error');
-                setMessage("Error fetching sessions");
+                toast.error("Error fetching sessions");
             } finally {
                 setLoading(false);
             }
@@ -42,7 +38,7 @@ export default function SessionsSett() {
 
     const handleDelete = (sessionId) => {
         setSessionToDelete(sessionId);
-        setConfirmationVisible(true);
+        showConfirmationToast();
     };
 
     const confirmDelete = async () => {
@@ -56,27 +52,31 @@ export default function SessionsSett() {
                     setSessionsData(prevSessions =>
                         prevSessions.filter(session => session.id !== sessionToDelete)
                     );
-                    setMessageType('success');
-                    setMessage("Session successfully deleted");
+                    toast.success("Session successfully deleted");
                 } else {
-                    setMessageType('error');
-                    setMessage("Failed to delete the session.");
+                    toast.error("Failed to delete the session.");
                 }
             } catch (error) {
                 console.error("Error deleting session:", error.response || error.message);
-                setMessageType('error');
-                setMessage("An error occurred while deleting the session.");
+                toast.error("An error occurred while deleting the session.");
             }
         }
-        setConfirmationVisible(false);
     };
 
     const cancelDelete = () => {
-        setConfirmationVisible(false);
-        setMessageType('error');
-        setMessage("Session deletion canceled");
+        setSessionToDelete(null);
+        toast.info("Session deletion canceled");
     };
 
+    const { showConfirmationToast } = useConfirmationToast({
+        message: "Are you sure you want to delete this session?",
+        onConfirm: confirmDelete,
+        onCancel: cancelDelete,
+        confirmText: "Confirm",
+        cancelText: "Cancel",
+    });
+
+    
     return (
         <div>
             <Navbar />
@@ -91,11 +91,6 @@ export default function SessionsSett() {
                                 <div className="card-body">
                                     <h5 className="mb-4 my-3 fw-bold">Manage Sessions</h5>
                                     <hr className="text-muted" />
-                                    {message && (
-                                        <div className={`alert ${messageType === 'success' ? 'alert-success' : 'alert-danger'} text-center`} role="alert">
-                                            {message}
-                                        </div>
-                                    )}
                                     <div className="table-responsive">
                                         <table className="table table-striped table-hover">
                                             <thead>
@@ -141,29 +136,6 @@ export default function SessionsSett() {
                                             </tbody>
                                         </table>
                                     </div>
-                                    {confirmationVisible && (
-                                        <div className="modal show d-block">
-                                            <div className="modal-dialog">
-                                                <div className="modal-content">
-                                                    <div className="modal-header">
-                                                        <h5 className="modal-title">Confirm Delete</h5>
-                                                        <button type="button" className="btn-close" onClick={cancelDelete}></button>
-                                                    </div>
-                                                    <div className="modal-body">
-                                                        Are you sure you want to delete this session?
-                                                    </div>
-                                                    <div className="modal-footer">
-                                                        <button className="btn btn-secondary" onClick={cancelDelete}>
-                                                            Cancel
-                                                        </button>
-                                                        <button className="btn btn-danger" onClick={confirmDelete}>
-                                                            Confirm
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
