@@ -2112,15 +2112,22 @@ export default function Newsfeed() {
               ))}
               <div className="d-grid gap-2 col-3 mx-auto mt-4">
                 {noMorePosts ? (
-                  <button className="btn btn-primary" disabled>
+                  <button className="btn btn-light" disabled>
                     No more posts
                   </button>
                 ) : (
-                  <button className="btn btn-primary" disabled={loading}>
-                    {loading ? "Loading..." : ""}
+                  <button className="btn btn-light" disabled={loading}>
+                    {loading ? (
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    ) : (
+                      "Load More"
+                    )}
                   </button>
                 )}
               </div>
+
             </div>
             <div className="col-md-3 p-3 rounded">
               <Leftnav />

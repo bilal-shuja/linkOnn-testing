@@ -7,6 +7,7 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function Poke() {
     useAuth();
@@ -22,10 +23,10 @@ export default function Poke() {
                 if (response.data.code == "200") {
                     setPokes(response.data.data);
                 } else {
-                    alert("Failed to fetch pokes");
+                    toast.error("Failed to fetch pokes");
                 }
             } catch (error) {
-                alert("Error fetching pokes");
+                toast.error("Error fetching pokes");
             }
         };
 
@@ -50,12 +51,12 @@ export default function Poke() {
             });
 
             if (response.data.code == "200") {
-                alert(response.data.message);
+                toast.success(response.data.message);
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("Error while Poking Back");
+            toast.error("Error while Poking Back");
         }
     };
 

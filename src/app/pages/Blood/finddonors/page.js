@@ -7,6 +7,7 @@ import useAuth from "@/app/lib/useAuth";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 export default function FindDonors() {
     useAuth();
@@ -19,10 +20,10 @@ export default function FindDonors() {
             if (response.data.code === 200) {
                 setDonors(response.data.data);
             } else {
-                alert(response.data.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
-            alert("Error fetching donors");
+            toast.error("Error fetching donors");
         }
     };
 
@@ -99,8 +100,6 @@ export default function FindDonors() {
                                         </table>
                                     </div>
                                 </div>
-
-
                             </div>
                         </div>
                     </div>

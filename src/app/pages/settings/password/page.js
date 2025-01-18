@@ -56,21 +56,18 @@ export default function ChangePassword() {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("Error updating password:", error);
             toast.error("An error occurred while updating the password.");
         } finally {
             setLoading(false);
         }
     };
 
-    const cancelPasswordChange = () => {
-        toast.info("Password change canceled.");
-    };
-
     const { showConfirmationToast } = useConfirmationToast({
         message: "Are you sure you want to change your password?",
         onConfirm: confirmPasswordChange,
-        onCancel: cancelPasswordChange
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel",
     });
 
     return (

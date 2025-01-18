@@ -6,6 +6,8 @@ import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 import React, { useState } from "react";
 import createAPI from "@/app/lib/axios";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function Addbloodreq() {
     useAuth();
@@ -14,6 +16,7 @@ export default function Addbloodreq() {
     const [bloodGroup, setBloodGroup] = useState("");
     const [location, setLocation] = useState("");
     const [phone, setPhone] = useState("");
+    const router = useRouter();
 
     const handleSwitchChange = (event) => {
         setIsChecked(event.target.checked);
@@ -21,14 +24,14 @@ export default function Addbloodreq() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        
+
         const urgentNeedValue = isChecked ? 1 : 0;
 
         const formData = new FormData();
         formData.append("blood_group", bloodGroup);
         formData.append("location", location);
         formData.append("phone", phone);
-        formData.append("is_urgent_need", urgentNeedValue); 
+        formData.append("is_urgent_need", urgentNeedValue);
 
         try {
             const response = await api.post("/api/add-blood-request", formData, {
@@ -37,13 +40,17 @@ export default function Addbloodreq() {
                 },
             });
 
-            if (response.data.code === '200') {
-                alert(response.data.message);
+            if (response.data.code == "200") {
+                toast.success(response.data.message);
+                setTimeout(() => {
+                    router.push("/pages/Blood/bloodrequests");
+                }, 2000);
+
             } else {
-                alert(response.data.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
-            alert("An error occurred while submitting the request.");
+            toast.error("An error occurred while submitting the request.");
         }
     };
 

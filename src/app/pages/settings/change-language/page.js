@@ -6,6 +6,8 @@ import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function ChangeLang() {
     useAuth();
@@ -13,9 +15,6 @@ export default function ChangeLang() {
     const api = createAPI();
     const [selectedLanguage, setSelectedLanguage] = useState("");
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState("");
-    const [showConfirmation, setShowConfirmation] = useState(false);
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -34,7 +33,6 @@ export default function ChangeLang() {
     };
 
     const handleLanguage = async () => {
-        setShowConfirmation(false);
         setLoading(true);
         try {
             const formData = new FormData();
@@ -51,24 +49,28 @@ export default function ChangeLang() {
                 if (userProfile.data.code === "200") {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
-                setMessageType("success");
-                setMessage(response.data.message);
+                toast.success(response.data.message, { position: "top-center" });
 
                 setTimeout(() => {
                     router.push('/pages/newsfeed');
                 }, 2000);
             } else {
-                setMessageType("error");
-                setMessage(response.data.message);
+                toast.error(response.data.message, { position: "top-center" });
             }
         } catch (error) {
-            console.error("Error updating language:", error);
-            setMessageType("error");
-            setMessage("An error occurred while updating the language.");
+            toast.error("An error occurred while updating the language.", { position: "top-center" });
         } finally {
             setLoading(false);
         }
     };
+
+    const { showConfirmationToast } = useConfirmationToast({
+        message: "Are you sure you want to change the language? This will refresh the page.",
+        onConfirm: handleLanguage,
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel"
+    });
 
     return (
         <div>
@@ -84,14 +86,6 @@ export default function ChangeLang() {
                                 <div className="card-body">
                                     <h5 className="mb-4 my-3 fw-bold">Change Language</h5>
                                     <hr className="text-muted" />
-                                    {message && (
-                                        <div
-                                            className={`alert ${messageType === "success" ? "alert-success" : "alert-danger"} text-center`}
-                                            role="alert"
-                                        >
-                                            {message}
-                                        </div>
-                                    )}
                                     <div>
                                         <label htmlFor="languageSelect" className="form-label text-muted px-1">
                                             Select Language
@@ -114,7 +108,7 @@ export default function ChangeLang() {
                                     </div>
                                     <button
                                         className="btn btn-success my-3 rounded-1"
-                                        onClick={() => setShowConfirmation(true)}
+                                        onClick={showConfirmationToast}
                                         disabled={loading}
                                     >
                                         {loading ? (
@@ -129,42 +123,6 @@ export default function ChangeLang() {
                     </div>
                 </div>
             </div>
-            {showConfirmation && (
-                <div className="modal show d-block" tabIndex="-1" role="dialog">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Confirm Language Change</h5>
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    aria-label="Close"
-                                    onClick={() => setShowConfirmation(false)}
-                                ></button>
-                            </div>
-                            <div className="modal-body">
-                                <p>Are you sure you want to change the language? This will refresh the page.</p>
-                            </div>
-                            <div className="modal-footer">
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={() => setShowConfirmation(false)}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    onClick={handleLanguage}
-                                >
-                                    Confirm
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

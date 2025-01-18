@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/auth/axios";
+import { toast } from "react-toastify";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -20,6 +21,7 @@ export default function ForgotPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) {
+      toast.error("Please Enter Email")
       setError("Please Enter Email");
       return;
     }
@@ -35,27 +37,24 @@ export default function ForgotPassword() {
       });
 
       if (response.data.status === 200) {
+        toast.success(response.data.message)
         setSuccess(response.data.message);
 
         if (isClient) {
-          // Set to localStorage only on the client-side
           localStorage.setItem("email", email);
         }
 
         router.push("/auth/confirm-forgot");
       } else {
+        toast.error(response.data.message)
         setError(response.data.message);
       }
     } catch (err) {
       const errorMessage = err.response?.data?.message || "An error occurred. Please try again.";
       setError(errorMessage);
+      toast.error(errorMessage)
     }
   };
-
-  // Render a loading state or fallback until client-side code runs
-  // if (!isClient) {
-  //   return <div>Loading...</div>;
-  // }
 
   return (
     <div className="min-vh-100 d-flex">

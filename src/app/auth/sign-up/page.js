@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/auth/axios";
+import { toast } from "react-toastify";
 
 export default function SignUp() {
   const [password, setPassword] = useState("");
@@ -20,7 +21,6 @@ export default function SignUp() {
 
   const router = useRouter();
 
-  // Refs for each form field
   const firstNameRef = useRef(null);
   const lastNameRef = useRef(null);
   const usernameRef = useRef(null);
@@ -30,20 +30,19 @@ export default function SignUp() {
   const dobRef = useRef(null);
   const genderRef = useRef(null);
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setPasswordVisible((prev) => !prev);
   };
 
-  // Handle arrow key press for navigating between inputs
+
   const handleArrowKeyPress = (e, currentRef, nextRef, prevRef) => {
     if (e.key === "ArrowDown") {
       if (nextRef?.current) {
-        nextRef.current.focus(); // Move to the next field
+        nextRef.current.focus(); 
       }
     } else if (e.key === "ArrowUp") {
       if (prevRef?.current) {
-        prevRef.current.focus(); // Move to the previous field
+        prevRef.current.focus();
       }
     }
   };
@@ -53,11 +52,13 @@ export default function SignUp() {
 
     if (!email || !password || !password_confirm || !first_name || !last_name || !dob) {
       setError("Please fill in all fields.");
+      toast.error("Please fill in all fields.")
       return;
     }
 
     if (password !== password_confirm) {
       setError("Password and Confirm Password do not match.");
+      toast.error("Password and Confirm Password do not match.")
       return;
     }
 
@@ -78,6 +79,7 @@ export default function SignUp() {
       });
 
       if (response.status === 200) {
+        toast.success(response.data.message)
         setSuccess(response.data.message);
         setFirstName("");
         setLastName("");
@@ -93,11 +95,13 @@ export default function SignUp() {
         }, 4000);
       } else {
         setError(response.data.message || "An error occurred during registration.");
+        toast.error(response.data.message || "An error occurred during registration.");
       }
     } catch (err) {
       setSuccess("");
       const errorMessage = err.response?.data?.messages?.error || "An error occurred. Please try again.";
       setError(errorMessage);
+      toast.error(errorMessage)
     }
   };
 

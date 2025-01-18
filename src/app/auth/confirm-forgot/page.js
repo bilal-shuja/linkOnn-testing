@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/auth/axios";
+import { toast } from "react-toastify";
 
 export default function ConfirmForgot() {
   const [email, setEmail] = useState("");
@@ -57,11 +58,13 @@ export default function ConfirmForgot() {
     e.preventDefault();
 
     if (!password || !confirm_password || !reset_code) {
+      toast.error("Please fill in all fields.")
       setError("Please fill in all fields.");
       return;
     }
 
     if (password !== confirm_password) {
+      toast.error("Password and Confirm Password do not match.")
       setError("Password and Confirm Password do not match.");
       return;
     }
@@ -80,6 +83,7 @@ export default function ConfirmForgot() {
       });
 
       if (response.data.code === "200") {
+        toast.success(response.data.message)
         setSuccess(response.data.message);
         setResetCode("");
         setPassword("");
@@ -87,6 +91,7 @@ export default function ConfirmForgot() {
         setError("");
         router.push("/auth/sign-in");
       } else {
+        toast.error(response.data.message)
         setError(response.data.message);
         setSuccess("");
       }
@@ -94,6 +99,7 @@ export default function ConfirmForgot() {
       const errorMessage = err.response?.data?.message || "An error occurred. Please try again.";
       setError(errorMessage);
       setSuccess("");
+      toast.error(errorMessage)
     }
   };
 

@@ -5,12 +5,12 @@ import React, { useState, useEffect } from "react";
 import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from 'react-toastify';
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function NotificationSettings() {
     useAuth();
     const api = createAPI();
-
-    // Notification state variables
     const [notify_like, setNotifyLike] = useState(false);
     const [commentedPosts, setCommentedPosts] = useState(false);
     const [sharedPosts, setSharedPosts] = useState(false);
@@ -20,10 +20,6 @@ export default function NotificationSettings() {
     const [receivedMessages, setReceivedMessages] = useState(false);
     const [friendsNewPosts, setFriendsNewPosts] = useState(false);
     const [profileVisits, setProfileVisits] = useState(false);
-
-    const [confirmationVisible, setConfirmationVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState('');
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -40,7 +36,7 @@ export default function NotificationSettings() {
                 setFriendsNewPosts(parsedData.data.notify_friends_newpost === "1");
                 setProfileVisits(parsedData.data.notify_profile_visit === "1");
             } catch (error) {
-                console.error("Failed to parse userdata from localStorage:", error);
+                toast.error("Failed to parse userdata from localStorage:", error);
             }
         }
     }, []);
@@ -50,7 +46,7 @@ export default function NotificationSettings() {
     };
 
     const handleUpdate = async () => {
-        setConfirmationVisible(true); // Show confirmation dialog
+        showConfirmationToast();
     };
 
     const confirmUpdate = async () => {
@@ -75,25 +71,25 @@ export default function NotificationSettings() {
                 if (userProfile.data.code === "200") {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
-                setMessageType('success');
-                setMessage(response.data.message);
+
+                toast.success(response.data.message);
             } else {
-                setMessageType('error');
-                setMessage(response.data.message);
+
+                toast.error(response.data.message);
             }
         } catch (error) {
             const errorMessage = error.response?.data?.message || "An error occurred.";
-            setMessageType('error');
-            setMessage(errorMessage);
+            toast.error(errorMessage);
         }
-        setConfirmationVisible(false); // Close the confirmation modal after processing
     };
 
-    const cancelUpdate = () => {
-        setConfirmationVisible(false); // Close confirmation without updating
-        setMessageType('error');
-        setMessage("Action canceled.");
-    };
+    const { showConfirmationToast } = useConfirmationToast({
+        message: "Are you sure you want to save the changes to your notifications settings?",
+        onConfirm: confirmUpdate,
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel"
+    });
 
     return (
         <div>
@@ -109,20 +105,7 @@ export default function NotificationSettings() {
                                 <div className="card-body">
                                     <h5 className="mb-4 my-3 fw-bold">Notification Settings</h5>
                                     <hr className="text-muted" />
-                                    {message && (
-                                        <div
-                                            className={`alert ${messageType === 'success'
-                                                ? 'alert-success'
-                                                : 'alert-danger'
-                                                } text-center`}
-                                        >
-                                            {message}
-                                        </div>
-
-                                    )}
-
                                     <ul className="list-unstyled">
-                                        {/* Liked My Posts */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-hand-thumbs-up me-3 fs-5 text-primary"></i>
@@ -144,7 +127,6 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
 
-                                        {/* Commented on My Posts */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-chat me-3 fs-5 text-primary"></i>
@@ -166,7 +148,6 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
 
-                                        {/* Shared My Posts */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-share me-3 fs-5 text-primary"></i>
@@ -188,7 +169,6 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
 
-                                        {/* Accepted Friend Request */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-person-check me-3 fs-5 text-primary"></i>
@@ -210,7 +190,6 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
 
-                                        {/* Liked My Pages */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-hand-thumbs-up me-3 fs-5 text-primary"></i>
@@ -232,7 +211,6 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
 
-                                        {/* Joined My Groups */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-people me-3 fs-5 text-primary"></i>
@@ -254,7 +232,6 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
 
-                                        {/* Received Messages */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-envelope me-3 fs-5 text-primary"></i>
@@ -276,7 +253,6 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
 
-                                        {/* Friends New Posts */}
                                         <li className="d-flex justify-content-between align-items-center py-2 border-bottom">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-pencil-square me-3 fs-5 text-primary"></i>
@@ -298,7 +274,6 @@ export default function NotificationSettings() {
                                             </div>
                                         </li>
 
-                                        {/* Profile Visits */}
                                         <li className="d-flex justify-content-between align-items-center py-2">
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-eye me-3 fs-5 text-primary"></i>
@@ -321,31 +296,10 @@ export default function NotificationSettings() {
                                         </li>
                                     </ul>
 
-                                    {/* Save Changes button */}
                                     <div className="text-end mt-3">
                                         <button className="btn btn-primary" onClick={handleUpdate}>Save Changes</button>
                                     </div>
 
-                                    {/* Confirmation Modal */}
-                                    {confirmationVisible && (
-                                        <div className="modal fade show" tabIndex="-1" style={{ display: "block" }}>
-                                            <div className="modal-dialog">
-                                                <div className="modal-content">
-                                                    <div className="modal-header">
-                                                        <h5 className="modal-title">Confirm Update</h5>
-                                                        <button type="button" className="btn-close" onClick={cancelUpdate}></button>
-                                                    </div>
-                                                    <div className="modal-body">
-                                                        <p>Are you sure you want to save changes?</p>
-                                                    </div>
-                                                    <div className="modal-footer">
-                                                        <button type="button" className="btn btn-secondary" onClick={cancelUpdate}>Cancel</button>
-                                                        <button type="button" className="btn btn-primary" onClick={confirmUpdate}>Confirm</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>

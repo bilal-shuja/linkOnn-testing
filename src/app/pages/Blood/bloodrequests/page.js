@@ -7,6 +7,8 @@ import useAuth from "@/app/lib/useAuth";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Link from "next/link";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import { toast } from "react-toastify";
 
 export default function BloodReqs() {
     useAuth();
@@ -39,27 +41,26 @@ export default function BloodReqs() {
     }, []);
 
     const handleDeleteReq = async (requestId) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this request?");
-
-        if (confirmDelete) {
-            const updatedBloodReqs = bloodreqs.filter(req => req.id !== requestId);
-            setBloodreqs(updatedBloodReqs);
-
-            try {
-                const response = await api.post(`/api/delete-bloodrequest`, { request_id: requestId });
-
-                if (response.data.code === "200") {
-                    alert(response.data.message);
-                } else {
-                    alert(response.data.message);
-                    fetchDonors();
-                }
-            } catch (error) {
-                alert("Error deleting request");
-                fetchDonors();
+        try {
+            const response = await api.post(`/api/delete-bloodrequest`, { request_id: requestId });
+            if (response.data.code == "200") {
+                toast.success(response.data.message);
+                setBloodreqs(prev => prev.filter(req => req.id !== requestId));
+            } else {
+                toast.error(response.data.message);
             }
+        } catch (error) {
+            toast.error("Error deleting request");
         }
     };
+
+    const { showConfirmationToast } = useConfirmationToast({
+        message: "Are you sure you want to delete this request?",
+        onConfirm: (values) => handleDeleteReq(values[0]),
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel",
+    });
 
     if (!userdata) {
         return null;
@@ -122,7 +123,7 @@ export default function BloodReqs() {
                                                                 {userdata.data.id === req.user_id ? (
                                                                     <button
                                                                         className="btn btn-danger"
-                                                                        onClick={() => handleDeleteReq(req.id)}
+                                                                        onClick={() => showConfirmationToast([req.id])}
                                                                     >
                                                                         <i className="bi bi-trash3"></i> Delete
                                                                     </button>
@@ -139,7 +140,6 @@ export default function BloodReqs() {
                                         </table>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>

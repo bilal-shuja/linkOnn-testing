@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/app/lib/auth/axios";
 import createAPI from "@/app/lib/axios";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -39,6 +40,7 @@ export default function Login() {
     e.preventDefault();
 
     if (!email || !password) {
+      toast.error("Please fill in all fields.")
       setError("Please fill in all fields.");
       return;
     }
@@ -75,6 +77,7 @@ export default function Login() {
       const response = await api.post("/api/login", { email, password, lat, lon });
 
       if (response.status === 200 && response.data.token) {
+        toast.success(response.data.message)
         if (isClient) {
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("userid", response.data.user_id);
@@ -98,11 +101,13 @@ export default function Login() {
       } else {
         const errorMessage = response?.data?.messages?.error || "An unknown error occurred";
         setError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (err) {
       const errorMessage =
         err.response?.data?.messages?.error || "An error occurred. Please try again.";
       setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 

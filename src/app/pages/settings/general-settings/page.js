@@ -6,6 +6,8 @@ import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from 'react-toastify';
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function GeneralSett() {
     useAuth();
@@ -26,8 +28,6 @@ export default function GeneralSett() {
     const [coverPreview, setCoverPreview] = useState(null);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
-
-    const [confirmationVisible, setConfirmationVisible] = useState(false);
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -66,7 +66,7 @@ export default function GeneralSett() {
     };
 
     const handleUpdate = () => {
-        setConfirmationVisible(true);
+        showConfirmationToast();
     };
 
     const confirmUpdate = async () => {
@@ -103,22 +103,23 @@ export default function GeneralSett() {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
 
-                setSuccess(response.data.message);
-                setError(null);
+                toast.success(response.data.message);
             } else {
-                setError(response.data.message);
-                setSuccess(null);
+                toast.error(response.data.message);
             }
         } catch (error) {
-            setError("An error occurred.");
-            setSuccess(null);
+            toast.error("An error occurred.");
         }
-        setConfirmationVisible(false);
     };
 
-    const cancelUpdate = () => {
-        setConfirmationVisible(false);
-    };
+
+    const { showConfirmationToast } = useConfirmationToast({
+        message: "Are you sure you want to save the changes to your general settings?",
+        onConfirm: confirmUpdate,
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel"
+    });
 
     return (
         <div>
@@ -134,9 +135,6 @@ export default function GeneralSett() {
                                 <div className="card-body">
                                     <h4 className="fs-5 fw-bold my-3">Update Profile</h4>
                                     <hr />
-
-                                    {success && <div className="alert alert-success text-center">{success}</div>}
-                                    {error && <div className="alert alert-danger text-center">{error}</div>}
 
                                     <div className="mt-3">
                                         <label className="form-label text-muted px-2">Profile Avatar</label>
@@ -261,43 +259,6 @@ export default function GeneralSett() {
                         </div>
                     </div>
                 </div>
-
-                {/* Confirmation Modal */}
-                {confirmationVisible && (
-                    <div className="modal show d-block">
-                        <div className="modal-dialog modal-dialog-centered">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Confirm Update</h5>
-                                    <button
-                                        type="button"
-                                        className="btn-close"
-                                        onClick={cancelUpdate}
-                                    ></button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>Are you sure you want to update your profile?</p>
-                                </div>
-                                <div className="modal-footer">
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={cancelUpdate}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        onClick={confirmUpdate}
-                                    >
-                                        Confirm
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     )

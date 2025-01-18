@@ -5,74 +5,67 @@ import createAPI from "@/app/lib/axios";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function Leftnav() {
   useAuth();
-  const [error, setError] = useState(null);
   const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingBlogs, setLoadingBlogs] = useState(false);
   const [people, setPeople] = useState([]);
-  const [peopleLoading, setPeopleLoading] = useState(true);
-  const [isClient, setIsClient] = useState(false); // Track if it's client-side
+  const [loadingPeople, setLoadingPeople] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   const api = createAPI();
 
-  // Ensure code runs only on the client-side
   useEffect(() => {
-    setIsClient(true); // Set to true once the component is mounted in the browser
+    setIsClient(true);
   }, []);
 
-  // Fetch Articles Blogs (Client-side)
   const fetchArticlesBlogs = useCallback(async () => {
-    if (!isClient) return; // Only run on client-side
-    setLoading(true);
+    setLoadingBlogs(true);
     try {
       const response = await api.post("/public_api/recent-blogs");
       if (response.data.code === "200") {
         const lastFiveBlogs = response.data.data.slice(0, 5);
         setBlogs(lastFiveBlogs);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setError("Catch Error");
-      alert("Error fetching blogs");
+      toast.error("Error fetching blogs");
     } finally {
-      setLoading(false);
+      setLoadingBlogs(false);
     }
-  }, [isClient]);
+  }, []);
 
-  // Fetch People Recommendations (Client-side)
   const fetchPeopleRecommendations = useCallback(async () => {
-    if (!isClient) return; // Only run on client-side
-    setPeopleLoading(true);
+    setLoadingPeople(true);
     try {
       const response = await api.post(`/api/fetch-recommended`);
       if (response.data.code === "200") {
         setPeople(response.data.data);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setError("Error fetching recommendations");
-      alert("Error fetching recommendations");
+      toast.error("Error fetching recommendations");
     } finally {
-      setPeopleLoading(false);
+      setLoadingPeople(false);
     }
-  }, [isClient]);
+  }, []);
 
   const handleAddFriend = async (personId, isPending) => {
-    if (!isClient) return; // Only run on client-side
+    if (!isClient) return;
     try {
       const response = await api.post("/api/make-friend", { friend_two: personId });
       if (response.data.code === "200") {
         fetchPeopleRecommendations();
-        alert(isPending ? "Friend request canceled" : "Friend request sent");
+        toast.success(isPending ? "Friend request canceled" : "Friend request sent");
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("Error updating friend request");
+      toast.error("Error updating friend request");
     }
   };
 
@@ -81,22 +74,10 @@ export default function Leftnav() {
       fetchArticlesBlogs();
       fetchPeopleRecommendations();
     }
-  }, [isClient, fetchArticlesBlogs, fetchPeopleRecommendations]);
-
-  // If any data is still loading, show a loading spinner
-  if (peopleLoading || loading) {
-    return (
-      <div className="d-flex justify-content-center mt-3">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
+  }, [isClient]);
 
   return (
     <div className="position-sticky top-0">
-      {/* People Recommendations */}
       <div className="card mb-3 shadow-lg border-0">
         <div className="card-body">
           <div className="d-flex align-items-center justify-content-between">
@@ -106,7 +87,13 @@ export default function Leftnav() {
             </button>
           </div>
 
-          {people.length > 0 ? (
+          {loadingPeople ? (
+            <div className="d-flex justify-content-center mt-3">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : people.length > 0 ? (
             people.map((person) => (
               <div key={person.id} className="d-flex align-items-center justify-content-between mt-2 p-2">
                 <div className="d-flex align-items-center">
@@ -150,7 +137,6 @@ export default function Leftnav() {
         </div>
       </div>
 
-      {/* Articles and Blogs */}
       <div className="card mb-3 shadow-lg border-0">
         <div className="card-body">
           <div className="d-flex align-items-center justify-content-between">
@@ -160,7 +146,13 @@ export default function Leftnav() {
             </button>
           </div>
 
-          {blogs.length > 0 ? (
+          {loadingBlogs ? (
+            <div className="d-flex justify-content-center mt-3">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : blogs.length > 0 ? (
             blogs.map((blog) => (
               <div key={blog.id}>
                 <div className="mt-3 mx-2">

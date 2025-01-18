@@ -6,6 +6,8 @@ import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function Becomedonor() {
     useAuth();
@@ -16,8 +18,8 @@ export default function Becomedonor() {
     const [donationDate, setDonationDate] = useState('');
     const [userdata, setUserdata] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
     const api = createAPI();
+    const router = useRouter();
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -40,17 +42,16 @@ export default function Becomedonor() {
         event.preventDefault();
 
         if (!bloodGroup || !location || !phone || !donationDate) {
-            setErrorMessage('Please fill in all fields before submitting.');
+            toast.error('Please fill in all fields before submitting.');
             return;
         }
 
         setLoading(true);
-        setErrorMessage('');
 
         try {
             await updateBlood();
         } catch (error) {
-            setErrorMessage('There was an error submitting your details. Please try again.');
+            toast.error('There was an error submitting your details. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -70,16 +71,20 @@ export default function Becomedonor() {
             });
 
             if (response.data.code == '200') {
+                toast.success(response.data.message)
                 const userProfile = await api.get("/api/get-user-profile?user_id=" + localStorage.getItem("userid"));
 
                 if (userProfile.data.code === "200") {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
+                setTimeout(() => {
+                    router.push("/pages/Blood");
+                }, 2000);
             } else {
-                setErrorMessage('Failed to update profile. Please try again.');
+                toast.error('Failed to update profile. Please try again.');
             }
         } catch (error) {
-            setErrorMessage('There was an error updating your profile.');
+            toast.error('There was an error updating your profile.');
         }
     };
 
@@ -114,8 +119,6 @@ export default function Becomedonor() {
                                         <form onSubmit={handleSubmit}>
                                             <h3 className="fw-bold text-success">Become a Donor</h3>
                                             <p className="text-muted mb-4">Help save lives by donating blood. Please fill out the form below.</p>
-
-                                            {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
 
                                             <div className="mb-3">
                                                 <label className="form-label" htmlFor="bloodGroup">Blood Group</label>

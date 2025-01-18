@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from 'react-toastify';
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function PrivacySettings() {
     useAuth();
@@ -15,9 +17,6 @@ export default function PrivacySettings() {
     const [viewPhone, setViewPhone] = useState(false);
     const [seeFriends, setSeeFriends] = useState(false);
     const [birthday, setBirthday] = useState(false);
-    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
-    const [feedbackMessage, setFeedbackMessage] = useState(''); // Message to display
-    const [confirmationVisible, setConfirmationVisible] = useState(false); // Show confirmation dialog
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -31,7 +30,7 @@ export default function PrivacySettings() {
                 setSeeFriends(parsedData.data.privacy_see_friend);
                 setBirthday(parsedData.data.privacy_birthday);
             } catch (error) {
-                console.error("Failed to parse userdata from localStorage:", error);
+                toast.error("Failed to parse userdata from localStorage:", error);
             }
         }
     }, []);
@@ -41,7 +40,7 @@ export default function PrivacySettings() {
     };
 
     const handleUpdate = () => {
-        setConfirmationVisible(true); // Show confirmation dialog
+        showConfirmationToast();
     };
 
     const confirmPrivacyChange = async () => {
@@ -67,22 +66,22 @@ export default function PrivacySettings() {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
 
-                setMessageType('success');
-                setFeedbackMessage(response.data.message);
+                toast.success(response.data.message);
             } else {
-                setMessageType('error');
-                setFeedbackMessage(response.data.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
-            setMessageType('error');
-            setFeedbackMessage("An error occurred while updating privacy settings.");
+            toast.error("An error occurred while updating privacy settings.");
         }
-        setConfirmationVisible(false); // Hide confirmation dialog
     };
 
-    const cancelPrivacyChange = () => {
-        setConfirmationVisible(false); // Hide confirmation dialog without making changes
-    };
+    const { showConfirmationToast } = useConfirmationToast({
+        message: "Are you sure you want to save the changes to your privacy settings?",
+        onConfirm: confirmPrivacyChange,
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel"
+    });
 
     return (
         <div>
@@ -100,12 +99,6 @@ export default function PrivacySettings() {
                                 <div className="card-body">
                                     <h5 className="mb-4 fw-bold my-3">Privacy Settings</h5>
                                     <hr className="text-muted" />
-                                    {messageType && (
-                                        <div className={`alert alert-${messageType === 'success' ? 'success' : 'danger'} text-center`} role="alert">
-                                            {feedbackMessage}
-                                        </div>
-                                    )}
-                                    {/* Privacy Setting Options */}
                                     <div className="d-flex justify-content-between align-items-center py-3 gap-5">
                                         <div className="d-flex align-items-center w-50">
                                             <i className="bi bi-person-plus me-3 fs-5 text-primary"></i>
@@ -247,28 +240,6 @@ export default function PrivacySettings() {
                     </div>
                 </div>
             </div>
-
-            {/* Confirmation Modal */}
-            {confirmationVisible && (
-                <div className="modal fade show" tabIndex="-1" style={{ display: "block" }}>
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Confirm Changes</h5>
-                                <button type="button" className="btn-close" onClick={cancelPrivacyChange}></button>
-                            </div>
-                            <div className="modal-body">
-                                <p>Are you sure you want to save the changes to your privacy settings?</p>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={cancelPrivacyChange}>Cancel</button>
-                                <button type="button" className="btn btn-primary" onClick={confirmPrivacyChange}>Confirm</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
         </div>
     );
 }

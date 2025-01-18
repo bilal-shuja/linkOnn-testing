@@ -5,31 +5,29 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
- 
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import { toast } from 'react-toastify';
 
 export default function Notifications() {
   useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
-
   const api = createAPI();
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
         const response = await api.post(`/api/notifications/user-old-notification`);
-
         if (response.data.code == "200") {
           setNotifications(response.data.data);
         } else {
-          setError("Failed to fetch notifications");
+          toast.error("Failed to fetch notifications");
         }
       } catch (error) {
-        setError("Error fetching notifications");
-        console.error("Error fetching notifications:", error);
+        toast.error("Error fetching notifications");
       } finally {
         setLoading(false);
       }
@@ -38,18 +36,50 @@ export default function Notifications() {
     fetchNotifications();
   }, []);
 
-  const handleDeleteAllNotif = async () => {
+  const handleDeleteAllNotif = () => {
+    showConfirmationToastAll();
+  };
+
+  const handleDeleteAll = async () => {
     try {
       const response = await api.post("/api/notifications/delete-all");
       if (response.data.code == "200") {
-        alert(response.data.message);
+        toast.success(response.data.message);
+        setNotifications([]);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("catch error");
+      toast.error("Error deleting notifications");
     }
   };
+
+
+  const handleDelete = async (notification_id) => {
+    try {
+      const response = await api.post("/api/notifications/delete-notification", {
+        notification_id: notification_id
+      });
+
+      if (response.data.code === "200") {
+        toast.success(response.data.message);
+        setNotifications(prevNotifications => prevNotifications.filter(n => n.id !== notification_id));
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("Error while deleting notification");
+    }
+  };
+
+
+  const { showConfirmationToast: showConfirmationToastAll } = useConfirmationToast({
+    message: "Are you sure you want to delete all notifications?",
+    onConfirm: handleDeleteAll,
+    onCancel: () => toast.dismiss(),
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+  });
 
   return (
     <div>
@@ -60,7 +90,7 @@ export default function Notifications() {
             <div className="col-md-3 p-3 rounded">
               <Rightnav />
             </div>
-            <div className="col-md-9 p-3 ">
+            <div className="col-md-9 p-3">
               <div className="card shadow-lg border-0 ">
                 <div className="card-body d-flex flex-column">
                   <ul className="mt-2">
@@ -83,7 +113,7 @@ export default function Notifications() {
                       )}
                     </div>
                     <hr />
-                    {/* Loading or Error state */}
+
                     {loading ? (
                       <li className="dropdown-item">
                         <div className="d-flex justify-content-center">
@@ -119,20 +149,35 @@ export default function Notifications() {
                                   <strong>
                                     {notification.notifier?.last_name || 'Unknown'}
                                   </strong>
-                                  <span className="mx-2">{notification.text}
-                                  </span>
+                                  <span className="mx-2">{notification.text}</span>
                                 </p>
                               </div>
                             </div>
                             <div>
-
                               <small className="me-5">
                                 {formatDistanceToNow(
                                   new Date(notification.created_at)
-                                )}
-                                ago
+                                )} ago
                               </small>
-                              <i className="bi bi-three-dots me-3"></i>
+                              <button
+                                className="text-secondary btn py-0 px-2"
+                                id="cardNotiAction2"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                type="button"
+                              >
+                                <i className="bi bi-three-dots"></i>
+                              </button>
+                              <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="cardNotiAction2">
+                                <li>
+                                  <button
+                                    className="dropdown-item delete_notification"
+                                    onClick={() => handleDelete(notification.id)}
+                                  >
+                                    <i className="bi bi-trash fa-fw pe-2"></i>Delete
+                                  </button>
+                                </li>
+                              </ul>
                             </div>
                           </div>
                         </li>

@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -6,6 +6,7 @@ import createAPI from "@/app/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 const api = createAPI();
 
@@ -71,7 +72,6 @@ export default function Navbar() {
     }
   }, []);
 
-
   const handleLogout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("token");
@@ -82,19 +82,18 @@ export default function Navbar() {
     router.push("/sign-in");
   };
 
-
   const toggleOffcanvas = () => {
     setIsOffcanvasOpen(!isOffcanvasOpen);
   };
 
   if (!userdata) return null;
 
-
   const handleMarkAllAsRead = async () => {
     try {
       const response = await api.post("/api/notifications/mark-all-as-read");
       if (response.data.code === "200") {
-
+        toast.success(response.data.message)
+        setNotifications([]);
       } else {
         setError(response.data.message);
       }
@@ -130,7 +129,6 @@ export default function Navbar() {
               <i className="bi-gear"></i>
             </span>
           </button>
-
 
           <div className="collapse navbar-collapse" id="navbarNav">
             <div className="d-flex flex-column flex-lg-row align-items-center justify-content-center w-75">
@@ -174,8 +172,12 @@ export default function Navbar() {
                   unoptimized={true}
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
+                  className={notifications.length > 0 ? "position-relative" : ""}
                 />
-                <ul className="dropdown-menu p-3" style={{ width: "350px" }}>
+                {notifications.length > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                )}
+                <ul className="dropdown-menu p-3">
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
                       <i className="bi bi-bell pe-2"></i>
@@ -200,7 +202,7 @@ export default function Navbar() {
 
                   {notifications.length > 0 ? (
                     notifications.slice(0, 7).map((notification) => (
-                      <li key={notification.id} className="dropdown-item">
+                      <li key={notification.id} className={`dropdown-item ${notifications.length > 0 ? 'bg-light' : ''}`} style={{ width: "350px" }}>
                         <div className="d-flex align-items-center">
                           <Image
                             src={notification.notifier.avatar}
@@ -244,7 +246,6 @@ export default function Navbar() {
                   </div>
                 </ul>
               </div>
-
 
               <Link
                 href="/pages/settings/general-settings"
@@ -296,7 +297,7 @@ export default function Navbar() {
 
                   <li className="d-flex justify-content-center my-2 align-items-center">
                     <Link href="/pages/MyProfile">
-                      <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }}>
+                      <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }} >
                         View Profile
                       </button>
                     </Link>

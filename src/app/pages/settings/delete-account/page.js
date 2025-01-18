@@ -35,12 +35,17 @@ export default function DeleteAcc() {
         }
     };
 
-    const cancelDeleteAcc = () => {
-        toast.info("Account deletion canceled.");
-    };
-
     const handlePasswordChange = (event) => {
         setPassword(event.target.value);
+    };
+
+
+    const handleDeleteAcc = () => {
+        if (!password) {
+            toast.error("Please enter your password.");
+            return;
+        }
+        showConfirmationToast();
     };
 
     const { showConfirmationToast } = useConfirmationToast({
@@ -48,17 +53,8 @@ export default function DeleteAcc() {
         confirmText: "Delete Account",
         cancelText: "Cancel Deletion",
         onConfirm: confirmDeleteAcc,
-        onCancel: cancelDeleteAcc
+        onCancel: () => toast.dismiss(),
     });
-
-    const handleDeleteAcc = () => {
-        if (!password) {
-            toast.error("Please enter your password.");
-            return;
-        }
-
-        showConfirmationToast();
-    };
 
     return (
         <div>

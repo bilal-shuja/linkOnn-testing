@@ -84,30 +84,10 @@ export default function SettingNavbar() {
                     View Profile
                 </Link>
             </div>
-            <div className="d-flex align-items-center justify-content-evenly">
-                <Link href="#" className="text-decoration-none text-secondary">
-                    About Us
-                </Link>
-                <Link href="#" className="text-decoration-none text-secondary">
-                    Settings
-                </Link>
-                <Link href="#" className="text-decoration-none text-secondary">
-                    Support
-                </Link>
-            </div>
-
-            <div className="d-flex align-items-center justify-content-evenly">
-                <Link href="#" className="text-decoration-none text-secondary">
-                    Terms & Conditions
-                </Link>
-                <Link href="#" className="text-decoration-none text-secondary">
-                    Privacy Policy
-                </Link>
-            </div>
 
             <div className="d-flex justify-content-center mb-5">
                 <Link href="#" className="text-decoration-none text-secondary">
-                    ©2024 linkon
+                    ©2025 linkon
                 </Link>
             </div>
         </div>

@@ -6,15 +6,14 @@ import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function BlockUsers() {
     useAuth();
     const [blockedUsers, setBlockedUsers] = useState([]);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
-    const [loading, setLoading] = useState(false); // Loading state for unblock action
-    const [confirmationVisible, setConfirmationVisible] = useState(false); // Modal visibility state
-    const [userToUnblock, setUserToUnblock] = useState(null); // User to unblock
+    const [loading, setLoading] = useState(false);
+    const [confirmationVisible, setConfirmationVisible] = useState(false);
+    const [userToUnblock, setUserToUnblock] = useState(null);
     const api = createAPI();
 
     useEffect(() => {
@@ -24,10 +23,10 @@ export default function BlockUsers() {
                 if (response.data.code == "200") {
                     setBlockedUsers(response.data.data);
                 } else {
-                    setError("Failed to fetch blocked users");
+                    toast.error("Failed to fetch blocked users");
                 }
             } catch (error) {
-                setError("Error fetching blocked users");
+                toast.error("Error fetching blocked users");
             }
         };
 
@@ -36,30 +35,30 @@ export default function BlockUsers() {
 
     const handleUnblockClick = (user_id) => {
         setUserToUnblock(user_id);
-        setConfirmationVisible(true); // Show the confirmation modal
+        setConfirmationVisible(true);
     };
 
     const unblockUser = async () => {
         setLoading(true);
-        setConfirmationVisible(false); // Hide confirmation modal
+        setConfirmationVisible(false);
 
         try {
             const response = await api.post('/api/block-user', { user_id: userToUnblock });
             if (response.data.code == '200') {
-                setSuccess("User unblocked successfully!");
+                toast.success("User unblocked successfully!");
                 setBlockedUsers(blockedUsers.filter(user => user.id !== userToUnblock));
             } else {
-                setError("Failed to unblock user");
+                toast.error("Failed to unblock user");
             }
         } catch (error) {
-            setError("Error unblocking user");
+            toast.error("Error unblocking user");
         } finally {
             setLoading(false);
         }
     };
 
     const cancelUnblock = () => {
-        setConfirmationVisible(false); // Close the confirmation modal without unblocking
+        setConfirmationVisible(false);
     };
 
     return (
@@ -76,18 +75,6 @@ export default function BlockUsers() {
                                 <div className="card-body">
                                     <h5 className="mb-4 my-3 fw-bold">Blocked Users</h5>
                                     <hr className="text-muted" />
-
-                                    {error && (
-                                        <div className="alert alert-danger text-center" role="alert">
-                                            {error}
-                                        </div>
-                                    )}
-
-                                    {success && (
-                                        <div className="alert alert-success text-center" role="alert">
-                                            {success}
-                                        </div>
-                                    )}
 
                                     {blockedUsers.length === 0 ? (
                                         <div className="my-sm-5 py-sm-5 text-center">
@@ -127,6 +114,7 @@ export default function BlockUsers() {
                                                                     className="btn btn-primary btn-sm"
                                                                     onClick={() => handleUnblockClick(user.id)}
                                                                 >
+                                                                
                                                                     {loading && userToUnblock === user.id ? (
                                                                         <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                                                     ) : (

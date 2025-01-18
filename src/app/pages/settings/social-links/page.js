@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from 'react-toastify';
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function SocialLinks() {
     useAuth();
@@ -14,10 +16,6 @@ export default function SocialLinks() {
     const [instagram, setInstagram] = useState("");
     const [linkedin, setLinkedin] = useState("");
     const [youtube, setYoutube] = useState("");
-
-    const [messageType, setMessageType] = useState('');
-    const [feedbackMessage, setFeedbackMessage] = useState('');
-    const [confirmationVisible, setConfirmationVisible] = useState(false);
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -32,23 +30,22 @@ export default function SocialLinks() {
     }, []);
 
     const validateURL = (url) => {
-        const urlPattern = /^(https?:\/\/)?([\w.-]+)+(:\d+)?(\/([\w/_-]*(\?\S+)?)?)?$/;
+        const urlPattern = /^(https?:\/\/)?(www\.)?([\w-]+)\.[a-z]{2,6}(\/[\w\-]*)*(\?[\w&%=]*)?$/;
         return urlPattern.test(url);
     };
 
+
     const handleUpdate = () => {
-        if (![facebook, twitter, instagram, linkedin, youtube].every(validateURL)) {
-            setMessageType('error');
-            setFeedbackMessage('Please enter valid URLs for all fields.');
+        if (![facebook, twitter, instagram, linkedin, youtube].every(url => url && validateURL(url))) {
+            toast.error('Please enter valid URLs for all fields.');
             return;
         }
-        setConfirmationVisible(true);
+        showConfirmationToast();
     };
 
     const confirmSocialLinksUpdate = async () => {
         try {
             const formData = new FormData();
-
             formData.append("facebook", facebook);
             formData.append("twitter", twitter);
             formData.append("instagram", instagram);
@@ -68,22 +65,24 @@ export default function SocialLinks() {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
 
-                setMessageType('success');
-                setFeedbackMessage(response.data.message);
+                toast.success(response.data.message);
             } else {
-                setMessageType('error');
-                setFeedbackMessage(response.data.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
-            setMessageType('error');
-            setFeedbackMessage("An error occurred while updating social links.");
+            toast.error("An error occurred while updating social links.");
         }
-        setConfirmationVisible(false);
     };
 
-    const cancelSocialLinksUpdate = () => {
-        setConfirmationVisible(false);
-    };
+
+    const { showConfirmationToast } = useConfirmationToast({
+        message: "Are you sure you want to update your social links?",
+        onConfirm: confirmSocialLinksUpdate,
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel"
+    });
+
 
     return (
         <div>
@@ -99,18 +98,6 @@ export default function SocialLinks() {
                                 <div className="card-body">
                                     <h4 className="fs-5 fw-bold my-3">Social Settings</h4>
                                     <hr className="text-muted" />
-
-                                    {feedbackMessage && (
-                                        <div
-                                            className={`alert ${messageType === 'success'
-                                                ? 'alert-success'
-                                                : 'alert-danger'
-                                                } text-center`}
-                                        >
-                                            {feedbackMessage}
-                                        </div>
-
-                                    )}
 
                                     <div className="mt-3 gap-4 d-flex flex-wrap">
                                         {/* Facebook Input */}
@@ -213,43 +200,6 @@ export default function SocialLinks() {
                     </div>
                 </div>
             </div>
-
-            {/* Confirmation Modal */}
-            {confirmationVisible && (
-                <div className="modal show d-block">
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Confirm Update</h5>
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    onClick={cancelSocialLinksUpdate}
-                                ></button>
-                            </div>
-                            <div className="modal-body">
-                                <p>Are you sure you want to update your social links?</p>
-                            </div>
-                            <div className="modal-footer">
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={cancelSocialLinksUpdate}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    onClick={confirmSocialLinksUpdate}
-                                >
-                                    Confirm
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

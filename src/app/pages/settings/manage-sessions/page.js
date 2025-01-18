@@ -5,8 +5,8 @@ import SettingNavbar from "../settingNav";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import useAuth from "@/app/lib/useAuth";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";  // Import the custom hook
-import { toast } from 'react-toastify';  // Import toastify
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import { toast } from 'react-toastify';
 
 export default function SessionsSett() {
     useAuth();
@@ -63,20 +63,15 @@ export default function SessionsSett() {
         }
     };
 
-    const cancelDelete = () => {
-        setSessionToDelete(null);
-        toast.info("Session deletion canceled");
-    };
-
     const { showConfirmationToast } = useConfirmationToast({
         message: "Are you sure you want to delete this session?",
         onConfirm: confirmDelete,
-        onCancel: cancelDelete,
+        onCancel: () => toast.dismiss(),
         confirmText: "Confirm",
         cancelText: "Cancel",
     });
 
-    
+
     return (
         <div>
             <Navbar />
