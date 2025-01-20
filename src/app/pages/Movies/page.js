@@ -4,9 +4,9 @@ import Navbar from "@/app/assets/components/navbar/page";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import createAPI from "@/app/lib/axios";
- 
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function MoviesPage() {
   useAuth();
@@ -31,10 +31,10 @@ export default function MoviesPage() {
         setMovies(response.data.data);
         setFilteredMovies(response.data.data);
       } else {
-        console.log("No movies found");
+        toast.error("No movies found");
       }
     } catch (error) {
-      alert("Error fetching Movies");
+      toast.error("Error fetching Movies");
     } finally {
       setMovieLoading(false);
     }
@@ -155,10 +155,10 @@ export default function MoviesPage() {
                               src={movie.cover_pic}
                               alt={movie.movie_name}
                               className="card-img-top"
-                              width={300}  
-                              height={200}  
+                              width={300}
+                              height={200}
                               style={{
-                                objectFit: "cover",  
+                                objectFit: "cover",
                               }}
                             />
 

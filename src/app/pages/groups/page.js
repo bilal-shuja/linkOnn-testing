@@ -7,6 +7,8 @@ import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function Groups() {
   useAuth();
@@ -18,11 +20,8 @@ export default function Groups() {
   const [myGroupsPage, setMyGroupsPage] = useState(1);
   const [totalSuggested, setTotalSuggested] = useState(0);
   const [totalMyGroups, setTotalMyGroups] = useState(0);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
   const itemsPerPage = 6;
   const router = useRouter();
-
   const api = createAPI();
 
   const fetchSuggestedGroups = async (page) => {
@@ -35,14 +34,14 @@ export default function Groups() {
         limit: itemsPerPage,
       });
 
-      if (response.data.code === "200") {
+      if (response.data.code == "200") {
         setGroups(response.data.data);
         setTotalSuggested(response.data.total);
       } else {
-        setErrorMessage(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setErrorMessage("Error fetching suggested groups");
+      toast.error("Error fetching suggested groups");
     } finally {
       setLoading((prev) => ({ ...prev, suggested: false }));
     }
@@ -62,10 +61,10 @@ export default function Groups() {
         setMyGroups(response.data.data);
         setTotalMyGroups(response.data.total);
       } else {
-        setErrorMessage(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setErrorMessage("Error fetching my groups");
+      toast.error("Error fetching my groups");
     } finally {
       setLoading((prev) => ({ ...prev, myGroups: false }));
     }
@@ -86,10 +85,11 @@ export default function Groups() {
     }
   };
 
-  const handleDeleteGroup = async (groupId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this group?");
-    if (!confirmDelete) return;
+  const handleDeleteGroup = (groupId) => {
+    showConfirmationToast([groupId]);
+  };
 
+  const handleConfirmDelete = async (groupId) => {
     try {
       const formData = new FormData();
       formData.append("group_id", groupId);
@@ -101,18 +101,27 @@ export default function Groups() {
         },
       });
 
-      if (response.data.code === "200") {
-        setSuccessMessage(response.data.message);
+      if (response.data.code == "200") {
+        toast.success(response.data.message);
+        fetchMyGroups(myGroupsPage);
         setMyGroups((prevGroups) =>
           prevGroups.filter((group) => group.id !== groupId)
         );
       } else {
-        setErrorMessage(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setErrorMessage("Error deleting group");
+      toast.error("Error deleting group");
     }
   };
+
+  const { showConfirmationToast } = useConfirmationToast({
+    message: 'Are you sure you want to delete this group?',
+    onConfirm: handleConfirmDelete,
+    onCancel: () => toast.dismiss(),
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+  });
 
   const suggestedTotalPages = totalSuggested ? Math.ceil(totalSuggested / itemsPerPage) : 0;
   const myGroupsTotalPages = totalMyGroups ? Math.ceil(totalMyGroups / itemsPerPage) : 0;

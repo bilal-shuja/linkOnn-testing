@@ -4,9 +4,10 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
- 
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function FriendsPage() {
   useAuth();
@@ -14,7 +15,6 @@ export default function FriendsPage() {
   const [friendRequests, setFriendRequests] = useState([]);
   const [friendsloading, setfriendsLoading] = useState(false);
   const [getReqLoading, setgetReqLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("friends");
   const [people, setPeople] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
@@ -29,11 +29,10 @@ export default function FriendsPage() {
       if (response.data.code == "200") {
         setFriends(response.data.data);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setError("Failed to load friends.");
-      alert("Error fetching friends");
+      toast.error("Error fetching friends.");
     } finally {
       setfriendsLoading(false);
     }
@@ -46,11 +45,10 @@ export default function FriendsPage() {
       if (response.data.code == "200") {
         setFriendRequests(response.data.data);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setError("Failed to load friend requests.");
-      alert("Error fetching friend requests");
+      toast.error("Error fetching friend requests.");
     } finally {
       setgetReqLoading(false);
     }
@@ -64,10 +62,10 @@ export default function FriendsPage() {
       if (response.data.code == "200") {
         setPeople(response.data.data);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setError("Error fetching recommendations");
+      toast.error("Error fetching recommendations.");
     } finally {
       setPeopleLoading(false);
     }
@@ -81,10 +79,10 @@ export default function FriendsPage() {
       if (response.data.code == "200") {
         setSentRequests(response.data.data);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setError("Error fetching sent requests");
+      toast.error("Error fetching sent requests.");
     } finally {
       setSentReqLoad(false);
     }
@@ -105,14 +103,14 @@ export default function FriendsPage() {
 
       if (response.data.code == "200") {
         fetchPeopleRecommendations();
-        alert(
+        toast.success(
           isPending ? "Friend request canceled" : "Friend request sent"
         );
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("Error updating friend request");
+      toast.error("Error updating friend request.");
     }
   };
 
@@ -129,42 +127,44 @@ export default function FriendsPage() {
             friend.id === friendId ? { ...friend, role: newRole } : friend
           )
         );
-        alert(response.data.message);
+        toast.success(response.data.message);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      console.error("Error updating role:", error);
-      alert("An error occurred while updating the role.");
+      toast.error("An error occurred while updating the role.");
     }
   };
 
   const handleUnfriend = (friendId) => {
-    const confirmUnfriend = window.confirm("Are you sure you want to unfriend this person?");
-  
-    if (confirmUnfriend) {
-      async function unfriend() {
-        try {
-          const response = await api.post("/api/unfriend", { user_id: friendId });
-  
-          if (response.data.code === "200") {
-            console.log("Successfully unfriended!");
-            setFriends((prevFriends) =>
-              prevFriends.filter((friend) => friend.id !== friendId)
-            );
-          } else {
-            console.error(response.data.message);
-          }
-        } catch (error) {
-          console.error("Error unfriending the person:", error);
-        }
+    showConfirmationToast([friendId]);
+  };
+
+  const Unfriend = async (friendId) => {
+    try {
+      const response = await api.post("/api/unfriend", { user_id: friendId });
+
+      if (response.data.code === "200") {
+        setFriends((prevFriends) =>
+          prevFriends.filter((friend) => friend.id !== friendId)
+        );
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
       }
-      unfriend();
-    } else {
-      console.log("Unfriend action canceled");
+    } catch (error) {
+      toast.error("Error");
     }
   };
-  
+
+  const { showConfirmationToast } = useConfirmationToast({
+    message: "Are you sure you want to unfriend this person?",
+    onConfirm: Unfriend,
+    onCancel: () => toast.dismiss(),
+    confirmText: 'Unfriend',
+    cancelText: 'Cancel',
+  });
+
   const handleFriendRequestAction = async (userId, action) => {
     try {
       const response = await api.post("/api/friend-request-action", {
@@ -173,14 +173,13 @@ export default function FriendsPage() {
       });
 
       if (response.data.code == "200") {
-        alert(response.data.message);
+        toast.success(response.data.message);
         fetchFriendRequests();
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      console.error("Error processing friend request action:", error);
-      alert("An error occurred while processing the friend request.");
+      toast.error("An error occurred while processing the friend request.");
     }
   };
 
@@ -287,8 +286,6 @@ export default function FriendsPage() {
                             <span className="visually-hidden">Loading...</span>
                           </div>
                         </div>
-                      ) : error ? (
-                        <div className="text-danger">{error}</div>
                       ) : friends.length === 0 ? (
                         <div className="text-center">
                           <i
@@ -344,7 +341,7 @@ export default function FriendsPage() {
                                 <option value={4}>Business</option>
                               </select>
                               <button
-                                className="btn btn-danger rounded-0 border border-0 mx-3"
+                                className="btn btn-danger rounded-2 border border-0 mx-3"
                                 onClick={() => handleUnfriend(friend.id)}
                               >
                                 Unfriend
@@ -378,8 +375,6 @@ export default function FriendsPage() {
                             <span className="visually-hidden">Loading...</span>
                           </div>
                         </div>
-                      ) : error ? (
-                        <div className="text-danger">{error}</div>
                       ) : friendRequests.length === 0 ? (
                         <div className="text-center">
                           <i
@@ -549,8 +544,6 @@ export default function FriendsPage() {
                             <span className="visually-hidden">Loading...</span>
                           </div>
                         </div>
-                      ) : error ? (
-                        <div className="text-danger">{error}</div>
                       ) : sentRequests.length > 0 ? (
                         sentRequests.map((request) => (
                           <div
@@ -562,10 +555,10 @@ export default function FriendsPage() {
                                 src={request.avatar}
                                 alt={`${request.first_name} ${request.last_name}`}
                                 className="rounded-circle"
-                                width={50}  
-                                height={50}  
+                                width={50}
+                                height={50}
                                 style={{
-                                  objectFit: "cover",  
+                                  objectFit: "cover",
                                 }}
                               />
 

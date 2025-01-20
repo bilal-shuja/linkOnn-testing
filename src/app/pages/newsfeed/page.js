@@ -7,12 +7,13 @@ import Link from "next/link";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
-// import("bootstrap/dist/js/bootstrap.bundle.min.js");
 import { useRouter } from "next/navigation";
 import Storycreate from "@/app/assets/components/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function Newsfeed() {
   useAuth();
@@ -93,10 +94,10 @@ export default function Newsfeed() {
 
         if (isInitialLoad) setPage(1);
       } else {
-        setError("Invalid data format received from API.");
+        toast.error("Invalid data format received from API.")
       }
     } catch (error) {
-      setError("An error occurred while fetching data.");
+      toast.error("An error occurred while fetching data.")
     } finally {
       setLoading(false);
     }
@@ -146,10 +147,10 @@ export default function Newsfeed() {
           setError("");
         } else {
           setError("Failed to load stories");
+          toast.error("Failed to load stories")
         }
       } catch (err) {
-        console.error("Error fetching stories:", err);
-        setError("Error fetching stories. Please try again later.");
+        toast.error("Error fetching stories. Please try again later.")
       } finally {
         setLoading(false);
       }
@@ -180,12 +181,10 @@ export default function Newsfeed() {
     const comment = commentText[postId] || "";
 
     if (!comment || comment.trim() === "") {
-      alert("Comment cannot be empty.");
+      toast.error("Comment cannot be empty.")
       return;
     }
-
     setLoading(true);
-
     try {
       const response = await api.post("/api/post/comments/add", {
         post_id: postId,
@@ -204,16 +203,16 @@ export default function Newsfeed() {
             [postId]: updatedComments,
           };
         });
-        alert(response.data.message);
+        toast.success(response.data.message);
         setCommentText((prevText) => ({
           ...prevText,
           [postId]: "",
         }));
       } else {
-        alert(response.data.message || "Failed to add the comment.");
+        toast.error(response.data.message || "Failed to add the comment.")
       }
     } catch (error) {
-      alert("An error occurred while adding the comment.");
+      toast.error("An error occurred while adding the comment.")
       console.error(error);
     } finally {
       setLoading(false);
@@ -248,59 +247,45 @@ export default function Newsfeed() {
   };
 
   const handleCommentDelete = async (comment_id, postId) => {
-    const isConfirmed = window.confirm("Confirm Delete");
-
-    if (isConfirmed) {
-      alert("Comment deleted.");
-
-      setComments((prevComments) => {
-        const updatedComments = prevComments[postId].filter(
-          (comment) => comment.id !== comment_id
-        );
-        return {
-          ...prevComments,
-          [postId]: updatedComments,
-        };
+    try {
+      const response = await api.post("/api/post/comments/delete", {
+        comment_id,
       });
 
-      try {
-        const response = await api.post("/api/post/comments/delete", {
-          comment_id,
+      if (response.data.code == "200") {
+        setComments((prevComments) => {
+          const updatedComments = prevComments[postId].filter(
+            (comment) => comment.id !== comment_id
+          );
+          return {
+            ...prevComments,
+            [postId]: updatedComments,
+          };
         });
 
-        if (response.data.code === "200") {
-        } else {
-          alert(response.data.message);
-        }
-      } catch (error) {
-        alert("An error occurred while deleting the comment.");
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
       }
-    } else {
-      alert("Cancel");
+    } catch (error) {
+      toast.error("An error occurred while deleting the comment.");
     }
   };
 
 
   const handleCommentreplyDelete = async (reply_id) => {
-    const isConfirmed = window.confirm("Confirm Delete");
+    try {
+      const response = await api.post("/api/post/comments/delete-reply", {
+        reply_id,
+      });
 
-    if (isConfirmed) {
-      alert("Comment reply deleted.");
-
-      try {
-        const response = await api.post("/api/post/comments/delete-reply", {
-          reply_id,
-        });
-
-        if (response.data.code === "200") {
-        } else {
-          alert(response.data.code);
-        }
-      } catch (error) {
-        alert("An error occurred while deleting the comment.");
+      if (response.data.code == "200") {
+        toast.success("Reply deleted successfully.");
+      } else {
+        toast.error(`Error: ${response.data.code}`);
       }
-    } else {
-      alert("Cancel");
+    } catch (error) {
+      toast.error("An error occurred while deleting the reply.");
     }
   };
 
@@ -399,6 +384,7 @@ export default function Newsfeed() {
       });
 
       if (response.data.code == "200") {
+        toast.success(response.data.message)
         setPosts([response.data.data, ...posts]);
         setPostText("");
         setError("");
@@ -412,14 +398,12 @@ export default function Newsfeed() {
         setDonationTitle("");
         setDonationDescription("");
         setDonationImage([]);
-        setSuccess(response.data.message);
       } else {
-        setError("Error from server: " + response.data.message);
+        toast.error("Error from server: " + response.data.message)
         setSuccess("");
       }
     } catch (error) {
-      setError(error.response.data.message);
-      console.error(error);
+      toast.error(error.response.data.message)
     } finally {
       setLoading(false);
     }
@@ -483,33 +467,40 @@ export default function Newsfeed() {
     setShowimg((prev) => !prev);
   };
 
-  const handlePostDelete = async (postId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this post? This action cannot be undone."
-    );
 
-    if (confirmDelete) {
-      try {
-        const response = await api.post("/api/post/action", {
-          post_id: postId,
-          action: "delete",
-        });
 
-        if (response.data.code == 200) {
-          setPosts((prevPosts) =>
-            prevPosts.filter((post) => post.id !== postId)
-          );
-          alert("Post successfully deleted"); // Success alert
-        } else {
-          alert("Failed to delete the post."); // Error alert
-        }
-      } catch (error) {
-        alert("An error occurred while deleting the post."); // Error alert
+  const handlePostDelete = (postId) => {
+    showConfirmationToast([postId]);
+  };
+
+  const handleDelete = async (values) => {
+    const postId = values[0];
+
+    try {
+      const response = await api.post("/api/post/action", {
+        post_id: postId,
+        action: "delete",
+      });
+
+      if (response.data.code == "200") {
+        setPosts((prevPosts) =>
+          prevPosts.filter((post) => post.id !== postId)
+        );
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
       }
-    } else {
-      alert("Cancel"); // Alert if the user cancels the deletion
+    } catch (error) {
+      toast.error("An error occurred while deleting the post.");
     }
   };
+
+  const { showConfirmationToast } = useConfirmationToast({
+    message: 'Are you sure you want to delete this post? This action cannot be undone.',
+    onConfirm: handleDelete,
+    onCancel: () => toast.dismiss(),
+  });
+
 
   const handleVote = async (optionId, pollId, postId) => {
     try {
@@ -520,12 +511,12 @@ export default function Newsfeed() {
       });
 
       if (response.data.status == "200") {
-        alert(response.data.message);
+        toast.success(response.data.message)
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message)
       }
     } catch (error) {
-      alert("An error occurred while voting. Please try again.");
+      toast.error("An error occurred while voting. Please try again.")
     }
   };
 
@@ -548,10 +539,10 @@ export default function Newsfeed() {
           [commentId]: !prevState[commentId],
         }));
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message)
       }
     } catch (error) {
-      alert("An error occurred while fetching replies.");
+      toast.error("An error occurred while fetching replies.");
     }
   };
 
@@ -570,16 +561,16 @@ export default function Newsfeed() {
       });
 
       if (response.data.code == "200") {
-        alert("Reply added successfully!");
+        toast.success("Reply added successfully!");
         setCommentreplyText((prevState) => ({
           ...prevState,
           [commentId]: "",
         }));
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("An error occurred while adding the reply");
+      toast.error("An error occurred while adding the reply");
     }
   };
 
@@ -590,12 +581,12 @@ export default function Newsfeed() {
         post_id: postId,
       });
       if (response.data.code == "200") {
-        alert(response.data.message);
+        toast.success(response.data.message);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("Error while reacting to the comment");
+      toast.error("Error while reacting to the comment");
     }
   };
 
@@ -605,12 +596,12 @@ export default function Newsfeed() {
         comment_reply_id: replyId,
       });
       if (response.data.code == "200") {
-        alert(response.data.message);
+        toast.success(response.data.message);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("Error while reacting to the comment reply");
+      toast.error("Error while reacting to the comment reply");
     }
   };
 
@@ -622,12 +613,12 @@ export default function Newsfeed() {
         reaction_type: 1,
       });
       if (response.data.code == "200") {
-        alert(response.data.message);
+        toast.success(response.data.message);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("Error while reacting to the Post");
+      toast.error("Error while reacting to the Post");
     }
   };
 
@@ -642,12 +633,12 @@ export default function Newsfeed() {
         amount: donate,
       });
       if (response.data.code == "200") {
-        alert(response.data.message);
+        toast.success(response.data.message);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("Error while donating Fund.");
+      toast.error("Error while donating Fund.");
     }
   };
 

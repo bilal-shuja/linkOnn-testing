@@ -7,6 +7,7 @@ import createAPI from "@/app/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function GamesPage() {
     useAuth();
@@ -23,11 +24,11 @@ export default function GamesPage() {
             if (response.data.code == "200") {
                 setGamesData(response.data.data);
             } else {
-                alert(response.data.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
             setError("Error fetching game data");
-            alert("Error fetching game data");
+            toast.error("Error fetching game data");
         } finally {
             setGameloading(false);
         }
@@ -70,10 +71,10 @@ export default function GamesPage() {
                                                             src={game.image}
                                                             alt={game.name}
                                                             className="card-img-top"
-                                                            width={300}  
-                                                            height={200} 
+                                                            width={300}
+                                                            height={200}
                                                             style={{
-                                                                objectFit: "cover", 
+                                                                objectFit: "cover",
                                                             }}
                                                         />
 

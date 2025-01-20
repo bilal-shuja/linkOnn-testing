@@ -22,10 +22,10 @@ export default function BloodReqs() {
             if (response.data.code === "200") {
                 setBloodreqs(response.data.data);
             } else {
-                alert(response.data.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
-            alert("Error fetching requests");
+            toast.error("Error fetching requests");
         }
     };
 

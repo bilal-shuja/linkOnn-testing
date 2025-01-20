@@ -7,6 +7,8 @@ import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function Events() {
   useAuth();
@@ -16,11 +18,8 @@ export default function Events() {
   const [myEvents, setMyEvents] = useState([]);
   const [suggestedPage, setSuggestedPage] = useState(1);
   const [myEventsPage, setMyEventsPage] = useState(1);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const itemsPerPage = 6;
   const router = useRouter();
-
   const api = createAPI();
 
   const fetchAllEvents = async (page) => {
@@ -36,14 +35,11 @@ export default function Events() {
 
       if (response.data.code == "200") {
         setEvents(response.data.data);
-        setErrorMessage("");
       } else {
-        setErrorMessage(response.data.message);
-        setSuccessMessage("");
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setErrorMessage("Error fetching events");
-      setSuccessMessage("");
+      toast.error("Error fetching events");
     } finally {
       setEventLoading((prev) => ({ ...prev, allEvents: false }));
     }
@@ -62,14 +58,11 @@ export default function Events() {
 
       if (response.data.code == "200") {
         setMyEvents(response.data.data);
-        setErrorMessage("");
       } else {
-        setErrorMessage(response.data.message);
-        setSuccessMessage("");
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setErrorMessage("Error fetching events");
-      setSuccessMessage("");
+      toast.error("Error fetching events");
     } finally {
       setEventLoading((prev) => ({ ...prev, myEvents: false }));
     }
@@ -96,24 +89,38 @@ export default function Events() {
   };
 
   const handleDeleteEvent = (eventId) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
-      api
-        .post("/api/delete-event", { event_id: eventId })
-        .then((response) => {
-          if (response.data.code === "200") {
-            setSuccessMessage(response.data.message);
-            setMyEvents((prevEvents) =>
-              prevEvents.filter((event) => event.id !== eventId)
-            );
-          } else {
-            setErrorMessage(response.data.message);
-          }
-        })
-        .catch((error) => {
-          setErrorMessage("Error deleting event");
-        });
+    showConfirmationToast([eventId]);
+  };
+
+  const DeleteEvent = async (eventId) => {
+    try {
+      const response = await api.post("/api/delete-event", {
+        event_id: eventId,
+      });
+
+      if (response.data.code == "200") {
+        toast.success(response.data.message);
+        fetchMyEvents(myEventsPage);
+        setMyEvents((prevEvents) =>
+          prevEvents.filter((event) => event.id !== eventId)
+        );
+
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("Error deleting event");
     }
   };
+
+  const { showConfirmationToast } = useConfirmationToast({
+    message: 'Are you sure you want to delete this Event?',
+    onConfirm: DeleteEvent,
+    onCancel: () => toast.dismiss(),
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+  });
+
 
   return (
     <div>
@@ -163,14 +170,6 @@ export default function Events() {
                   </li>
                 </ul>
               </div>
-
-
-              {errorMessage && (
-                <div className="alert alert-danger mt-3">{errorMessage}</div>
-              )}
-              {successMessage && (
-                <div className="alert alert-success mt-3">{successMessage}</div>
-              )}
 
               <div className="tab-content mt-5">
 

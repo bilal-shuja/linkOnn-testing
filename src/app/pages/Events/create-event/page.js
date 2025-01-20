@@ -6,12 +6,11 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function Eventform() {
   useAuth();
   const router = useRouter();
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventLocation, setEventLocation] = useState("");
   const [description, setDescription] = useState("");
@@ -19,10 +18,8 @@ export default function Eventform() {
   const [startTime, setStartTime] = useState("");
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [image, setImage] = useState(null); 
-
+  const [image, setImage] = useState(null);
   const api = createAPI();
-
   const handleNameChange = (e) => setEventName(e.target.value);
   const handleLocationChange = (e) => setEventLocation(e.target.value);
   const handleDescriptionChange = (e) => setDescription(e.target.value);
@@ -40,7 +37,7 @@ export default function Eventform() {
 
   const addEvent = async () => {
     if (!eventName || !eventLocation || !startDate || !startTime || !endDate || !endTime) {
-      setError("Please fill in all fields!");
+      toast.error("Please fill in all fields!");
       return;
     }
 
@@ -49,12 +46,12 @@ export default function Eventform() {
     const currentDateTime = new Date();
 
     if (startDateTime < currentDateTime) {
-      setError("Event start date and time cannot be in the past.");
+      toast.error("Event start date and time cannot be in the past.");
       return;
     }
 
     if (startDateTime >= endDateTime) {
-      setError("Event start date and time must be earlier than end date and time.");
+      toast.error("Event start date and time must be earlier than end date and time.");
       return;
     }
 
@@ -78,19 +75,13 @@ export default function Eventform() {
       });
 
       if (response.data.code == "200") {
-        setError("");
-        setSuccess(response.data.message);
+        toast.success(response.data.message);
         router.push("/newsfeed");
       } else {
-        setError("Error from server: " + response.data.message);
+        toast.error("Error from server: " + response.data.message);
       }
     } catch (error) {
-      if (error.response && error.response.data) {
-        setError(error.response.data.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
-      console.error(error);
+      toast.error("An unexpected error occurred");
     }
   };
 
@@ -107,10 +98,7 @@ export default function Eventform() {
               <div className="card shadow-lg border-0 p-3">
                 <div className="card-body">
                   <h5 className="fw-bold mt-2 fs-4">Create Event</h5>
-                  {success && (
-                    <div className="alert alert-success mt-2">{success}</div>
-                  )}
-                  {error && <p className="text-center text-danger">{error}</p>}
+
                   <div className="mt-4">
                     <label className="form-label mx-1 text-muted">Event Name</label>
                     <input

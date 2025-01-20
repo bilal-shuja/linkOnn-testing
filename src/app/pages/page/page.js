@@ -7,6 +7,8 @@ import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function Pages() {
   useAuth();
@@ -25,10 +27,10 @@ export default function Pages() {
       if (response.data.code == "200") {
         setPages(response.data.data);
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      alert("Error fetching Suggested Pages");
+      toast.error("Error fetching Suggested Pages");
     } finally {
       setSuggesPLoading(false);
     }
@@ -41,10 +43,10 @@ export default function Pages() {
       if (response.data.code == "200") {
         setMyPages(response.data.data);
       } else {
-        console.log("No pages found");
+        toast.error("No pages found");
       }
     } catch (error) {
-      alert("Error fetching My Pages");
+      toast.error("Error fetching My Pages");
     } finally {
       setMyPLoading(false);
     }
@@ -56,74 +58,82 @@ export default function Pages() {
   }, []);
 
   const handleDeletePage = (pageId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this page?");
+    showConfirmationToastDelete([pageId]);
+  };
 
-    if (confirmDelete) {
-      async function deletePage() {
-        try {
-          const formData = new FormData();
-          formData.append("page_id", pageId);
-          formData.append("request_action", "accept");
+  const DeletePage = async (pageId) => {
+    try {
+      const formData = new FormData();
+      formData.append("page_id", pageId);
+      formData.append("request_action", "accept");
 
-          const response = await api.post("/api/delete-page", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
+      const response = await api.post("/api/delete-page", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-          if (response.data.code === "200") {
-            alert(response.data.message);
-            setMyPages((prevPages) =>
-              prevPages.filter((page) => page.id !== pageId)
-            );
-          } else {
-            alert(response.data.message);
-          }
-        } catch (error) {
-          alert("Error deleting page");
-        }
+      if (response.data.code === "200") {
+        toast.success(response.data.message);
+        fetchMyPages();
+        setMyPages((prevPages) =>
+          prevPages.filter((page) => page.id !== pageId)
+        );
+      } else {
+        toast.error(response.data.message);
       }
-      deletePage();
-    } else {
-      alert("Deleting Page canceled");
+    } catch (error) {
+      toast.error("Error deleting Page");
     }
   };
+
+  const { showConfirmationToast: showConfirmationToastDelete } = useConfirmationToast({
+    message: 'Are you sure you want to delete this Page?',
+    onConfirm: DeletePage,
+    onCancel: () => toast.dismiss(),
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+  });
 
   const handleLikeUnlikePage = (pageId) => {
-    const confirmAction = window.confirm("Are you sure you want to perform this action?");
+    showConfirmationToastLikeUnlike([pageId]);
+  };
 
-    if (confirmAction) {
-      async function likeUnlikePage() {
-        try {
-          const formData = new FormData();
-          formData.append("page_id", pageId);
+  const LikeUnlikePage = async (pageId) => {
+    try {
+      const formData = new FormData();
+      formData.append("page_id", pageId);
 
-          const response = await api.post("/api/like-unlike-page", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
+      const response = await api.post("/api/like-unlike-page", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-          if (response.data.code == "200") {
-            alert(response.data.message);
-
-            setMyPages((prevPages) =>
-              prevPages.map((page) =>
-                page.id === pageId ? { ...page, isLiked: !page.isLiked } : page
-              )
-            );
-          } else {
-            alert(response.data.message);
-          }
-        } catch (error) {
-          alert("Error liking/unliking the page");
-        }
+      if (response.data.code == "200") {
+        toast.success(response.data.message);
+        fetchSuggestedPages();
+        setMyPages((prevPages) =>
+          prevPages.map((page) =>
+            page.id === pageId ? { ...page, isLiked: !page.isLiked } : page
+          )
+        );
+      } else {
+        toast.error(response.data.message);
       }
-      likeUnlikePage();
-    } else {
-      alert("Action cancelled");
+    } catch (error) {
+      toast.error("Error liking/unliking the page");
     }
   };
+
+  const { showConfirmationToast: showConfirmationToastLikeUnlike } = useConfirmationToast({
+    message: 'Are you sure you want to perform this action?',
+    onConfirm: LikeUnlikePage,
+    onCancel: () => toast.dismiss(),
+    confirmText: 'Yes',
+    cancelText: 'No',
+  });
+
 
   return (
     <div>

@@ -6,12 +6,11 @@ import createAPI from "@/app/lib/axios";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function GroupForm() {
   useAuth();
   const router = useRouter();
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState("");
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [avatar, setAvatar] = useState(null);  
@@ -21,13 +20,11 @@ export default function GroupForm() {
 
   const api = createAPI();
 
-  // Handle input field changes
   const handleGroupNameChange = (e) => setGroupName(e.target.value);
   const handleDescriptionChange = (e) => setDescription(e.target.value);
   const handleCategoryChange = (e) => setCategory(e.target.value);
   const handlePrivacyChange = (e) => setPrivacy(e.target.value);
 
-  // Handle file changes
   const handleAvatarChange = (e) => {
     const files = e.target.files;
     if (files.length > 0) {
@@ -42,10 +39,9 @@ export default function GroupForm() {
     }
   };
 
-  // Add group
   const addGroup = async () => {
     if (!groupName || !description || !category) {
-      setError("Please fill in all fields!");
+      toast.info("Please fill in all fields!");
       return;
     }
 
@@ -64,26 +60,20 @@ export default function GroupForm() {
         },
       });
 
-      if (response.data.code === "200") {
-        setError("");
+      if (response.data.code == "200") {
         setGroupName("");
         setCategory("");
         setPrivacy("");
         setDescription("");
         setAvatar(null); 
         setCover(null); 
-        setSuccess(response.data.message);
+        toast.success(response.data.message);
         router.push("/pages/groups");
       } else {
-        setError("Error from server: " + response.data.message);
+        toast.error("Error from server: " + response.data.message);
       }
     } catch (error) {
-      if (error.response && error.response.data) {
-        setError(error.response.data.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
-      console.error(error);
+       toast.error("An unexpected error occurred");
     }
   };
 
@@ -100,11 +90,6 @@ export default function GroupForm() {
               <div className="card shadow-lg border-0 p-3">
                 <div className="card-body">
                   <h5 className="fw-bold mt-2 fs-4">Create a Group</h5>
-
-                  {success && (
-                    <div className="alert alert-success mt-2">{success}</div>
-                  )}
-                  {error && <p className="text-center text-danger">{error}</p>}
 
                   <div className="mt-4">
                     <label className="form-label mx-1 text-muted">

@@ -6,10 +6,10 @@ import Link from "next/link";
 import useAuth from "@/app/lib/useAuth";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
+import { toast } from "react-toastify";
 
 export default function Wallet() {
   useAuth();
-  const [error, setError] = useState(null);
   const [balance, setBalance] = useState(null);
   const [earnings, setEarnings] = useState({});
   const [loading, setLoading] = useState(true);
@@ -26,10 +26,10 @@ export default function Wallet() {
             setBalance(response.data.amount);
             setEarnings(response.data.earning || {});
           } else {
-            setError("Failed to fetch wallet data.");
+            toast.error(response.data.message);
           }
         } catch (err) {
-          setError("Error fetching data.");
+          toast.error("Error fetching data.");
         } finally {
           setLoading(false);
         }
@@ -57,14 +57,6 @@ export default function Wallet() {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
         {loadingSpinner}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="alert alert-danger" role="alert">
-        {error}
       </div>
     );
   }

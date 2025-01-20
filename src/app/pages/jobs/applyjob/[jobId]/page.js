@@ -4,23 +4,23 @@ import Navbar from "@/app/assets/components/navbar/page";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import createAPI from "@/app/lib/axios";
- 
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import useAuth from "@/app/lib/useAuth";
 
-export default function ApplyJob() {
+export default function ApplyJob({ params }) {
   useAuth();
+  const { jobId } = React.use(params); 
   const [phone, setPhone] = useState("");
   const [position, setPosition] = useState("");
   const [company, setCompany] = useState("");
-  const [cv, setCv] = useState(null); 
+  const [cv, setCv] = useState(null);
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
-  const [error, setError] = useState(""); 
-  const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const api = createAPI();
   const router = useRouter();
-
   const handlePhone = (e) => setPhone(e.target.value);
   const handlePosition = (e) => setPosition(e.target.value);
   const handleCompany = (e) => setCompany(e.target.value);
@@ -32,12 +32,71 @@ export default function ApplyJob() {
     if (files.length > 0) {
       const file = files[0];
       if (file.size > 5000000) {
-        alert("File size exceeds 5MB limit");
-        setCv(null); 
+        toast.error("File size exceeds 5MB limit");
+        setCv(null);
       } else {
         setCv(file);
       }
     }
+  };
+
+  const applyJob = async () => {
+    if (!cv || !phone || !position || !jobId) {
+      toast.error("Please fill in all fields!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("phone", phone);
+      formData.append("position", position);
+      formData.append("description", description);
+      formData.append("location", address);
+      formData.append("job_id", jobId);
+
+      if (cv) formData.append("cv_file", cv);
+
+      const response = await api.post("/api/apply-for-job", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setLoading(false);
+      if (response.data.code == "200") {
+        setPhone("");
+        setPosition("");
+        setDescription("");
+        setAddress("");
+        setCompany("");
+        setCv(null);
+        setError("");
+        toast.success(response.data.message);
+        router.push("/pages/jobs");
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      setLoading(false);
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+      toast.error(error.message);
+    }
+  };
+
+
+  const resetForm = () => {
+    setPhone("");
+    setPosition("");
+    setCompany("");
+    setCv(null);
+    setAddress("");
+    setDescription("");
+    setError("");
   };
 
   const categories = [
@@ -51,64 +110,6 @@ export default function ApplyJob() {
     "Security and Law Enforcement Jobs", "Writer Jobs", "test Jobs", "testing Jobs"
   ];
 
-  const applyJob = async (jobId) => {
-    if (!cv || !phone || !position) {
-      alert("Please fill in all fields!");
-      setError("Please fill in all fields!");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("phone", phone);
-      formData.append("position", position);
-      formData.append("description", description);
-      formData.append("location", address);
-      formData.append("job_id", 6);
-      if (cv) formData.append("cv_file", cv);
-
-      const response = await api.post("/api/apply-for-job", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setLoading(false); 
-      if (response.data.code == "200") {
-        setPhone("");
-        setPosition("");
-        setDescription("");
-        setAddress("");
-        setCompany("");
-        setCv(null); 
-        setError(""); 
-        alert(response.data.message);
-        router.push("/pages/jobs");
-      } else {
-        setError("Error from server: " + response.data.message);
-        alert(response.data.message);
-      }
-    } catch (error) {
-      setLoading(false); 
-      if (error.response && error.response.data) {
-        setError(error.response.data.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
-      alert(error.message);
-    }
-  };
-
-  const resetForm = () => {
-    setPhone("");
-    setPosition("");
-    setCompany("");
-    setCv(null);
-    setAddress("");
-    setDescription("");
-    setError(""); 
-  };
 
   return (
     <div>
@@ -245,7 +246,7 @@ export default function ApplyJob() {
                     <div className="mt-4 d-flex gap-3 mx-2">
                       <button
                         className="btn btn-success border-0 rounded-1"
-                        onClick={() => applyJob("jobId")} 
+                        onClick={() => applyJob("jobId")}
                         disabled={loading}
                       >
                         {loading ? "Submitting..." : "Submit"}

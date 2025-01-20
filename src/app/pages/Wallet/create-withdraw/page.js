@@ -5,12 +5,12 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import useAuth from "@/app/lib/useAuth";
-import { useRouter } from "next/navigation";  // Import useRouter for navigation
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function CreateWithdraw() {
     useAuth();
-    const router = useRouter(); // Initialize the router
-    const [error, setError] = useState(null);
+    const router = useRouter();
     const [balance, setBalance] = useState(null);
     const [withdrawMethod, setWithdrawMethod] = useState("");
     const [amount, setAmount] = useState("");
@@ -21,21 +21,15 @@ export default function CreateWithdraw() {
     const [country, setCountry] = useState("");
     const [swiftCode, setSwiftCode] = useState("");
     const [mobileNumber, setMobileNumber] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
     const api = createAPI();
 
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true);
             try {
                 const response = await api.get("/api/user-wallet");
                 setBalance(response.data.amount);
             } catch (err) {
-                setError("Error fetching wallet data.");
-                setMessage("Error fetching data.");
-            } finally {
-                setLoading(false);
+                toast.error("Error fetching wallet data.");
             }
         };
 
@@ -54,16 +48,15 @@ export default function CreateWithdraw() {
         e.preventDefault();
 
         if (!withdrawMethod || !amount || parseFloat(amount) <= 0) {
-            setMessage("Please fill in all fields and enter a valid amount.");
+            toast.info("Please fill in all fields and enter a valid amount.");
             return;
         }
 
         if (parseFloat(amount) > balance) {
-            setMessage("Insufficient balance.");
+            toast.error("Insufficient balance.");
             return;
         }
 
-        setLoading(true);
         try {
             const formData = new FormData();
 
@@ -82,43 +75,16 @@ export default function CreateWithdraw() {
             });
 
 
-            if (response.data.status === "200") {
-                setMessage("Withdrawal request successfully created.");
-                setWithdrawMethod("");
-                setAmount("");
+            if (response.data.status == "200") {
+                toast.success(response.data.message);
                 router.push("/pages/Wallet/withdraw-requests");
             } else {
-                setMessage(response.data.message);
+                toast.error(response.data.message);
             }
-        } catch (err) {
-            setMessage("Error creating withdrawal request.");
-            setError("Error creating withdrawal request.");
-        } finally {
-            setLoading(false);
+        } catch (err) { 
+            toast.error("Error creating withdrawal request.");
         }
     };
-
-    const loadingSpinner = (
-        <div className="spinner-grow" role="status">
-            <span className="visually-hidden">Loading...</span>
-        </div>
-    );
-
-    if (loading) {
-        return (
-            <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
-                {loadingSpinner}
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="alert alert-danger" role="alert">
-                {error}
-            </div>
-        );
-    }
 
     return (
         <div>
@@ -135,7 +101,7 @@ export default function CreateWithdraw() {
                                     <div className="card shadow-sm border-0 p-4">
                                         <h5 className="text-dark fw-bold">Total Balance</h5>
                                         <h4 className="text-dark fw-bold">
-                                        {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
+                                        {balance === null ? <p></p> : `$${(Number(balance) || 0).toFixed(2)}`}
                                         </h4>
                                     </div>
                                 </div>
@@ -255,8 +221,6 @@ export default function CreateWithdraw() {
                                             )}
 
                                             <button className="btn btn-success mt-4" onClick={handleSubmit}>Withdraw</button>
-
-                                            {message && <div className="alert alert-info mt-3">{message}</div>}
                                         </div>
                                     </div>
                                 </div>

@@ -1,12 +1,12 @@
-"use client"; // Ensure this is a client-side component
+"use client";
 
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
- 
 import { useRouter } from "next/navigation";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 export default function Pageform() {
   useAuth();
@@ -16,14 +16,13 @@ export default function Pageform() {
   const [pageName, setPageName] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
-  const [avatar, setAvatar] = useState(null); // Changed from array to null (to match expected file type)
-  const [cover, setCover] = useState(null); // Changed from array to null
+  const [avatar, setAvatar] = useState(null);
+  const [cover, setCover] = useState(null);
   const [category, setCategory] = useState("");
-  const [isClient, setIsClient] = useState(false); // State to track if we are on the client
+  const [isClient, setIsClient] = useState(false);
 
   const api = createAPI();
 
-  // This effect ensures that the code only runs on the client-side after mounting
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -55,15 +54,13 @@ export default function Pageform() {
   const addPage = async () => {
     if (!pageName || !description || !category) {
       if (typeof window !== "undefined") {
-        alert("Please fill in all fields!");
+        toast.error("Please fill in all fields!");
       }
-      setError("Please fill in all fields!");
       return;
     }
 
     try {
       const formData = new FormData();
-
       formData.append("page_title", pageName);
       formData.append("website", url);
       formData.append("page_description", description);
@@ -83,26 +80,22 @@ export default function Pageform() {
 
       if (response.data.code == "200") {
         setError("");
-        setSuccess(response.data.message);
+        toast.success(response.data.message);
         router.push("/pages/page");
-        if (typeof window !== "undefined") {
-          alert(response.data.message);
-        }
       } else {
-        setError("Error from server: " + response.data.message);
+        toast.error("Error from server: " + response.data.message);
       }
     } catch (error) {
       if (error.response && error.response.data) {
-        setError(error.response.data.message);
+        toast.error(error.response.data.message);
       } else {
-        setError("An unexpected error occurred");
+        toast.error("An unexpected error occurred");
       }
-      console.error(error);
     }
   };
 
   if (!isClient) {
-    return <div>Loading...</div>; 
+    return <div>Loading...</div>;
   }
 
   return (

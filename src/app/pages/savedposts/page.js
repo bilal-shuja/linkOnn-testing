@@ -8,7 +8,7 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
-import("bootstrap/dist/js/bootstrap.bundle.min.js");
+import { toast } from "react-toastify";
 
 export default function Savedposts() {
     useAuth();
@@ -62,10 +62,10 @@ export default function Savedposts() {
 
                 if (isInitialLoad) setPage(1);
             } else {
-                setError("Invalid data format received from API.");
+                toast.error("Invalid data format received from API.");
             }
         } catch (error) {
-            setError("An error occurred while fetching data.");
+            toast.error("An error occurred while fetching data.");
         } finally {
             setLoading(false);
         }
@@ -98,7 +98,7 @@ export default function Savedposts() {
         const comment = commentText[postId] || "";
 
         if (!comment || comment.trim() === "") {
-            setMessage("Comment cannot be empty.");
+            toast.error("Comment cannot be empty.");
             return;
         }
 
@@ -122,17 +122,16 @@ export default function Savedposts() {
                         [postId]: updatedComments,
                     };
                 });
-                setMessage(response.data.message);
+                toast.success(response.data.message);
                 setCommentText((prevText) => ({
                     ...prevText,
                     [postId]: "",
                 }));
             } else {
-                setMessage(response.data.message || "Failed to add the comment.");
+                toast.error(response.data.message || "Failed to add the comment.");
             }
         } catch (error) {
-            setMessage("An error occurred while adding the comment.");
-            console.error(error);
+            toast.error("An error occurred while adding the comment.");
         } finally {
             setLoading(false);
         }
@@ -160,8 +159,7 @@ export default function Savedposts() {
         if (!comments[postId]) {
             try {
                 const response = await api.get(
-                    `/api/post/comments/getcomment?post_id=${postId}`,
-                    {}
+                    `/api/post/comments/getcomment?post_id=${postId}`
                 );
 
                 if (response.data.data && Array.isArray(response.data.data)) {
@@ -171,62 +169,50 @@ export default function Savedposts() {
                     }));
                 }
             } catch (error) {
-                setError("An error occurred while fetching comments.");
+                toast.error("An error occurred while fetching comments.");
             }
         }
     };
 
     const handleCommentDelete = async (comment_id, postId) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this comment?");
-        if (confirmDelete) {
-            setComments((prevComments) => {
-                const updatedComments = prevComments[postId].filter(
-                    (comment) => comment.id !== comment_id
-                );
-                return {
-                    ...prevComments,
-                    [postId]: updatedComments,
-                };
+        try {
+            const response = await api.post("/api/post/comments/delete", {
+                comment_id,
             });
 
-            try {
-                const response = await api.post("/api/post/comments/delete", {
-                    comment_id,
+            if (response.data.code == "200") {
+                setComments((prevComments) => {
+                    const updatedComments = prevComments[postId].filter(
+                        (comment) => comment.id !== comment_id
+                    );
+                    return {
+                        ...prevComments,
+                        [postId]: updatedComments,
+                    };
                 });
 
-                if (response.data.code == "200") {
-                    alert("Comment deleted.");
-                } else {
-                    alert(`Error: ${response.data.message}`);
-                }
-            } catch (error) {
-                alert("An error occurred while deleting the comment.");
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
             }
-        } else {
-            alert("Comment deletion cancelled.");
+        } catch (error) {
+            toast.error("An error occurred while deleting the comment.");
         }
     };
 
     const handleCommentreplyDelete = async (reply_id) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this reply?");
-        if (confirmDelete) {
-            alert("Comment reply deleted.");
+        try {
+            const response = await api.post("/api/post/comments/delete-reply", {
+                reply_id,
+            });
 
-            try {
-                const response = await api.post("/api/post/comments/delete-reply", {
-                    reply_id,
-                });
-
-                if (response.data.code == "200") {
-                    // Handle success
-                } else {
-                    alert(`Error: ${response.data.message}`);
-                }
-            } catch (error) {
-                alert("An error occurred while deleting the comment reply.");
+            if (response.data.code == "200") {
+                toast.success("Reply deleted successfully.");
+            } else {
+                toast.error(`Error: ${response.data.code}`);
             }
-        } else {
-            alert("Reply deletion cancelled.");
+        } catch (error) {
+            toast.error("An error occurred while deleting the reply.");
         }
     };
 
@@ -256,10 +242,10 @@ export default function Savedposts() {
                     [commentId]: !prevState[commentId],
                 }));
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("An error occurred while fetching replies.");
+            toast.error("An error occurred while fetching replies.");
         }
     };
 
@@ -278,16 +264,16 @@ export default function Savedposts() {
             });
 
             if (response.data.code == "200") {
-                alert("Reply added successfully!");
+                toast.success("Reply added successfully!");
                 setCommentreplyText((prevState) => ({
                     ...prevState,
                     [commentId]: "",
                 }));
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("An error occurred while adding the reply.");
+            toast.error("An error occurred while adding the reply.");
         }
     };
 
@@ -298,12 +284,12 @@ export default function Savedposts() {
                 post_id: postId,
             });
             if (response.data.code == "200") {
-                alert(response.data.message);
+                toast.success(response.data.message);
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("Error while reacting to the comment.");
+            toast.error("Error while reacting to the comment.");
         }
     };
 
@@ -313,12 +299,12 @@ export default function Savedposts() {
                 comment_reply_id: replyId,
             });
             if (response.data.code == "200") {
-                alert(response.data.message);
+                toast.success(response.data.message);
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("Error while reacting to the comment reply.");
+            toast.error("Error while reacting to the comment reply.");
         }
     };
 
@@ -331,12 +317,12 @@ export default function Savedposts() {
             });
 
             if (response.data.code == "200") {
-                alert(response.data.message);
+                toast.success(response.data.message);
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("Error while reacting to the Post");
+            toast.error("Error while reacting to the Post");
         }
     };
 
@@ -351,12 +337,12 @@ export default function Savedposts() {
                 amount: donate,
             });
             if (response.data.code == "200") {
-                alert(response.data.message);
+                toast.success(response.data.message);
             } else {
-                alert(response.data.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
-            alert("Error while donating Fund.");
+            toast.error("Error while donating Fund.");
         }
     };
 
@@ -369,12 +355,12 @@ export default function Savedposts() {
             });
 
             if (response.data.status == "200") {
-                alert(response.data.message);
+                toast.success(response.data.message);
             } else {
-                alert(response.data.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
-            alert("An error occurred while voting. Please try again.");
+            toast.error("An error occurred while voting. Please try again.");
         }
     };
 
@@ -516,17 +502,6 @@ export default function Savedposts() {
                                                                 Open post in new tab
                                                             </Link>
                                                         </li>
-                                                        {post.user.id == userdata.data.id && (
-                                                            <li className="align-items-center d-flex">
-                                                                <button
-                                                                    className="btn dropdown-item text-secondary"
-                                                                    onClick={() => handlePostDelete(post.id)}
-                                                                >
-                                                                    <i className="bi bi-trash3 pe-2"></i>
-                                                                    Delete Post
-                                                                </button>
-                                                            </li>
-                                                        )}
                                                     </ul>
                                                 </div>
                                             </div>

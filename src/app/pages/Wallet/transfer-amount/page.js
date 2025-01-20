@@ -6,15 +6,15 @@ import useAuth from "@/app/lib/useAuth";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Select from 'react-select';
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function TransferAmount() {
   useAuth();
-  const [error, setError] = useState(null);
+  const router = useRouter();
   const [balance, setBalance] = useState(null);
   const [amount, setAmount] = useState("");
-  const [transferError, setTransferError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const api = createAPI();
@@ -26,11 +26,10 @@ export default function TransferAmount() {
         if (response.data.amount !== undefined) {
           setBalance(response.data.amount);
         } else {
-          setError("Balance information is unavailable.");
+          toast.error(response.data.message);
         }
       } catch (err) {
-        setError("Error fetching balance.");
-        setMessage("Error fetching balance.");
+        toast.error("Error fetching balance.");
       } finally {
         setLoading(false);
       }
@@ -42,11 +41,10 @@ export default function TransferAmount() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        
         const formData = new FormData();
         formData.append("type", "people");
-        formData.append("limit" , '22')
-        formData.append("search_string" , "");
+        formData.append("limit", '22')
+        formData.append("search_string", "");
 
         const response = await api.post("/api/search-user", formData, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -55,12 +53,10 @@ export default function TransferAmount() {
         if (response.data.code === "200" && Array.isArray(response.data.data)) {
           setUsers(response.data.data);
         } else {
-          setError("Error fetching users.");
-          setMessage("No users available.");
+          toast.error("Error fetching users.");
         }
       } catch (err) {
-        setError("Error fetching users.");
-        setMessage("Error fetching users.");
+        toast.error("Error fetching users.");
       }
     };
 
@@ -71,14 +67,12 @@ export default function TransferAmount() {
     e.preventDefault();
 
     if (!amount || amount <= 0) {
-      setTransferError("Please enter a valid amount.");
-      setMessage("Please enter a valid amount.");
+      toast.info("Please enter a valid amount.");
       return;
     }
 
     if (amount > balance) {
-      setTransferError("Insufficient funds.");
-      setMessage("Insufficient funds.");
+      toast.info("Insufficient funds.");
       return;
     }
 
@@ -86,18 +80,16 @@ export default function TransferAmount() {
       const response = await api.post("/api/transfer-amount", { amount, user_id: selectedUser?.value });
 
       if (response.data.status === "200") {
-        setTransferError(null);
-        setMessage(response.data.message);
+        toast.success(response.data.message);
         setBalance(balance - amount);
         setAmount("");
         setSelectedUser(null);
+        router.push("/pages/Wallet");
       } else {
-        setTransferError(response.data.message);
-        setMessage(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (err) {
-      setTransferError("Error transferring amount.");
-      setMessage("Error transferring amount.");
+      toast.error("Error transferring amount.");
     }
   };
 
@@ -109,14 +101,6 @@ export default function TransferAmount() {
 
   if (loading) {
     return <div className="d-flex justify-content-center mt-3">{loadingSpinner}</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="alert alert-danger" role="alert">
-        {error}
-      </div>
-    );
   }
 
   const userOptions = users.map(user => ({
@@ -139,7 +123,7 @@ export default function TransferAmount() {
                   <div className="card shadow-sm border-0 p-4">
                     <h5 className="text-dark fw-bold">Total Balance</h5>
                     <h4 className="text-dark fw-bold">
-                    {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
+                      {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
                     </h4>
                   </div>
                 </div>
@@ -181,14 +165,6 @@ export default function TransferAmount() {
                           required
                         />
                       </div>
-
-                      {message && (
-                        <div className="alert alert-success text-center">{message}</div>
-                      )}
-                     
-                      {transferError && (
-                        <div className="alert alert-danger text-center">{transferError}</div>
-                      )}
 
                       <div className="d-flex justify-content-end">
                         <button

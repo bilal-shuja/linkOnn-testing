@@ -31,12 +31,12 @@ const useConfirmationToast = ({ message, onConfirm, onCancel, confirmText = 'Con
   };
 
   const handleConfirm = (toastId, values) => {
-    onConfirm(values);  // Pass the array of values
+    onConfirm(values);
     toast.dismiss(toastId); 
   };
 
   const handleCancel = (toastId, values) => {
-    onCancel(values);  // Pass the array of values
+    onCancel(values);
     toast.dismiss(toastId); 
   };
 

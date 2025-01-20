@@ -6,6 +6,7 @@ import Link from "next/link";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 export default function JobsPage() {
   const [activeTab, setActiveTab] = useState(0);
@@ -13,9 +14,8 @@ export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [myJobs, setMyJobs] = useState([]);
   const [jobLoading, setJobLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null); 
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false); 
+  const [isClient, setIsClient] = useState(false);
 
   const categories = [
     "All", "Healthcares Jobs", "Government Jobs", "Science and Research Jobs", "Information Technology Jobs",
@@ -30,7 +30,6 @@ export default function JobsPage() {
 
   const fetchJobs = async () => {
     setJobLoading(true);
-    setErrorMessage(null);
     try {
       const response = await api.post("/api/get-jobs", {
         type: "all",
@@ -38,10 +37,10 @@ export default function JobsPage() {
       if (response.data.code === "200") {
         setJobs(response.data.data);
       } else {
-        setErrorMessage("No jobs found");
+        toast.error("No jobs found");
       }
     } catch (error) {
-      setErrorMessage("Error fetching Jobs");
+      toast.error("Error fetching Jobs");
     } finally {
       setJobLoading(false);
     }
@@ -49,7 +48,6 @@ export default function JobsPage() {
 
   const fetchMyJobs = async () => {
     setJobLoading(true);
-    setErrorMessage(null);
     try {
       const response = await api.post("/api/get-jobs", {
         type: "my",
@@ -57,23 +55,21 @@ export default function JobsPage() {
       if (response.data.code === "200") {
         setMyJobs(response.data.data);
       } else {
-        setErrorMessage("No my jobs found");
+        toast.error("No my jobs found");
       }
     } catch (error) {
-      setErrorMessage("Error fetching My Jobs");
+      toast.error("Error fetching My Jobs");
     } finally {
       setJobLoading(false);
     }
   };
 
-  
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-
   useEffect(() => {
-    if (!isClient) return; 
+    if (!isClient) return;
     if (activeTab === 0) {
       fetchJobs();
     } else {
@@ -81,13 +77,7 @@ export default function JobsPage() {
     }
   }, [activeTab, isClient]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      import("bootstrap/dist/js/bootstrap.bundle.min.js"); 
-    }
-  }, []); 
-
-  if (!isClient) return null; 
+  if (!isClient) return null;
 
   return (
     <div>
@@ -217,7 +207,6 @@ export default function JobsPage() {
                               <div className="d-flex align-items-center justify-content-between">
                                 <h6>{job.job_title}</h6>
 
-                                {/* Conditionally render the "Applied" button */}
                                 {job.is_applied ? (
                                   <button className="btn btn-primary border-0 rounded-1">
                                     <i className="bi bi-check"></i> Applied
@@ -225,10 +214,11 @@ export default function JobsPage() {
                                 ) : (
                                   <button
                                     className="btn btn-primary border-0 rounded-1"
-                                    onClick={() => router.push("/pages/jobs/applyjob")}
+                                    onClick={() => router.push(`/pages/jobs/applyjob/${job.id}`)}
                                   >
                                     <i className="bi bi-person-fill"></i> Apply now
                                   </button>
+
                                 )}
                               </div>
 

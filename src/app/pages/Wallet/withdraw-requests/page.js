@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import createAPI from "@/app/lib/axios";
+import { toast } from "react-toastify";
 
 export default function WithdrawReqs() {
-  const [error, setError] = useState(null);
   const [balance, setBalance] = useState(null);
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
   const api = createAPI();
 
   useEffect(() => {
@@ -23,14 +22,13 @@ export default function WithdrawReqs() {
         const withdrawResponse = await api.post("/api/withdraw-requset/list");
 
         if (withdrawResponse.data.code === "400" && withdrawResponse.data.message === "Api.withdraw_requests_not_found") {
-          setWithdrawals([]); // Set withdrawals to empty array when no requests are found
-          setMessage("No withdrawal requests found."); // Optionally set a message for empty state
+          setWithdrawals([]);
+          toast.info(withdrawResponse.data.message);
         } else {
           setWithdrawals(withdrawResponse.data.data || []);
         }
       } catch (err) {
-        setError(err);
-        setMessage("Error fetching data.");
+        toast.error("Error fetching data.");
       } finally {
         setLoading(false);
       }
@@ -53,13 +51,6 @@ export default function WithdrawReqs() {
     );
   }
 
-  if (error && !(error.response && error.response.data && error.response.data.code === "400" && error.response.data.message === "Api.withdraw_requests_not_found")) {
-    return (
-      <div className="alert alert-danger" role="alert">
-        Error: {error.message}
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -76,7 +67,7 @@ export default function WithdrawReqs() {
                   <div className="card shadow-sm border-0 p-4">
                     <h5 className="text-dark fw-bold">Total Balance</h5>
                     <h4 className="text-dark fw-bold">
-                    {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
+                      {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
                     </h4>
                   </div>
                 </div>
@@ -113,10 +104,12 @@ export default function WithdrawReqs() {
                               <td>
                                 <span
                                   className={`badge ${withdrawal.status === "Pending"
-                                    ? "bg-primary"
-                                    : withdrawal.status === "Api.status_approve"
-                                      ? "bg-success"
-                                      : "bg-danger"
+                                      ? "bg-primary"
+                                      : withdrawal.status === "Api.status_approve"
+                                        ? "bg-success"
+                                        : withdrawal.status === "Api.status_reject"
+                                          ? "bg-danger"
+                                          : ""
                                     }`}
                                 >
                                   {
@@ -124,10 +117,12 @@ export default function WithdrawReqs() {
                                       ? "Pending"
                                       : withdrawal.status === "Api.status_approve"
                                         ? "Approved"
-                                        : null
+                                        : withdrawal.status === "Api.status_reject"
+                                          ? "Rejected"
+                                          : null
                                   }
-
                                 </span>
+
                               </td>
                             </tr>
                           ))

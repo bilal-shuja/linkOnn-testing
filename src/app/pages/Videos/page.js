@@ -8,17 +8,18 @@ import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function VideoFeed() {
     useAuth();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [lastPostId, setLastPostId] = useState(0);
     const [limit] = useState(5);
     const [page, setPage] = useState(1);
     const [noMorePosts, setNoMorePosts] = useState(false);
+    const [showList, setShowList] = useState(false);
     const [commentText, setCommentText] = useState({});
     const [showComments, setShowComments] = useState({});
     const [comments, setComments] = useState({});
@@ -27,8 +28,6 @@ export default function VideoFeed() {
     const [repliesData, setRepliesData] = useState({});
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
-    const [message, setMessage] = useState("");
-    const notify = () => toast("This is a notification!");
     const api = createAPI();
 
     const fetchPosts = async (isInitialLoad = true) => {
@@ -64,10 +63,10 @@ export default function VideoFeed() {
 
                 if (isInitialLoad) setPage(1);
             } else {
-                setError("Invalid data format received from API.");
+                toast.error("Invalid data format received from API.");
             }
         } catch (error) {
-            setError("An error occurred while fetching data.");
+            toast.error("An error occurred while fetching data.")
         } finally {
             setLoading(false);
         }
@@ -100,12 +99,10 @@ export default function VideoFeed() {
         const comment = commentText[postId] || "";
 
         if (!comment || comment.trim() === "") {
-            setMessage("Comment cannot be empty.");
+            toast.error("Comment cannot be empty.")
             return;
         }
-
         setLoading(true);
-
         try {
             const response = await api.post("/api/post/comments/add", {
                 post_id: postId,
@@ -124,16 +121,16 @@ export default function VideoFeed() {
                         [postId]: updatedComments,
                     };
                 });
-                setMessage(response.data.message);
+                toast.success(response.data.message);
                 setCommentText((prevText) => ({
                     ...prevText,
                     [postId]: "",
                 }));
             } else {
-                setMessage(response.data.message || "Failed to add the comment.");
+                toast.error(response.data.message || "Failed to add the comment.")
             }
         } catch (error) {
-            setMessage("An error occurred while adding the comment.");
+            toast.error("An error occurred while adding the comment.")
             console.error(error);
         } finally {
             setLoading(false);
@@ -173,62 +170,50 @@ export default function VideoFeed() {
                     }));
                 }
             } catch (error) {
-                setError("An error occurred while fetching comments.");
+                toast.error("An error occurred while fetching comments.");
             }
         }
     };
 
     const handleCommentDelete = async (comment_id, postId) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this comment?");
-        if (confirmDelete) {
-            setComments((prevComments) => {
-                const updatedComments = prevComments[postId].filter(
-                    (comment) => comment.id !== comment_id
-                );
-                return {
-                    ...prevComments,
-                    [postId]: updatedComments,
-                };
+        try {
+            const response = await api.post("/api/post/comments/delete", {
+                comment_id,
             });
 
-            try {
-                const response = await api.post("/api/post/comments/delete", {
-                    comment_id,
+            if (response.data.code == "200") {
+                setComments((prevComments) => {
+                    const updatedComments = prevComments[postId].filter(
+                        (comment) => comment.id !== comment_id
+                    );
+                    return {
+                        ...prevComments,
+                        [postId]: updatedComments,
+                    };
                 });
 
-                if (response.data.code == "200") {
-                    alert("Comment deleted.");
-                } else {
-                    alert(`Error: ${response.data.message}`);
-                }
-            } catch (error) {
-                alert("An error occurred while deleting the comment.");
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
             }
-        } else {
-            alert("Comment deletion cancelled.");
+        } catch (error) {
+            toast.error("An error occurred while deleting the comment.");
         }
     };
 
     const handleCommentreplyDelete = async (reply_id) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this reply?");
-        if (confirmDelete) {
-            alert("Comment reply deleted.");
+        try {
+            const response = await api.post("/api/post/comments/delete-reply", {
+                reply_id,
+            });
 
-            try {
-                const response = await api.post("/api/post/comments/delete-reply", {
-                    reply_id,
-                });
-
-                if (response.data.code == "200") {
-                    // Handle success
-                } else {
-                    alert(`Error: ${response.data.message}`);
-                }
-            } catch (error) {
-                alert("An error occurred while deleting the comment reply.");
+            if (response.data.code == "200") {
+                toast.success("Reply deleted successfully.");
+            } else {
+                toast.error(`Error: ${response.data.code}`);
             }
-        } else {
-            alert("Reply deletion cancelled.");
+        } catch (error) {
+            toast.error("An error occurred while deleting the reply.");
         }
     };
 
@@ -258,10 +243,10 @@ export default function VideoFeed() {
                     [commentId]: !prevState[commentId],
                 }));
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("An error occurred while fetching replies.");
+            toast.error("An error occurred while fetching replies.");
         }
     };
 
@@ -280,16 +265,16 @@ export default function VideoFeed() {
             });
 
             if (response.data.code == "200") {
-                alert("Reply added successfully!");
+                toast.success("Reply added successfully!");
                 setCommentreplyText((prevState) => ({
                     ...prevState,
                     [commentId]: "",
                 }));
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("An error occurred while adding the reply.");
+            toast.error("An error occurred while adding the reply.");
         }
     };
 
@@ -300,12 +285,12 @@ export default function VideoFeed() {
                 post_id: postId,
             });
             if (response.data.code == "200") {
-                alert(response.data.message);
+                toast.success(response.data.message);
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("Error while reacting to the comment.");
+            toast.error("Error while reacting to the comment.");
         }
     };
 
@@ -315,12 +300,12 @@ export default function VideoFeed() {
                 comment_reply_id: replyId,
             });
             if (response.data.code == "200") {
-                alert(response.data.message);
+                toast.success(response.data.message);
             } else {
-                alert(`Error: ${response.data.message}`);
+                toast.error(`Error: ${response.data.message}`);
             }
         } catch (error) {
-            alert("Error while reacting to the comment reply.");
+            toast.error("Error while reacting to the comment reply.");
         }
     };
 
@@ -333,45 +318,49 @@ export default function VideoFeed() {
             });
 
             if (response.data.code == "200") {
-                alert(response.data.message);
                 toast.success(response.data.message);
-                
+
             } else {
-                alert(`Error: ${response.data.message}`);
                 toast.error(response.data.message)
             }
         } catch (error) {
-            alert("Error while reacting to the Post");
+            toast.error("Error while reacting to the Post");
         }
     };
 
-    const handlePostDelete = async (postId) => {
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this post? This action cannot be undone."
-        );
+    const handlePostDelete = (postId) => {
+        showConfirmationToast([postId]);
+    };
 
-        if (confirmDelete) {
-            try {
-                const response = await api.post("/api/post/action", {
-                    post_id: postId,
-                    action: "delete",
-                });
+    const handleDelete = async (values) => {
+        const postId = values[0];
 
-                if (response.data.code == 200) {
-                    setPosts((prevPosts) =>
-                        prevPosts.filter((post) => post.id !== postId)
-                    );
-                    alert("Post successfully deleted");
-                } else {
-                    alert("Failed to delete the post.");
-                }
-            } catch (error) {
-                alert("An error occurred while deleting the post.");
+        try {
+            const response = await api.post("/api/post/action", {
+                post_id: postId,
+                action: "delete",
+            });
+
+            if (response.data.code == "200") {
+                setPosts((prevPosts) =>
+                    prevPosts.filter((post) => post.id !== postId)
+                );
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
             }
-        } else {
-            alert("Cancel");
+        } catch (error) {
+            toast.error("An error occurred while deleting the post.");
         }
     };
+
+    const { showConfirmationToast } = useConfirmationToast({
+        message: 'Are you sure you want to delete this post? This action cannot be undone.',
+        onConfirm: handleDelete,
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel",
+    });
 
     return (
         <div>
@@ -388,8 +377,6 @@ export default function VideoFeed() {
                             {posts.length === 0 && !loading && (
                                 <p className="text-center">No posts found.</p>
                             )}
-
-                            {error && <p className="text-center text-danger">{error}</p>}
 
                             {posts.map((post, index) => (
                                 <div
@@ -564,7 +551,7 @@ export default function VideoFeed() {
                                             >
                                                 <i className="bi bi-emoji-smile me-2"></i> Reaction
                                             </button>
-                                          
+
                                             <button
                                                 className="btn border-0 d-flex align-items-center"
                                                 onClick={() => handleCommentToggle(post.id)}

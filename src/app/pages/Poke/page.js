@@ -18,12 +18,14 @@ export default function Poke() {
     useEffect(() => {
         const fetchPokes = async () => {
             try {
-                const response = await api.post(`/api/get-pokes`);
+                const response = await api.post("/api/get-pokes", {
+                    limit: '50',
+                });
 
                 if (response.data.code == "200") {
                     setPokes(response.data.data);
                 } else {
-                    toast.error("Failed to fetch pokes");
+                    toast.error(response.data.message);
                 }
             } catch (error) {
                 toast.error("Error fetching pokes");
@@ -44,10 +46,11 @@ export default function Poke() {
         return null;
     }
 
-    const handlePokeBack = async (postId) => {
+    const handlePokeBack = async (pokeId) => {
         try {
             const response = await api.post("/api/poke-user", {
-                user_id: postId,
+                user_id: pokeId,
+                pock_back : '1',
             });
 
             if (response.data.code == "200") {
