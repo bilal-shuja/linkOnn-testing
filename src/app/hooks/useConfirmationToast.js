@@ -1,36 +1,22 @@
-'use client';
+"use client"
 
-import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
-const useConfirmationToast = () => {
-  const showConfirmationToast = useCallback(({
-    message,
-    onConfirm,
-    onCancel,
-    confirmText = 'Confirm',
-    cancelText = 'Cancel',
-    values = []
-  }) => {
+const useConfirmationToast = ({ message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => {
+  const showConfirmationToast = (values = []) => {
     const toastId = toast(
       <div>
         <p>{message}</p>
         <div className="d-flex justify-content-between">
           <button
             className="btn btn-secondary"
-            onClick={() => {
-              if (onCancel) onCancel(values);
-              toast.dismiss(toastId);
-            }}
+            onClick={() => handleCancel(toastId, values)}
           >
             {cancelText}
           </button>
           <button
             className="btn btn-danger"
-            onClick={() => {
-              if (onConfirm) onConfirm(values);
-              toast.dismiss(toastId);
-            }}
+            onClick={() => handleConfirm(toastId, values)}
           >
             {confirmText}
           </button>
@@ -44,7 +30,17 @@ const useConfirmationToast = () => {
         progress: undefined,
       }
     );
-  }, []);
+  };
+
+  const handleConfirm = (toastId, values) => {
+    onConfirm(values);
+    toast.dismiss(toastId);
+  };
+
+  const handleCancel = (toastId, values) => {
+    onCancel(values);
+    toast.dismiss(toastId);
+  };
 
   return { showConfirmationToast };
 };
