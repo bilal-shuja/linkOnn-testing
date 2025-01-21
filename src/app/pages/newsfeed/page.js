@@ -15,6 +15,7 @@ import useAuth from "@/app/lib/useAuth";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
+
 export default function Newsfeed() {
   useAuth();
   const router = useRouter();
@@ -60,6 +61,41 @@ export default function Newsfeed() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const api = createAPI();
+
+  const handlePostDelete = (postId) => {
+    showConfirmationToast([postId]);
+  };
+
+  const handleDelete = async (values) => {
+    const postId = values[0];
+
+    try {
+      const response = await api.post("/api/post/action", {
+        post_id: postId,
+        action: "delete",
+      });
+
+      if (response.data.code == "200") {
+        setPosts((prevPosts) =>
+          prevPosts.filter((post) => post.id !== postId)
+        );
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("An error occurred while deleting the post.");
+    }
+  };
+
+    const { showConfirmationToast } = useConfirmationToast({
+      message: 'Are you sure you want to delete this post? This action cannot be undone.',
+      onConfirm: handleDelete,
+      onCancel: () => toast.dismiss(),
+      confirmText: "Confirm",
+      cancelText: "Cancel",
+    });
+  
 
   const fetchPosts = async (isInitialLoad = true) => {
     try {
@@ -469,37 +505,6 @@ export default function Newsfeed() {
 
 
 
-  const handlePostDelete = (postId) => {
-    showConfirmationToast([postId]);
-  };
-
-  const handleDelete = async (values) => {
-    const postId = values[0];
-
-    try {
-      const response = await api.post("/api/post/action", {
-        post_id: postId,
-        action: "delete",
-      });
-
-      if (response.data.code == "200") {
-        setPosts((prevPosts) =>
-          prevPosts.filter((post) => post.id !== postId)
-        );
-        toast.success(response.data.message);
-      } else {
-        toast.error(response.data.message);
-      }
-    } catch (error) {
-      toast.error("An error occurred while deleting the post.");
-    }
-  };
-
-  const { showConfirmationToast } = useConfirmationToast({
-    message: 'Are you sure you want to delete this post? This action cannot be undone.',
-    onConfirm: handleDelete,
-    onCancel: () => toast.dismiss(),
-  });
 
 
   const handleVote = async (optionId, pollId, postId) => {
