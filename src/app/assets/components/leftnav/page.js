@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function Leftnav() {
   useAuth();
@@ -14,8 +15,8 @@ export default function Leftnav() {
   const [people, setPeople] = useState([]);
   const [loadingPeople, setLoadingPeople] = useState(false);
   const [isClient, setIsClient] = useState(false);
-
   const api = createAPI();
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -96,7 +97,10 @@ export default function Leftnav() {
           ) : people.length > 0 ? (
             people.map((person) => (
               <div key={person.id} className="d-flex align-items-center justify-content-between mt-2 p-2">
-                <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => router.push(`/pages/UserProfile/${person.id}`)}
+                >
                   <Image
                     src={person.avatar || '/default-avatar.png'}
                     alt="Avatar"
