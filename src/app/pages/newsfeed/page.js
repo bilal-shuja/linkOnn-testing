@@ -2128,6 +2128,7 @@ export default function Newsfeed() {
                   </div>
                 </div>
               ))}
+              
               <div className="d-grid gap-2 col-3 mx-auto mt-4">
                 {noMorePosts ? (
                   <button className="btn btn-light" disabled>
