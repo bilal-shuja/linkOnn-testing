@@ -105,7 +105,7 @@ export default function Blogs() {
                         </span>
                         <h5 className="card-title">{blog.title}</h5>
                         <Link
-                          href="#"
+                          href="/pages/Blogs/blogdetails"
                           className="text-primary text-decoration-none"
                         >
                           Read more...

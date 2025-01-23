@@ -9,6 +9,7 @@ import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import Link from "next/link";
 
 export default function Groups() {
   useAuth();
@@ -130,13 +131,13 @@ export default function Groups() {
     <div>
       <Navbar />
       <div className="container-fluid bg-light">
-        <div className="container mt-3 pt-5">
+        <div className="container pt-5">
           <div className="row">
             <div className="col-md-3 p-3 rounded">
               <Rightnav />
             </div>
             <div className="col-md-9 p-3">
-              <div className="d-flex flex-column">
+              <div className="d-flex flex-column mt-2">
                 <ul
                   className="nav nav-pills nav-fill bg-white d-flex justify-content-evenly"
                   id="myTab"
@@ -175,7 +176,7 @@ export default function Groups() {
                 </ul>
               </div>
 
-              <div className="tab-content mt-5">
+              <div className="tab-content mt-3">
                 <div
                   className={`tab-pane fade ${activeTab === 0 ? "show active" : ""}`}
                   id="suggested"
@@ -358,25 +359,26 @@ export default function Groups() {
                                     <Image
                                       src={group.avatar}
                                       alt="Group Image"
-                                      className="card-img-top mx-auto mt-3"
-                                      width={80}
-                                      height={200}
-                                      style={{ objectFit: "cover" }}
+                                      className="d-block mx-auto mt-1 rounded-circle"
+                                      width={150}
+                                      height={150}
+                                      // style={{ objectFit: "cover" }}
                                     />
                                   ) : (
                                     <div
                                       style={{
                                         backgroundColor: "black",
                                         color: "white",
-                                        width: "200px",
-                                        height: "200px",
+                                        width: "150px",
+                                        height: "150px",
                                         display: "flex",
                                         justifyContent: "center",
                                         alignItems: "center",
                                         fontSize: "12px",
                                         fontWeight: "bold",
+                                        textAlign: "center",
                                       }}
-                                      className="card-img-top mx-auto mt-3"
+                                      className="d-flex justify-content-center align-items-center mx-auto mt-1 rounded-circle"
                                     >
                                       No image
                                     </div>
@@ -384,22 +386,30 @@ export default function Groups() {
 
                                   <div className="card-body">
                                     <h5 className="card-title mb-1">{group.group_title}</h5>
-                                    <p className="text-muted align-items-center">
-                                      <i className="bi bi-globe pe-2"></i>
+                                    <div className="text-muted align-items-center fs-6">
+                                      <i className="bi bi-globe pe-2 fs-6"></i>
                                       {group.category}
-                                    </p>
+                                    </div>
                                     <div className="d-flex justify-content-around align-items-center border-bottom">
                                       <div className="text-center">
-                                        <p className="fs-5 text-dark fw-semibold mb-0">{group.members_count}</p>
+                                        <p className="fs-6 text-dark fw-semibold mb-0">{group.members_count}</p>
                                         <p className="mb-1">Members</p>
                                       </div>
                                     </div>
-                                    <div className="d-flex justify-content-around mt-3">
-                                      <button className="btn btn-sm btn-primary">Edit Group</button>
+                                    <div className="d-flex justify-content-center mt-3">
+                                      <Link href={{
+                                            pathname: '/pages/groups/editgroups',
+                                            query: { id: group.id },
+                                          }}  
+                                        className="btn btn-sm btn-outline-info me-2">
+                                      <i className="bi bi-pencil"></i>&nbsp;
+                                        Edit
+                                        </Link>
                                       <button
-                                        className="btn btn-sm btn-danger"
+                                        className="btn btn-sm btn-outline-danger"
                                         onClick={() => handleDeleteGroup(group.id)}
                                       >
+                                        <i className="bi bi-trash"></i>
                                         Delete
                                       </button>
                                     </div>
