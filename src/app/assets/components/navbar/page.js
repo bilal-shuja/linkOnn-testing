@@ -201,7 +201,7 @@ export default function Navbar() {
                   )}
 
                   {notifications.length > 0 ? (
-                    notifications.slice(0, 7).map((notification) => (
+                    notifications.slice(0, 5).map((notification) => (
                       <li key={notification.id} className={`dropdown-item ${notifications.length > 0 ? 'bg-light' : ''}`} style={{ width: "350px" }}>
                         <div className="d-flex align-items-center">
                           <Image
@@ -296,11 +296,14 @@ export default function Navbar() {
                   </li>
 
                   <li className="d-flex justify-content-center my-2 align-items-center">
-                    <Link href="/pages/MyProfile">
-                      <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }} >
+              
+                      <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }}
+                       onClick={() => router.push(`/pages/UserProfile/${userdata.data.id}`)}
+                      >
                         View Profile
+                      
                       </button>
-                    </Link>
+                    
                   </li>
 
                   <li>

@@ -14,6 +14,7 @@ import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import CryptoJS from 'crypto-js';
 
 
 export default function Newsfeed() {
@@ -88,14 +89,14 @@ export default function Newsfeed() {
     }
   };
 
-    const { showConfirmationToast } = useConfirmationToast({
-      message: 'Are you sure you want to delete this post? This action cannot be undone.',
-      onConfirm: handleDelete,
-      onCancel: () => toast.dismiss(),
-      confirmText: "Confirm",
-      cancelText: "Cancel",
-    });
-  
+  const { showConfirmationToast } = useConfirmationToast({
+    message: 'Are you sure you want to delete this post? This action cannot be undone.',
+    onConfirm: handleDelete,
+    onCancel: () => toast.dismiss(),
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+  });
+
 
   const fetchPosts = async (isInitialLoad = true) => {
     try {
@@ -656,6 +657,11 @@ export default function Newsfeed() {
     setShowEmojiPicker(false);
   };
 
+  const handleClick = (userId) => {
+    // const encryptedId = CryptoJS.AES.encrypt(userId.toString(), 'secret-key').toString();
+    router.push(`/pages/UserProfile/${userId}`);
+  };
+
   return (
     <div>
       <Navbar />
@@ -682,6 +688,7 @@ export default function Newsfeed() {
                       <span className="visually-hidden">Loading...</span>
                     </div>
                   )}
+
                   {error && <div className="alert alert-danger">{error}</div>}
 
                   <div className="carousel">
@@ -942,9 +949,14 @@ export default function Newsfeed() {
                       className="rounded-circle"
                       height={50}
                       width={50}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => router.push(`/pages/UserProfile/${userdata.data.id}`)}
                     />
                     <div className="mx-2 flex-grow-1">
-                      <span className="fw-semibold">
+                      <span className="fw-semibold"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => router.push(`/pages/UserProfile/${userdata.data.id}`)}
+                      >
                         {userdata.data.first_name} {userdata.data.last_name}
                       </span>
 
@@ -1358,7 +1370,9 @@ export default function Newsfeed() {
                     <div className="d-flex align-items-center justify-content-between">
                       <div className="d-flex align-items-center">
 
-                        <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          onClick={() => handleClick(post.user.id)} >
+
                           <Link href="#">
                             <Image
                               className="avatar-img rounded-circle"
@@ -1391,7 +1405,14 @@ export default function Newsfeed() {
 
                         <div className="mx-2">
                           <h6 className="card-title">
-                            {post.user.first_name} {post.user.last_name}
+
+                            <span
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleClick(post.user.id)}
+                            >
+                              {post.user.first_name} {post.user.last_name}
+                            </span>
+
                             {post.post_location && post.post_location !== "" && (
                               <span className="text-primary">
                                 <small className="text-dark"> is in </small>
@@ -1483,6 +1504,7 @@ export default function Newsfeed() {
                         </div>
                       </div>
                     </div>
+
                     <hr className="my-2 text-muted" />
 
                     {post.post_type !== "donation" && (
@@ -2106,6 +2128,7 @@ export default function Newsfeed() {
                   </div>
                 </div>
               ))}
+              
               <div className="d-grid gap-2 col-3 mx-auto mt-4">
                 {noMorePosts ? (
                   <button className="btn btn-light" disabled>
