@@ -14,7 +14,7 @@ import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
-import CryptoJS from 'crypto-js';
+// import CryptoJS from 'crypto-js';
 
 
 export default function Newsfeed() {
