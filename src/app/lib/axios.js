@@ -10,7 +10,6 @@ const createAPI = () => {
   if (!token) {
     return null; 
   }
-
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
     headers: {
@@ -19,7 +18,6 @@ const createAPI = () => {
       Accept: "application/json",
     },
   });
-
   return api;
 };
 
