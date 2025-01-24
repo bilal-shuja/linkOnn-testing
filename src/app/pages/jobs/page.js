@@ -9,6 +9,8 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 
 export default function JobsPage() {
+
+  const [jobCategory , setJobCategory] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const api = createAPI();
   const [jobs, setJobs] = useState([]);
@@ -17,16 +19,38 @@ export default function JobsPage() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
-  const categories = [
-    "All", "Healthcares Jobs", "Government Jobs", "Science and Research Jobs", "Information Technology Jobs",
-    "Transportation Jobs", "Education Jobs", "Finance Jobs", "Sales Jobs", "Engineering Jobs",
-    "Hospitality Jobs", "Retail Jobs", "Human Resources Jobs", "Construction Jobs", "Marketing Jobs",
-    "Legal Jobs", "Customer Service Jobs", "Design Jobs", "Media and Entertainment Jobs",
-    "Agriculture and Forestry Jobs", "Arts and Culture Jobs", "Real Estate Jobs", "Manufacturing Jobs",
-    "Environmental Jobs", "Non-Profit and Social Services Jobs", "Telecommunications Jobs",
-    "Sports and Recreation Jobs", "Travel and Tourism Jobs", "Food Services Jobs", "Beauty and Wellness Jobs",
-    "Security and Law Enforcement Jobs", "Writer Jobs", "test Jobs", "testing Jobs"
-  ];
+
+  // const categories = [
+  //   "All", "Healthcares Jobs", "Government Jobs", "Science and Research Jobs", "Information Technology Jobs",
+  //   "Transportation Jobs", "Education Jobs", "Finance Jobs", "Sales Jobs", "Engineering Jobs",
+  //   "Hospitality Jobs", "Retail Jobs", "Human Resources Jobs", "Construction Jobs", "Marketing Jobs",
+  //   "Legal Jobs", "Customer Service Jobs", "Design Jobs", "Media and Entertainment Jobs",
+  //   "Agriculture and Forestry Jobs", "Arts and Culture Jobs", "Real Estate Jobs", "Manufacturing Jobs",
+  //   "Environmental Jobs", "Non-Profit and Social Services Jobs", "Telecommunications Jobs",
+  //   "Sports and Recreation Jobs", "Travel and Tourism Jobs", "Food Services Jobs", "Beauty and Wellness Jobs",
+  //   "Security and Law Enforcement Jobs", "Writer Jobs", "test Jobs", "testing Jobs"
+  // ];
+
+
+  function fetchJobCategories() {
+
+    api.get("/api/get-job_categories")
+        .then((res) => {
+            if (res.data.code == "200") {
+                setJobCategory(res.data.data);
+        }
+            else {
+                toast.error("Error fetching event details");
+            }
+
+        })
+        .catch((error) => {
+            if (error)
+              console.log(error)
+                toast.error("Error fetching event details");
+        })
+
+}
 
   const fetchJobs = async () => {
     setJobLoading(true);
@@ -66,6 +90,7 @@ export default function JobsPage() {
 
   useEffect(() => {
     setIsClient(true);
+    fetchJobCategories();
   }, []);
 
   useEffect(() => {
@@ -78,6 +103,8 @@ export default function JobsPage() {
   }, [activeTab, isClient]);
 
   if (!isClient) return null;
+
+  console.log("jobs",jobCategory);
 
   return (
     <div>
@@ -119,16 +146,35 @@ export default function JobsPage() {
                 <div className="card mb-3 shadow-lg border-0">
                   <div className="card-body">
                     <div className="list-group list-group-flush">
-                      {categories.map((category) => (
-                        <Link
-                          key={category}
-                          className="list-group-item text-decoration-none border-0 bold-text d-flex align-items-center text-wrap"
-                          href="#"
-                        >
-                          <i className="bi bi-briefcase"></i>
-                          <span className="mx-3">{category}</span>
-                        </Link>
-                      ))}
+                      {
+                        jobCategory.length > 0 ?
+                        
+                        (
+                          jobCategory.map((category) => (
+                            <Link
+                              key={category.id}
+                              className="list-group-item text-decoration-none border-0 bold-text d-flex align-items-center text-wrap"
+                              href="#"
+                            >
+                              <i className="bi bi-briefcase"></i>
+                              <span className="mx-3">{category.name}</span>
+                            </Link>
+                          ))
+                        )
+                        :
+                        <>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33].map((item) => (
+                          <div 
+                            key={item} 
+                            className="list-group-item placeholder-glow d-flex align-items-center"
+                          >
+                            {/* <div className="placeholder col-1 me-3"></div> */}
+                            <div className="placeholder col-8"></div>
+                          </div>
+                        ))}
+                      </>
+                   
+                      }
                     </div>
                   </div>
                 </div>

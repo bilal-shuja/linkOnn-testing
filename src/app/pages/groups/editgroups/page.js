@@ -8,7 +8,6 @@ import useAuth from "@/app/lib/useAuth";
 import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
-// import { useRouter } from 'next/router';
 import { useRouter } from 'next/navigation';
 
 export default function Groups() {
@@ -30,6 +29,7 @@ export default function Groups() {
 
     const handleProfileImageChange = (e) => {
         const file = e.target.files[0];
+        
      setGroupProfileImg(file); // Preview the image
     };
 

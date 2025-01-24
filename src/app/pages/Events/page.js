@@ -9,6 +9,7 @@ import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import Link from "next/link";
 
 export default function Events() {
   useAuth();
@@ -339,29 +340,57 @@ export default function Events() {
                             </div>
                           ) : (
                             myEvents.map((event) => (
-                              <div key={event.id} className="col-md-4 mb-4">
-                                <div className="row">
-                                  <div className="card h-100">
+                              <div key={event.id} className="col-md-4  mb-4">
+                                <div className="row g-3">
+                                  <div className="card">
                                     <Image
                                       src={event.cover || "https://via.placeholder.com/150"}
                                       alt="Event Image"
                                       className="card-img-top mx-auto mt-3"
                                       width={80}
-                                      height={80}
+                                      height={130}
                                       style={{
-                                        objectFit: "cover",
+                                        // objectFit: "cover",
                                       }}
                                     />
-                                    <div className="card-body">
-                                      <h5 className="card-title mb-1">
+                                    <div className="card-body text-center">
+                                      <h6 className="card-title mb-1">
                                         {event.name}
-                                      </h5>
-                                      <p className="text-muted">{event.location}</p>
-                                      <div className="d-flex justify-content-between align-items-center">
+                                      </h6>
+                                      <p className="mb-0 small"><i className="bi bi-calendar-check pe-1"></i>{event.start_date} {event.start_time} {event.end_date} {event.end_time}</p>
+                                      <p className="small text-muted">
+                                      <i className="bi bi-geo-alt pe-1"></i>
+                                        {event.location}</p>
+                                      <div className="d-flex justify-content-between">
+                                      <Link
+                                          className="btn btn-sm btn-outline-primary mt-2"
+                                          // onClick={() => handleDeleteEvent(event.id)}
+
+                                          href={{
+                                            pathname: '/pages/Events/eventDetails',
+                                            query: { id:event.id},
+                                          }}  
+                                        >
+                                         <i className="bi bi-card-checklist"></i>
+                                         &nbsp;Details
+                                        </Link>
+
+                                      <Link
+                                          className="btn btn-sm btn-outline-info mt-2"
+                                          href={{
+                                            pathname: '/pages/Events/editEvent',
+                                            query: { id:event.id},
+                                          }}  
+                                        >
+                                          <i className="bi bi-pencil"></i>
+                                          &nbsp;Edit
+                                        </Link>
+
                                         <button
-                                          className="btn btn-outline-danger mt-2"
+                                          className="btn btn-sm btn-outline-danger mt-2"
                                           onClick={() => handleDeleteEvent(event.id)}
                                         >
+                                          <i className="bi bi-trash"></i>
                                           Delete
                                         </button>
                                       </div>

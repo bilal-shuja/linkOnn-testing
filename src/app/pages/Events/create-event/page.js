@@ -94,7 +94,7 @@ export default function Eventform() {
             <div className="col-md-3 p-3 rounded">
               <Rightnav />
             </div>
-            <div className="col-md-9 p-3">
+            <div className="col-md-9 p-3 mt-2">
               <div className="card shadow-lg border-0 p-3">
                 <div className="card-body">
                   <h5 className="fw-bold mt-2 fs-4">Create Event</h5>
