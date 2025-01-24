@@ -1,13 +1,14 @@
 "use client"
-import { useSearchParams } from 'next/navigation';
+
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import useAuth from "@/app/lib/useAuth";
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from 'react';
+import { use } from "react";
 import Image from "next/image";
 
-export default function EventDetails() {
+export default function EventDetails({params}) {
 
     useAuth();
 
@@ -15,15 +16,18 @@ export default function EventDetails() {
 
     const userid = localStorage.getItem("userid");
 
-    const searchParams = useSearchParams();
-    const eveID = searchParams.get('id');
+    const {eventDetails} = use(params)
+
+    // const searchParams = useSearchParams();
+    // const eveID = searchParams.get('id');
+
 
     const [specificEventDetails, setSpecificEventDetails] = useState();
     const [eventSection, setEventSection] = useState();
 
     function fetchSpecificEvent() {
 
-        api.post("/api/event-details", { event_id: eveID })
+        api.post("/api/event-details", { event_id: eventDetails })
             .then((res) => {
                 if (res.data.code == "200") {
                     setSpecificEventDetails(res.data.data.event);

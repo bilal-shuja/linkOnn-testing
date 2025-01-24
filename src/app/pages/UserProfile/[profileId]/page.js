@@ -32,11 +32,7 @@ export default function UserProfileCard({ params }) {
     }, [profileId]);
 
     if (!user) {
-        return (
-            <div>
-                <p> </p>
-            </div>
-        );
+        return null;
     }
 
     return (

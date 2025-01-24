@@ -9,13 +9,13 @@ const useConfirmationToast = ({ message, onConfirm, onCancel, confirmText = 'Con
         <p>{message}</p>
         <div className="d-flex justify-content-between">
           <button
-            className="btn btn-secondary"
+            className="btn btn-outline-secondary"
             onClick={() => handleCancel(toastId, values)}
           >
             {cancelText}
           </button>
           <button
-            className="btn btn-danger"
+            className="btn btn-outline-danger"
             onClick={() => handleConfirm(toastId, values)}
           >
             {confirmText}

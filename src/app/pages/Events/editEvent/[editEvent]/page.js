@@ -1,20 +1,19 @@
 "use client"
-import { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
+import { use } from "react";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import useAuth from "@/app/lib/useAuth";
 import createAPI from "@/app/lib/axios";
 import { toast } from "react-toastify";
-import { useSearchParams } from 'next/navigation';
-
 import { useRouter } from 'next/navigation';
-export default function EditEvent() {
+
+export default function EditEvent({params}) {
     useAuth();
 
-
-  const searchParams = useSearchParams();
-  const eveID = searchParams.get('id');
-  const router = useRouter();
+    const api = createAPI();
+    const router = useRouter();
+    const {editEvent} = use(params)
     
   const [specificEventDetails, setSpecificEventDetails] = useState();
 
@@ -28,7 +27,6 @@ export default function EditEvent() {
   const [coverImage, setCoverImage] = useState(null);
 
 
-  const api = createAPI();
 
 
   const handleNameChange = (e) => setEventName(e.target.value);
@@ -47,9 +45,11 @@ export default function EditEvent() {
     }
   };
 
+
+
     function fetchSpecificEvent() {
 
-        api.post("/api/event-details", { event_id: eveID })
+        api.post("/api/event-details", { event_id: editEvent })
             .then((res) => {
                 if (res.data.code == "200") {
                     setSpecificEventDetails(res.data.data.event);
@@ -125,6 +125,7 @@ export default function EditEvent() {
 
   return (
    <div>
+
          <Navbar />
          <div className="container-fluid bg-light">
            <div className="container mt-3 pt-5">
@@ -229,15 +230,19 @@ export default function EditEvent() {
                          Update Event
                        </button>
                      </div>
-
+            
                      
                    </div>
                  </div>
                </div>
 
+
+
              </div>
            </div>
          </div>
+
+
        </div>
        
   )

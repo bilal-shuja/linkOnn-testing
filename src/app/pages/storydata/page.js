@@ -4,10 +4,10 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";
+import { toast } from "react-toastify";
 
 
 export default function Storyform() {
@@ -24,27 +24,32 @@ export default function Storyform() {
 
     const api = createAPI();
 
+    
+
     useEffect(() => {
+    
         const fetchStories = async () => {
             try {
                 setLoading(true);
                 const response = await api.post("/api/story/get-stories");
-
+    
                 if (response.data.code === "200") {
                     const allStories = response.data.data.flatMap(user => user.stories);
                     setStories(allStories);
                     setError("");
+    
+                    // toast.success("Stories loaded successfully");
                 } else {
-                    setError("Failed to load stories");
+                    toast.error("Failed to load stories");
                 }
             } catch (err) {
-                console.error("Error fetching stories:", err);
-                setError("Error fetching stories. Please try again later.");
+                // console.error("Error fetching stories:", err);
+                toast.error("Error fetching stories. Please try again later.");
             } finally {
                 setLoading(false);
             }
         };
-
+        // activeTab === "myStories" ? fetchStories() : null;
         fetchStories();
     }, []);
 
@@ -94,7 +99,7 @@ export default function Storyform() {
 
     const addStory = async () => {
         if (!files) {
-            alert("Please upload a valid media file.");
+            toast.error("Please upload a valid media file.");
             return;
         }
 
@@ -120,13 +125,17 @@ export default function Storyform() {
             });
 
             if (response.data.code === "200") {
-                alert(response.data.message);
-                router.push("/newsfeed");
+                toast.success(response.data.message);
+                setTimeout(() => {
+
+                    router.push("/pages/newsfeed");
+
+                }, 3000);
             } else {
-                alert("Error from server: " + response.data.message);
+                toast.success("Error from server: " + response.data.message);
             }
         } catch (error) {
-            console.error("Error creating story:", error);
+            toast.error("Error creating story:", error);
         }
     };
 
@@ -138,16 +147,16 @@ export default function Storyform() {
                 const response = await api.post("/api/story/delete-story", { story_id });
 
                 if (response.data.code == '200') {
-                    alert("Story deleted.");
+                    toast.success("Story deleted.");
                     setStories(prevStories => prevStories.filter(story => story.id !== story_id));
                 } else {
-                    alert(response.data.message || "Failed to delete story.");
+                    toast.error(response.data.message || "Failed to delete story.");
                 }
             } catch (error) {
-                alert("An error occurred while deleting the story.");
+                toast.error("An error occurred while deleting the story.");
             }
         } else {
-            alert("Cancel");
+            toast.error("Cancel");
         }
     };
 
@@ -233,16 +242,16 @@ export default function Storyform() {
                                                 <textarea
                                                     className="form-control p-2"
                                                     rows="6"
-                                                    placeholder="Story Caption"
+                                                    placeholder="Story Caption..."
                                                     value={caption}
                                                     onChange={handleCaptionChange}
                                                 ></textarea>
                                                 <button
                                                     type="button"
-                                                    className="btn btn-primary mt-4 mb-3 mx-1"
+                                                    className="btn btn-outline-primary mt-4 mb-3 mx-1 float-end"
                                                     onClick={addStory}
                                                 >
-                                                    <i className="bi bi-plus-circle pe-1 text-white"></i> Add Story
+                                                    <i className="bi bi-plus-circle pe-1"></i> Add Story
                                                 </button>
                                             </div>
                                         </div>
@@ -257,8 +266,8 @@ export default function Storyform() {
                                     aria-labelledby="myStories-tab"
                                 >
                                     <div className="card shadow-lg border-0 p-2">
-                                        <div className="card-body">
-                                            <table className="table table-secondary table-light table-hover">
+                                        <div className="card-body  text-center">
+                                            <table className="table table-responsive table-bordered table-hover">
                                                 <thead>
                                                     <tr>
                                                         <th scope="col">Sr</th>
@@ -311,10 +320,10 @@ export default function Storyform() {
                                                                 <td>{story.description || "No caption"}</td>
                                                                 <td>
                                                                     <button
-                                                                        className="btn btn-danger btn-sm"
+                                                                        className="btn btn-outline-danger btn-sm"
                                                                         onClick={() => handleDeleteStory(story.id)}
                                                                     >
-                                                                        <i className="bi bi-trash3"></i> <small>Delete Story</small>
+                                                                        <i className="bi bi-trash3"></i> <small>Story</small>
                                                                     </button>
                                                                 </td>
                                                             </tr>

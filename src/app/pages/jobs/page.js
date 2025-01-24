@@ -7,6 +7,8 @@ import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+
 
 export default function JobsPage() {
 
@@ -30,6 +32,42 @@ export default function JobsPage() {
   //   "Sports and Recreation Jobs", "Travel and Tourism Jobs", "Food Services Jobs", "Beauty and Wellness Jobs",
   //   "Security and Law Enforcement Jobs", "Writer Jobs", "test Jobs", "testing Jobs"
   // ];
+
+
+  const handleJobDelete = (jobId) => {
+    showConfirmationToast(jobId);
+  };
+
+  const handleDeleteFun =  (jobId) => {
+
+     api.post("/api/delete-job-post", {
+        job_id: jobId,
+      })
+      .then((res)=>{
+        if (res.data.code == "200") {
+          setMyJobs((prevPosts) =>
+            prevPosts.filter((job) => job.id !== jobId)
+          );
+          toast.success(res.data.message);
+        } else {
+          toast.error(res.data.message);
+        }
+      })
+      .catch((error) => {
+
+        if (error)
+          console.log(error)
+          toast.error("An error occurred while deleting the job post.");
+      })
+  };
+
+  const { showConfirmationToast } = useConfirmationToast({
+    message: 'Are you sure you want to delete this job post?',
+    onConfirm: handleDeleteFun,
+    onCancel: () => toast.dismiss(),
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+  });
 
 
   function fetchJobCategories() {
@@ -104,7 +142,6 @@ export default function JobsPage() {
 
   if (!isClient) return null;
 
-  console.log("jobs",jobCategory);
 
   return (
     <div>
@@ -121,6 +158,8 @@ export default function JobsPage() {
               marginTop: '80px',
             }}
           >
+
+            
             <div className="text-center position-absolute top-50 start-50 translate-middle z-index-1">
               <h2 className="fw-bold text-white">Find a Job you Need</h2>
               <p className="text-white">Find Jobs, Employment & Career Opportunities</p>
@@ -332,11 +371,28 @@ export default function JobsPage() {
                                     )}
                                   </div>
                                   <div className="card-body">
-                                    <h5 className="card-title">{job.job_title}</h5>
-                                    <p className="card-text">{job.job_description}</p>
-                                    <a href="#" className="btn btn-primary">
+                                    <h5 className="card-title text-primary">{job.job_title}</h5>
+                                    <h6><i className="bi bi-briefcase-fill" style={{color:"#2bb431"}}></i>&nbsp;{job.job_type}</h6>  
+                                    <p className="card-text"> <i className="bi bi-geo-fill" style={{color:"#1f9cff"}}></i> {job.job_location}</p>
+
+                                    <Link className="btn btn-sm btn-outline-primary me-1"
+                                     href={`/pages/jobs/editJob/${job.id}`}
+                                    >
+                                       <i className="bi bi-pencil"/> Edit Job
+                                      </Link>
+
+                                      <button className="btn btn-sm btn-outline-danger"
+                                      
+                                      onClick={() => handleJobDelete(job.id)}
+                                      >
+                                       <i className="bi bi-trash"/> Delete
+                                      </button>
+
+                                    {/* <a href="#" className="btn btn-primary">
                                       View Details
-                                    </a>
+                                    </a> */}
+
+
                                   </div>
                                 </div>
                               </div>
