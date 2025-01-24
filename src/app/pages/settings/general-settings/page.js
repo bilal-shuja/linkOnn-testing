@@ -72,37 +72,66 @@ export default function GeneralSett() {
     const confirmUpdate = async () => {
         try {
             const formData = new FormData();
-            formData.append("first_name", first_name);
-            formData.append("last_name", last_name);
-            formData.append("about_you", about_you);
-            formData.append("gender", gender);
-            formData.append("address", address);
-            formData.append("phone", phone);
-            formData.append("city", city);
-            formData.append("relation_id", relation_id);
-            formData.append("working", working);
-
+            
+            // Append updated fields only if they are different
+            if (first_name !== userdata?.data?.first_name) {
+                formData.append("first_name", first_name);
+            }
+            if (last_name !== userdata?.data?.last_name) {
+                formData.append("last_name", last_name);
+            }
+            if (about_you !== userdata?.data?.about_you) {
+                formData.append("about_you", about_you);
+            }
+            if (gender !== userdata?.data?.gender) {
+                formData.append("gender", gender);
+            }
+            if (address !== userdata?.data?.address) {
+                formData.append("address", address);
+            }
+            if (phone !== userdata?.data?.phone) {
+                formData.append("phone", phone);
+            }
+            if (city !== userdata?.data?.city) {
+                formData.append("city", city);
+            }
+            if (relation_id !== userdata?.data?.relation_id) {
+                formData.append("relation_id", relation_id);
+            }
+            if (working !== userdata?.data?.working) {
+                formData.append("working", working);
+            }
+    
+            // Handle avatar and cover files
             if (avatar) {
+                // Append new avatar if user uploaded a new file
                 formData.append("avatar", avatar);
+            } else if (userdata?.data?.avatar) {
+                // If avatar wasn't updated, don't append anything for avatar
+                formData.append("avatar", userdata?.data?.avatar);
             }
-
+    
             if (cover) {
+                // Append new cover if user uploaded a new file
                 formData.append("cover", cover);
+            } else if (userdata?.data?.cover) {
+                // If cover wasn't updated, don't append anything for cover
+                formData.append("cover", userdata?.data?.cover);
             }
-
+    
             const response = await api.post("/api/update-user-profile", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-
+    
             if (response.data.code === '200') {
                 const userProfile = await api.get(
                     "/api/get-user-profile?user_id=" + localStorage.getItem("userid")
                 );
-
+    
                 if (userProfile.data.code === "200") {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
-
+    
                 toast.success(response.data.message);
             } else {
                 toast.error(response.data.message);
@@ -111,6 +140,7 @@ export default function GeneralSett() {
             toast.error("An error occurred.");
         }
     };
+    
 
 
     const { showConfirmationToast } = useConfirmationToast({

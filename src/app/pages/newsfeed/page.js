@@ -505,9 +505,6 @@ export default function Newsfeed() {
   };
 
 
-
-
-
   const handleVote = async (optionId, pollId, postId) => {
     try {
       const response = await api.post("/api/post/poll-vote", {
@@ -658,8 +655,7 @@ export default function Newsfeed() {
   };
 
   const handleClick = (userId) => {
-    // const encryptedId = CryptoJS.AES.encrypt(userId.toString(), 'secret-key').toString();
-    router.push(`/pages/UserProfile/${userId}`);
+    router.push(`/pages/UserProfile/timeline/${userId}`);
   };
 
   return (
@@ -748,7 +744,6 @@ export default function Newsfeed() {
                                 </p>
                               </div>
 
-                              {/* Story Image or Video */}
                               <div className="story-img-container">
                                 {story.media.endsWith(".mp4") ? (
                                   <video
@@ -795,7 +790,6 @@ export default function Newsfeed() {
                     </div>
                   </div>
 
-                  {/* Fullscreen Carousel for Story Preview */}
                   {showCarousel && (
                     <div
                       className="fullscreen-carousel"
@@ -830,7 +824,6 @@ export default function Newsfeed() {
                                   }`}
                               >
                                 <div className="position-relative">
-                                  {/* Profile Image - Circular */}
                                   <div
                                     className="rounded-circle border border-3 border-light position-absolute"
                                     style={{
@@ -846,7 +839,7 @@ export default function Newsfeed() {
                                     }}
                                   ></div>
 
-                                  {/* Story Image or Video */}
+
                                   <div className="story-img-container">
                                     {story.media.endsWith(".mp4") ? (
                                       <video
@@ -920,7 +913,6 @@ export default function Newsfeed() {
                           </button>
                         </div>
 
-                        {/* Close Carousel Button */}
                         <button
                           className="btn btn-light position-absolute"
                           style={{ top: "1rem", right: "1rem", zIndex: 1100 }}
@@ -950,12 +942,12 @@ export default function Newsfeed() {
                       height={50}
                       width={50}
                       style={{ cursor: 'pointer' }}
-                      onClick={() => router.push(`/pages/UserProfile/${userdata.data.id}`)}
+                      onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
                     />
                     <div className="mx-2 flex-grow-1">
                       <span className="fw-semibold"
                         style={{ cursor: 'pointer' }}
-                        onClick={() => router.push(`/pages/UserProfile/${userdata.data.id}`)}
+                        onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
                       >
                         {userdata.data.first_name} {userdata.data.last_name}
                       </span>
@@ -1370,8 +1362,9 @@ export default function Newsfeed() {
                     <div className="d-flex align-items-center justify-content-between">
                       <div className="d-flex align-items-center">
 
-                        <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                          onClick={() => handleClick(post.user.id)} >
+                        <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                          onClick={() => handleClick(post.user.id)}
+                        >
 
                           <Link href="#">
                             <Image
@@ -2128,7 +2121,7 @@ export default function Newsfeed() {
                   </div>
                 </div>
               ))}
-              
+
               <div className="d-grid gap-2 col-3 mx-auto mt-4">
                 {noMorePosts ? (
                   <button className="btn btn-light" disabled>
