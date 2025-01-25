@@ -6,16 +6,16 @@ import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import useAuth from "@/app/lib/useAuth";
 import Link from "next/link";
-import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { use } from "react";
 
-export default function Groups() {
+export default function Groups({params}) {
     useAuth();
     const api = createAPI();
-    const searchParams = useSearchParams();
-    const groupID = searchParams.get('id');
     const router = useRouter();
+
+      const {editGroup} = use(params)
 
     const [sepGroup, setSpecificGroup] = useState('');
 
@@ -68,7 +68,7 @@ export default function Groups() {
 
     function fetchSpecificGroup() {
 
-        api.post("/api/get-group-data", { group_id: groupID })
+        api.post("/api/get-group-data", { group_id: editGroup })
             .then((res) => {
                 if (res.data.code == "200") {
                     setSpecificGroup(res.data.data);
@@ -88,7 +88,7 @@ export default function Groups() {
     const updateGroup = async () => {
         try {
             const formData = new FormData();
-            if (groupID) formData.append("group_id", groupID);
+            if (editGroup) formData.append("group_id", editGroup);
             if (groupTitle) formData.append("group_title", groupTitle);
             if (groupCategory) formData.append("category", groupCategory);
             if (groupPrivacy) formData.append("privacy", groupPrivacy);

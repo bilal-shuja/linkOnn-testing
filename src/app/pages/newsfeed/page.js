@@ -8,7 +8,7 @@ import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import { useRouter } from "next/navigation";
-import Storycreate from "@/app/assets/components/createstory/page";
+import Storycreate from "@/app/pages/storydata/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
 import Image from "next/image";
 import useAuth from "@/app/lib/useAuth";

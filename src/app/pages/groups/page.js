@@ -397,10 +397,8 @@ export default function Groups() {
                                       </div>
                                     </div>
                                     <div className="d-flex justify-content-center mt-3">
-                                      <Link href={{
-                                            pathname: '/pages/groups/editgroups',
-                                            query: { id: group.id },
-                                          }}  
+                                      <Link 
+                                          href={`/pages/groups/${group.id}`}
                                         className="btn btn-sm btn-outline-info me-2">
                                       <i className="bi bi-pencil"></i>&nbsp;
                                         Edit

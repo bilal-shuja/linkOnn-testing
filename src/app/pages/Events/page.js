@@ -362,14 +362,11 @@ export default function Events() {
                                       <i className="bi bi-geo-alt pe-1"></i>
                                         {event.location}</p>
                                       <div className="d-flex justify-content-between">
-                                      <Link
-                                          className="btn btn-sm btn-outline-primary mt-2"
-                                          // onClick={() => handleDeleteEvent(event.id)}
 
-                                          href={{
-                                            pathname: '/pages/Events/eventDetails',
-                                            query: { id:event.id},
-                                          }}  
+                                      <Link
+                                          className="btn btn-sm btn-outline-primary mt-2" 
+
+                                          href={`/pages/Events/eventDetails/${event.id}`}
                                         >
                                          <i className="bi bi-card-checklist"></i>
                                          &nbsp;Details
@@ -377,10 +374,9 @@ export default function Events() {
 
                                       <Link
                                           className="btn btn-sm btn-outline-info mt-2"
-                                          href={{
-                                            pathname: '/pages/Events/editEvent',
-                                            query: { id:event.id},
-                                          }}  
+
+                                          href={`/pages/Events/editEvent/${event.id}`}
+                                        
                                         >
                                           <i className="bi bi-pencil"></i>
                                           &nbsp;Edit
