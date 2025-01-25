@@ -298,7 +298,7 @@ export default function Navbar() {
                   <li className="d-flex justify-content-center my-2 align-items-center">
               
                       <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }}
-                       onClick={() => router.push(`/pages/UserProfile/${userdata.data.id}`)}
+                       onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
                       >
                         View Profile
                       

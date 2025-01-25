@@ -81,7 +81,7 @@ export default function EditEvent({params}) {
         if (endTime) formData.append("end_time", endTime);
         if (coverImage) formData.append("cover", coverImage);
 
-  
+
          api.post("/api/update-event", formData, {
           headers: {
             "Content-Type": "multipart/form-data",

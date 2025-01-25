@@ -99,7 +99,7 @@ export default function Leftnav() {
               <div key={person.id} className="d-flex align-items-center justify-content-between mt-2 p-2">
                 <div className="d-flex align-items-center"
                   style={{ cursor: 'pointer' }}
-                  onClick={() => router.push(`/pages/UserProfile/${person.id}`)}
+                  onClick={() => router.push(`/pages/UserProfile/timeline/${person.id}`)}
                 >
                   <Image
                     src={person.avatar || '/default-avatar.png'}
