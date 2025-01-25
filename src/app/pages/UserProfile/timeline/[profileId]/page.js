@@ -356,14 +356,36 @@ export default function UserProfileCard({ params }) {
                 poll_id: pollId,
                 post_id: postId,
             });
-
+    
             if (response.data.status == "200") {
-                toast.success(response.data.message)
+                setPosts(prevPosts => 
+                    prevPosts.map(post => {
+                        if (post.id === postId) {
+                            const updatedPoll = {
+                                ...post.poll,
+                                poll_total_votes: (post.poll.poll_total_votes || 0) + 1,
+                                poll_options: post.poll.poll_options.map(option => 
+                                    option.id === optionId 
+                                        ? { ...option, no_of_votes: (option.no_of_votes || 0) + 1 }
+                                        : option
+                                )
+                            };
+    
+                            return {
+                                ...post,
+                                poll: updatedPoll
+                            };
+                        }
+                        return post;
+                    })
+                );
+    
+                toast.success(response.data.message);
             } else {
-                toast.error(response.data.message)
+                toast.error(response.data.message);
             }
         } catch (error) {
-            toast.error("An error occurred while voting. Please try again.")
+            toast.error("An error occurred while voting. Please try again.");
         }
     };
 
