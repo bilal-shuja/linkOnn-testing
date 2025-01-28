@@ -10,17 +10,14 @@ export default function Storycreate() {
     const [userdata, setUserdata] = useState(null);
 
     useEffect(() => {
-        // This code will only run in the client-side (browser)
         const data = localStorage.getItem("userdata");
         if (data) {
             setUserdata(JSON.parse(data));
         }
-    }, []); // Empty dependency array ensures this runs once on mount
+    }, []);
 
-    // Check if the userdata is loaded before rendering the content
     if (!userdata) {
-        // Optionally show a loading state or return null
-        return <div>Loading...</div>;
+        return <div></div>;
     }
     
     return (

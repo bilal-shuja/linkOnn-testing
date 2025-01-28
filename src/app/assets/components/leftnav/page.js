@@ -102,7 +102,7 @@ export default function Leftnav() {
                   onClick={() => router.push(`/pages/UserProfile/timeline/${person.id}`)}
                 >
                   <Image
-                    src={person.avatar || '/default-avatar.png'}
+                    src={person.avatar}
                     alt="Avatar"
                     className="rounded-circle img-fluid"
                     width={40}
