@@ -356,21 +356,21 @@ export default function UserProfileCard({ params }) {
                 poll_id: pollId,
                 post_id: postId,
             });
-    
+
             if (response.data.status == "200") {
-                setPosts(prevPosts => 
+                setPosts(prevPosts =>
                     prevPosts.map(post => {
                         if (post.id === postId) {
                             const updatedPoll = {
                                 ...post.poll,
                                 poll_total_votes: (post.poll.poll_total_votes || 0) + 1,
-                                poll_options: post.poll.poll_options.map(option => 
-                                    option.id === optionId 
+                                poll_options: post.poll.poll_options.map(option =>
+                                    option.id === optionId
                                         ? { ...option, no_of_votes: (option.no_of_votes || 0) + 1 }
                                         : option
                                 )
                             };
-    
+
                             return {
                                 ...post,
                                 poll: updatedPoll
@@ -379,7 +379,7 @@ export default function UserProfileCard({ params }) {
                         return post;
                     })
                 );
-    
+
                 toast.success(response.data.message);
             } else {
                 toast.error(response.data.message);
@@ -636,7 +636,60 @@ export default function UserProfileCard({ params }) {
         router.push(`/pages/UserProfile/timeline/${userId}`);
     };
 
+    const handlePoke = async (pokeId) => {
+        try {
+            const response = await api.post("/api/poke-user", {
+                user_id: pokeId,
+            });
 
+            if (response.data.code == "200") {
+                toast.success(response.data.message);
+            } else {
+                toast.error(`Error: ${response.data.message}`);
+            }
+        } catch (error) {
+            toast.error("Error while Poking Back");
+        }
+    };
+
+    const handleAddFriend = async (personId) => {
+        try {
+            const response = await api.post("/api/make-friend", { friend_two: personId })
+            if (response.data.code == "200") {
+                toast.success(response.data.message)
+            } else {
+                toast.error(response.data.message)
+            }
+        } catch (error) {
+            toast.error("Error updating friend request.");
+        }
+    };
+
+    const handleUnFriend = async (personId) => {
+        try {
+            const response = await api.post("/api/unfriend", { user_id: personId })
+            if (response.data.code == "200") {
+                toast.success(response.data.message)
+            } else {
+                toast.error(response.data.message)
+            }
+        } catch (error) {
+            toast.error("Error in Unfriend");
+        }
+    };
+
+    const handleCancelRequest = async (personId) => {
+        try {
+            const response = await api.post("/api/make-friend", { friend_two: personId })
+            if (response.data.code == "200") {
+                toast.success("Friend Request Cancelled")
+            } else {
+                toast.error(response.data.message)
+            }
+        } catch (error) {
+            toast.error("Error updating friend request.");
+        }
+    };
     return (
         <>
             <Navbar />
@@ -672,12 +725,91 @@ export default function UserProfileCard({ params }) {
                             <div className="card-body">
                                 <div className=" mt-1" style={{ marginLeft: '10rem' }} >
                                     <div>
-                                        <h5 className="fw-bold text-dark">
-                                            {user.first_name} {user.last_name}
-                                            {user.user_level.verified_badge === '1' && (
-                                                <i className="bi bi-patch-check-fill text-success ms-2"></i>
-                                            )}
-                                        </h5>
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <h5 className="fw-bold text-dark">
+                                                {user.first_name} {user.last_name}
+                                                {user.user_level.verified_badge === '1' && (
+                                                    <i className="bi bi-patch-check-fill text-success ms-2"></i>
+                                                )}
+                                            </h5>
+                                            <div className="dropdown">
+                                                <button
+                                                    className="btn btn-light border-0 p-2"
+                                                    type="button"
+                                                    id="dropdownMenu"
+                                                    data-bs-toggle="dropdown"
+                                                    aria-expanded="false"
+                                                >
+                                                    <i className="fas fa-ellipsis-v"></i>
+                                                </button>
+
+                                                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu">
+                                                    {userdata.data.id === profileId && (
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item d-flex align-items-center"
+                                                                onClick={() => router.push('/pages/settings/general-settings')}
+                                                            >
+                                                                <i className="bi bi-pencil-fill me-3"></i> Edit Profile
+                                                            </button>
+                                                        </li>
+                                                    )}
+
+
+                                                    {userdata.data.id !== profileId && user.isFriend === "1" && (
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item d-flex align-items-center"
+                                                                onClick={() => handlePoke(profileId)}
+                                                            >
+                                                                <i className="fa fa-hand-point-right me-3"></i> Poke
+                                                            </button>
+                                                        </li>
+                                                    )}
+
+                                                    {userdata.data.id !== profileId && (
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item d-flex align-items-center"
+                                                                onClick={() => {
+                                                                    if (user.isPending === "1") {
+                                                                        handleCancelRequest(profileId);
+                                                                    } else if (user.isFriend === "0") {
+                                                                        handleAddFriend(profileId);
+                                                                    } else if (user.isFriend === "1") {
+                                                                        handleUnFriend(profileId);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {user.isFriend === "1" ? (
+                                                                    <>
+                                                                        <i className="bi bi-person-dash-fill me-3"></i> Unfriend
+                                                                    </>
+                                                                ) : user.isPending === "1" ? (
+                                                                    <>
+                                                                        <i className="bi bi-clock me-3"></i> Request Sent
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <i className="bi bi-person-plus-fill me-3"></i> Add Friend
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        </li>
+                                                    )}
+
+                                                    {userdata.data.id !== profileId && (
+                                                        <li>
+                                                            <button className="dropdown-item d-flex align-items-center">
+                                                                <i className="bi bi-chat-text me-3"></i> Message
+                                                            </button>
+                                                        </li>
+                                                    )}
+
+                                                </ul>
+                                            </div>
+
+                                        </div>
                                         <span className="badge bg-primary mt-1">
                                             {user.user_level.name == 'Premium' && (
                                                 <i className="bi bi-diamond pe-1"></i>

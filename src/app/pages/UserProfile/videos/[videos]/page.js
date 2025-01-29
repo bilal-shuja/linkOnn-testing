@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Navbar from "@/app/assets/components/navbar/page";
-import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
 import moment from "moment";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 export default function UserVideos({ params }) {
     const { videos } = use(params);
@@ -16,13 +16,15 @@ export default function UserVideos({ params }) {
     const router = useRouter();
     const [userdata, setUserData] = useState(null);
     const [user, setUser] = useState(null);
+    const [postVideos, setPostVideos] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
             if (!videos) return;
             try {
                 const response = await api.get(`/api/get-user-profile?user_id=${videos}`);
-                if (response.data.code == "200") {
+                if (response.data.code === "200") {
                     setUser(response.data.data);
                 } else {
                     toast.error("Failed to fetch user profile.");
@@ -35,6 +37,7 @@ export default function UserVideos({ params }) {
         fetchUserProfile();
     }, [videos]);
 
+
     useEffect(() => {
         const data = localStorage.getItem("userdata");
         if (data) {
@@ -43,9 +46,103 @@ export default function UserVideos({ params }) {
     }, []);
 
 
+    const fetchPosts = async () => {
+        if (loading) return;
+
+        try {
+            setLoading(true);
+
+            const response = await api.post("/api/post/newsfeed", {
+                user_id: videos,
+                post_type: "post",
+                limit: '1000',
+            });
+
+            if (response.data?.code == "200" && Array.isArray(response.data.data)) {
+                const videoPosts = response.data.data
+                    .filter(post => post.video && post.video.media_path)
+                    .map(post => ({
+                        id: post.id,
+                        url: post.video.media_path,
+                        thumbnail: post.video_thumbnail || '',
+                        title: post.post_text || 'Untitled Video',
+                        date: post.created_at,
+                        views: post.video_view_count || 0
+                    }));
+
+                setPostVideos(videoPosts);
+            } else {
+                toast.error("Invalid data format received from API.");
+            }
+        } catch (error) {
+            toast.error("An error occurred while fetching newsfeed data.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPosts();
+    }, [videos]);
+
     if (!user || !userdata) {
         return null;
     }
+
+    const handlePoke = async (pokeId) => {
+        try {
+            const response = await api.post("/api/poke-user", {
+                user_id: pokeId,
+            });
+
+            if (response.data.code == "200") {
+                toast.success(response.data.message);
+            } else {
+                toast.error(`Error: ${response.data.message}`);
+            }
+        } catch (error) {
+            toast.error("Error while Poking Back");
+        }
+    };
+
+    const handleAddFriend = async (personId) => {
+        try {
+            const response = await api.post("/api/make-friend", { friend_two: personId })
+            if (response.data.code == "200") {
+                toast.success(response.data.message)
+            } else {
+                toast.error(response.data.message)
+            }
+        } catch (error) {
+            toast.error("Error updating friend request.");
+        }
+    };
+
+    const handleUnFriend = async (personId) => {
+        try {
+            const response = await api.post("/api/unfriend", { user_id: personId })
+            if (response.data.code == "200") {
+                toast.success(response.data.message)
+            } else {
+                toast.error(response.data.message)
+            }
+        } catch (error) {
+            toast.error("Error in Unfriend");
+        }
+    };
+
+    const handleCancelRequest = async (personId) => {
+        try {
+            const response = await api.post("/api/make-friend", { friend_two: personId })
+            if (response.data.code == "200") {
+                toast.success("Friend Request Cancelled")
+            } else {
+                toast.error(response.data.message)
+            }
+        } catch (error) {
+            toast.error("Error updating friend request.");
+        }
+    };
 
     return (
         <>
@@ -81,20 +178,100 @@ export default function UserVideos({ params }) {
                             <div className="card-body">
                                 <div className=" mt-1" style={{ marginLeft: '10rem' }} >
                                     <div>
-                                        <h5 className="fw-bold text-dark">
-                                            {user.first_name} {user.last_name}
-                                            {user.user_level.verified_badge === '1' && (
-                                                <i className="bi bi-patch-check-fill text-success ms-2"></i>
-                                            )}
-                                        </h5>
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <h5 className="fw-bold text-dark">
+                                                {user.first_name} {user.last_name}
+                                                {user.user_level.verified_badge === '1' && (
+                                                    <i className="bi bi-patch-check-fill text-success ms-2"></i>
+                                                )}
+                                            </h5>
+                                            <div className="dropdown">
+                                                <button
+                                                    className="btn btn-light border-0 p-2"
+                                                    type="button"
+                                                    id="dropdownMenu"
+                                                    data-bs-toggle="dropdown"
+                                                    aria-expanded="false"
+                                                >
+                                                    <i className="fas fa-ellipsis-v"></i>
+                                                </button>
+
+                                                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu">
+                                                    {userdata.data.id === videos && (
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item d-flex align-items-center"
+                                                                onClick={() => router.push('/pages/settings/general-settings')}
+                                                            >
+                                                                <i className="bi bi-pencil-fill me-3"></i> Edit Profile
+                                                            </button>
+                                                        </li>
+                                                    )}
+
+
+                                                    {userdata.data.id !== videos && user.isFriend === "1" && (
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item d-flex align-items-center"
+                                                                onClick={() => handlePoke(videos)}
+                                                            >
+                                                                <i className="fa fa-hand-point-right me-3"></i> Poke
+                                                            </button>
+                                                        </li>
+                                                    )}
+
+                                                    {userdata.data.id !== videos && (
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item d-flex align-items-center"
+                                                                onClick={() => {
+                                                                    if (user.isPending === "1") {
+                                                                        handleCancelRequest(videos);
+                                                                    } else if (user.isFriend === "0") {
+                                                                        handleAddFriend(videos);
+                                                                    } else if (user.isFriend === "1") {
+                                                                        handleUnFriend(videos);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {user.isFriend === "1" ? (
+                                                                    <>
+                                                                        <i className="bi bi-person-dash-fill me-3"></i> Unfriend
+                                                                    </>
+                                                                ) : user.isPending === "1" ? (
+                                                                    <>
+                                                                        <i className="bi bi-clock me-3"></i> Request Sent
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <i className="bi bi-person-plus-fill me-3"></i> Add Friend
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        </li>
+                                                    )}
+
+                                                    {userdata.data.id !== videos && (
+                                                        <li>
+                                                            <button className="dropdown-item d-flex align-items-center">
+                                                                <i className="bi bi-chat-text me-3"></i> Message
+                                                            </button>
+                                                        </li>
+                                                    )}
+
+                                                </ul>
+                                            </div>
+
+
+                                        </div>
                                         <span className="badge bg-primary mt-1">
-                                            {user.user_level.name == 'Premium' && (
+                                            {user.user_level.name === 'Premium' && (
                                                 <i className="bi bi-diamond pe-1"></i>
                                             )}
-                                            {user.user_level.name == 'basic' && (
+                                            {user.user_level.name === 'basic' && (
                                                 <i className="bi bi-star pe-1"></i>
                                             )}
-                                            {user.user_level.name == 'Diamond' && (
+                                            {user.user_level.name === 'Diamond' && (
                                                 <i className="bi bi-gem pe-1"></i>
                                             )}
                                             {user.user_level.name}
@@ -104,7 +281,6 @@ export default function UserVideos({ params }) {
                                 <p className="text-muted mt-4 mx-3">
                                     <i className="bi bi-calendar2-plus me-1"></i>
                                     Joined on {moment(user.created_at).format("MMM DD, YYYY")}
-
                                 </p>
 
                                 <hr className="text-muted" />
@@ -125,6 +301,41 @@ export default function UserVideos({ params }) {
                                     <Link href={`/pages/UserProfile/videos/${videos}`} className="text-decoration-none text-light bg-primary rounded-pill px-2 fw-semibold">
                                         Videos
                                     </Link>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="card shadow-lg border-0 mt-4">
+                            <div className="card-body p-4">
+                                <div className="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 className="card-title m-0">Videos</h4>
+                                    {loading && <div className="spinner-border text-primary" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>}
+                                </div>
+
+                                <div className="row g-4">
+                                    {postVideos.length > 0 ? (
+                                        postVideos.map((video) => (
+                                            <div className="col-12 col-md-6 col-lg-4" key={video.id}>
+                                                <div className="card h-100 border-0 shadow-sm">
+                                                    <div className="ratio ratio-16x9">
+                                                        <video
+                                                            className="card-img-top"
+                                                            controls
+                                                            poster={video.thumbnail}
+                                                            preload="none"
+                                                        >
+                                                            <source src={video.url} type="video/mp4" />
+                                                            Your browser does not support the video tag.
+                                                        </video>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div></div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -193,7 +404,6 @@ export default function UserVideos({ params }) {
                                         <h4 className="mb-3">Social Links</h4>
                                         <div className="d-flex justify-content-between mx-3">
 
-
                                             {user.facebook && user.facebook !== "" && user.facebook !== "#" ? (
                                                 <Link href={user.facebook}>
                                                     <i className="bi bi-facebook text-primary" style={{ fontSize: '1.5rem' }}></i>
@@ -249,7 +459,7 @@ export default function UserVideos({ params }) {
                                                 <h4>Friends</h4>
                                                 <span className="badge bg-danger mb-1 mx-1">{user.friends_count}</span>
                                             </div>
-                                            <button className="btn btn-light text-primary border-0 rounded-1">See all photos</button>
+                                            <button className="btn btn-light text-primary border-0 rounded-1">See all friends</button>
                                         </div>
 
                                     </div>
@@ -258,7 +468,6 @@ export default function UserVideos({ params }) {
 
                         </div>
                     </div>
-
                 </div>
             </div>
         </>
