@@ -59,12 +59,11 @@ export default function UserImages({ params }) {
             if (response.data && Array.isArray(response.data.data)) {
                 const newPosts = response.data.data;
 
-                // Extract only the image URLs (media_path) from the posts
                 const imagesFromPosts = newPosts
-                    .filter(post => post.images && Array.isArray(post.images) && post.images.length > 0) // Check for images
-                    .map(post => post.images[0].media_path); // Get the media_path of the first image
+                    .filter(post => post.images && Array.isArray(post.images) && post.images.length > 0) 
+                    .map(post => post.images[0].media_path);
 
-                setPostImages(imagesFromPosts); // Set only images to the state
+                setPostImages(imagesFromPosts); 
             } else {
                 toast.error("Invalid data format received from API.");
             }

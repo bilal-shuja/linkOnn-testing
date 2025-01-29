@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import createAPI from "@/app/lib/axios";
 import Navbar from "@/app/assets/components/navbar/page";
 import Image from "next/image";
@@ -52,6 +52,38 @@ export default function UserProfileCard({ params }) {
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
     const [repliesData, setRepliesData] = useState({});
+
+    // Define handleDelete using useCallback to ensure it doesn't change on every render
+    const handleDelete = useCallback(async (values) => {
+        const postId = values[0];
+
+        try {
+            const response = await api.post("/api/post/action", {
+                post_id: postId,
+                action: "delete",
+            });
+
+            if (response.data.code == "200") {
+                setPosts((prevPosts) =>
+                    prevPosts.filter((post) => post.id !== postId)
+                );
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            toast.error("An error occurred while deleting the post.");
+        }
+    }, [api]);
+
+    // Call useConfirmationToast at the top level
+    const { showConfirmationToast } = useConfirmationToast({
+        message: 'Are you sure you want to delete this post? This action cannot be undone.',
+        onConfirm: handleDelete,
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel",
+    });
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -144,37 +176,6 @@ export default function UserProfileCard({ params }) {
     const handlePostDelete = (postId) => {
         showConfirmationToast([postId]);
     };
-
-    const handleDelete = async (values) => {
-        const postId = values[0];
-
-        try {
-            const response = await api.post("/api/post/action", {
-                post_id: postId,
-                action: "delete",
-            });
-
-            if (response.data.code == "200") {
-                setPosts((prevPosts) =>
-                    prevPosts.filter((post) => post.id !== postId)
-                );
-                toast.success(response.data.message);
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("An error occurred while deleting the post.");
-        }
-    };
-
-    const { showConfirmationToast } = useConfirmationToast({
-        message: 'Are you sure you want to delete this post? This action cannot be undone.',
-        onConfirm: handleDelete,
-        onCancel: () => toast.dismiss(),
-        confirmText: "Confirm",
-        cancelText: "Cancel",
-    });
-
     const handleDropdownChange = (selection) => {
         setDropdownSelection(selection);
 
