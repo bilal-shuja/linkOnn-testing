@@ -1,17 +1,17 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-import useAuth from "@/app/lib/useAuth";
+   
 import Link from "next/link";
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { use } from "react";
 
 export default function Groups({params}) {
-    useAuth();
+      
     const api = createAPI();
     const router = useRouter();
 
@@ -126,7 +126,7 @@ export default function Groups({params}) {
 
     return (
         <>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container pt-5">
                     <div className="row">

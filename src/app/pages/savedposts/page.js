@@ -3,15 +3,15 @@
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 
 export default function Savedposts() {
-    useAuth();
+      
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -388,7 +388,7 @@ export default function Savedposts() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

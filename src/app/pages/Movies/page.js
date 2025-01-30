@@ -1,15 +1,15 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 
 export default function MoviesPage() {
-  useAuth();
+    
   const api = createAPI();
   const [movies, setMovies] = useState([]);
   const [movieLoading, setMovieLoading] = useState(false);
@@ -70,7 +70,7 @@ export default function MoviesPage() {
 
   return (
     <div>
-      <Navbar />
+        
       <div className="container">
         <div
           className="d-flex justify-content-center align-items-center mb-5 position-relative"

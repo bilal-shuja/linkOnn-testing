@@ -2,11 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import useAuth from "@/app/lib/useAuth";
-
+   
 
 export default function SettingNavbar() {
-    useAuth();
+      
     const pathname = usePathname();
 
     return (

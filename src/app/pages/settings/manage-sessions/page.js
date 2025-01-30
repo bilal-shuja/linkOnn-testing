@@ -1,15 +1,15 @@
 'use client';
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import SettingNavbar from "../settingNav";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-import useAuth from "@/app/lib/useAuth";
+   
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 import { toast } from 'react-toastify';
 
 export default function SessionsSett() {
-    useAuth();
+      
     const [sessions, setSessionsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sessionToDelete, setSessionToDelete] = useState(null);
@@ -74,7 +74,7 @@ export default function SessionsSett() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

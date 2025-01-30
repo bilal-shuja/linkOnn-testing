@@ -2,12 +2,12 @@
 
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
-import useAuth from "@/app/lib/useAuth";
-import Navbar from "@/app/assets/components/navbar/page";
+   
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 
 export default function Paypal() {
-    useAuth();
+      
     const [error, setError] = useState(null);
     const [balance, setBalance] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -59,7 +59,7 @@ export default function Paypal() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

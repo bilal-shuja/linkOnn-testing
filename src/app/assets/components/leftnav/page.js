@@ -4,12 +4,12 @@ import Link from "next/link";
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 export default function Leftnav() {
-  useAuth();
+    
   const [blogs, setBlogs] = useState([]);
   const [loadingBlogs, setLoadingBlogs] = useState(false);
   const [people, setPeople] = useState([]);

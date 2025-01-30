@@ -1,15 +1,15 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import useAuth from "@/app/lib/useAuth";
+   
 
 export default function ApplyJob({ params }) {
-  useAuth();
+    
   const { jobId } = React.use(params); 
   const [phone, setPhone] = useState("");
   const [position, setPosition] = useState("");
@@ -113,7 +113,7 @@ export default function ApplyJob({ params }) {
 
   return (
     <div>
-      <Navbar />
+        
       <div>
         <div className="container-fluid">
           <div

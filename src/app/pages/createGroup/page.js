@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 
 export default function GroupForm() {
-  useAuth();
+    
   const router = useRouter();
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
@@ -79,7 +79,7 @@ export default function GroupForm() {
 
   return (
     <div>
-      <Navbar />
+        
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">

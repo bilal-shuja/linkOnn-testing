@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-import Navbar from "@/app/assets/components/navbar/page";
 import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
 import moment from "moment";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import RightNavbar from "../../components/right-navbar";
+
 
 export default function UserFriends({ params }) {
     const { friends } = use(params);
@@ -16,6 +18,8 @@ export default function UserFriends({ params }) {
     const router = useRouter();
     const [userdata, setUserData] = useState(null);
     const [user, setUser] = useState(null);
+    const [friendsList, setFriendsList] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -35,6 +39,29 @@ export default function UserFriends({ params }) {
         fetchUserProfile();
     }, [friends]);
 
+    const fetchFriends = async () => {
+        try {
+            setLoading(true);
+            const response = await api.post("/api/get-friends", {
+                user_id: friends,
+                limit: '500'
+            });
+            if (response.data.code == "200") {
+                setFriendsList(response.data.data);
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            toast.error("Error fetching friends.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchFriends();
+    }, []);
+
     useEffect(() => {
         const data = localStorage.getItem("userdata");
         if (data) {
@@ -42,9 +69,44 @@ export default function UserFriends({ params }) {
         }
     }, []);
 
+    const handleUnfriend = (friendId) => {
+        showConfirmationToast([friendId]);
+    };
+
+    const Unfriend = async (friendId) => {
+        try {
+            const response = await api.post("/api/unfriend", { user_id: friendId });
+
+            if (response.data.code === "200") {
+                setFriendsList((prevFriends) =>
+                    prevFriends.filter((friend) => friend.id !== friendId)
+                );
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            toast.error("Error");
+        }
+    };
+
+    const { showConfirmationToast } = useConfirmationToast({
+        message: "Are you sure you want to unfriend this person?",
+        onConfirm: Unfriend,
+        onCancel: () => toast.dismiss(),
+        confirmText: 'Unfriend',
+        cancelText: 'Cancel',
+    });
+
 
     if (!user || !userdata) {
-        return null;
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
     }
 
     const handlePoke = async (pokeId) => {
@@ -102,10 +164,8 @@ export default function UserFriends({ params }) {
         }
     };
 
-
     return (
         <>
-            <Navbar />
             <div className="container mt-5 pt-4">
                 <div className="row d-flex justify-content-between">
                     <div className="col-12 col-md-8">
@@ -265,135 +325,81 @@ export default function UserFriends({ params }) {
                         </div>
 
 
-                    </div>
-
-                    <div className="col-12 col-lg-4 position-sticky top-0">
-                        <div className="row g-4">
-
-                            <div className="col-12">
-                                <div className="card shadow-lg border-0">
-                                    <div className="card-body p-4">
-                                        <h4>About</h4>
-                                        <p className="text-muted">Full Stack Developer</p>
-                                        <div className="d-flex justify-content-between text-muted">
-
-                                            <p className="fw-semibold">
-                                                {user.gender == 'Male' && (
-                                                    <i className="bi bi-gender-male fa-fw pe-1"></i>
-                                                )}
-                                                {user.gender == 'Female' && (
-                                                    <i className="bi bi-gender-female fa-fw pe-1"></i>
-                                                )}
-                                                {user.gender}
-                                            </p>
-
-                                            <p> <i className="bi bi-person-circle fa-fw pe-1"></i>
-                                                Posts
-                                                <span className="badge bg-danger mx-1">29</span>
-                                            </p>
-                                        </div>
-                                        <p className="text-muted">
-                                            <i className="bi bi-calendar-date fa-fw pe-1"></i>
-                                            DOB:
-                                            <strong className="mx-1">
-                                                {moment(user.date_of_birth).format("MMM DD, YYYY")}
-                                            </strong>
-                                        </p>
-                                        <p className="text-muted"> <i className="bi bi-heart fa-fw pe-1"></i>
-                                            Status:
-                                            <strong className="mx-1">
-                                                {user.relation_id == '0' && (
-                                                    <span>None</span>
-                                                )}
-                                                {user.relation_id == '1' && (
-                                                    <span>Single</span>
-                                                )}
-                                                {user.relation_id == '2' && (
-                                                    <span>In a Relationship</span>
-                                                )}
-                                                {user.relation_id == '3' && (
-                                                    <span>Married</span>
-                                                )}
-                                                {user.relation_id == '4' && (
-                                                    <span>Engaged</span>
-                                                )}
-                                            </strong>
+                        <div className="card shadow-lg border-0 p-3 mt-5">
+                            <div className="card-body">
+                                <h4 className="text-dark">Friends</h4>
+                                <hr />
+                                {loading && <div className="d-flex justify-content-center align-items-center">
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>}
+                                {friendsList.length === 0 ? (
+                                    <div className="text-center">
+                                        <i
+                                            className="bi bi-people text-secondary"
+                                            style={{ fontSize: "3rem" }}
+                                        ></i>
+                                        <p
+                                            className="mt-3 text-secondary fw-semibold"
+                                            style={{ fontSize: "1.5rem" }}
+                                        >
+                                            You Currently Have No Friends.
                                         </p>
                                     </div>
-                                </div>
-                            </div>
+                                ) : (
+                                    friendsList.map((friend, index) => (
+                                        <div
+                                            key={`${friend.id}-${index}`}
+                                            className="d-flex justify-content-between align-items-center mb-4 mx-3"
+                                        >
+                                            <div className="d-flex align-items-center">
+                                                <Image
+                                                    src={friend.avatar}
+                                                    alt={`${friend.first_name} ${friend.last_name}`}
+                                                    className="rounded-circle"
+                                                    width={50}
+                                                    height={50}
+                                                    style={{
+                                                        objectFit: "cover",
+                                                        cursor: "pointer",
+                                                    }}
+                                                    onClick={() =>
+                                                        router.push(`/pages/UserProfile/timeline/${friend.id}`)
+                                                    }
+                                                />
 
-                            <div className="col-12">
-                                <div className="card shadow-lg border-0">
-                                    <div className="card-body p-4">
-                                        <h4 className="mb-3">Social Links</h4>
-                                        <div className="d-flex justify-content-between mx-3">
-
-
-                                            {user.facebook && user.facebook !== "" && user.facebook !== "#" ? (
-                                                <Link href={user.facebook}>
-                                                    <i className="bi bi-facebook text-primary" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                            {user.twitter && user.twitter !== "" && user.twitter !== "#" ? (
-                                                <Link href={user.twitter}>
-                                                    <i className="bi bi-twitter text-info" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                            {user.instagram && user.instagram !== "" && user.instagram !== "#" ? (
-                                                <Link href={user.instagram}>
-                                                    <i className="bi bi-instagram text-danger" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                            {user.linkedin && user.linkedin !== "" && user.linkedin !== "#" ? (
-                                                <Link href={user.linkedin}>
-                                                    <i className="bi bi-linkedin text-primary" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                            {user.youtube && user.youtube !== "" && user.youtube !== "#" ? (
-                                                <Link href={user.youtube}>
-                                                    <i className="bi bi-youtube text-danger" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="col-12">
-                                <div className="card shadow-lg border-0">
-                                    <div className="card-body p-4">
-                                        <div className="d-flex justify-content-between">
-                                            <h4>Photos</h4>
-                                            <button className="btn btn-light text-primary border-0 rounded-1">See all photos</button>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="col-12">
-                                <div className="card shadow-lg border-0">
-                                    <div className="card-body p-4">
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <div className="d-flex align-items-center justify-content-evenly">
-                                                <h4>Friends</h4>
-                                                <span className="badge bg-danger mb-1 mx-1">{user.friends_count}</span>
+                                                <div className="ms-3">
+                                                    <h6
+                                                        className="mb-0"
+                                                        style={{ cursor: "pointer" }}
+                                                        onClick={() =>
+                                                            router.push(`/pages/UserProfile/timeline/${friend.id}`)
+                                                        }
+                                                    >
+                                                        {friend.first_name} {friend.last_name}
+                                                    </h6>
+                                                    <small>{friend.details.mutualfriendsCount} Mutual Friends</small>
+                                                </div>
                                             </div>
-                                            <button className="btn btn-light text-primary border-0 rounded-1">See all photos</button>
+
+                                            {userdata.data.id === friends && (
+                                                <button
+                                                    className="btn btn-danger rounded-2 border border-0 mx-3"
+                                                    onClick={() => handleUnfriend(friend.id)}
+                                                >
+                                                    Unfriend
+                                                </button>
+                                            )}
                                         </div>
-
-                                    </div>
-                                </div>
+                                    ))
+                                )}
                             </div>
-
                         </div>
+
                     </div>
+
+                    <RightNavbar user={user} />
 
                 </div>
             </div>

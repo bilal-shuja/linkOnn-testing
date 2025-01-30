@@ -1,16 +1,15 @@
 'use client';
 
-import Navbar from "@/app/assets/components/navbar/page";
 import React, { useState, useEffect } from "react";
 import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from 'react-toastify';
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function GeneralSett() {
-    useAuth();
+      
     const [userdata, setUserdata] = useState(null);
     const api = createAPI();
     const [avatar, setAvatar] = useState(null);
@@ -26,8 +25,6 @@ export default function GeneralSett() {
     const [working, setWorking] = useState('');
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [coverPreview, setCoverPreview] = useState(null);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -66,14 +63,37 @@ export default function GeneralSett() {
     };
 
     const handleUpdate = () => {
-        showConfirmationToast();
+        // Before calling the API, compare the fields with the current userdata
+        const hasChanges = checkChanges();
+
+        if (hasChanges) {
+            showConfirmationToast();
+        } else {
+            toast.info("No changes detected.");
+        }
+    };
+
+    // Function to check if any field has changed
+    const checkChanges = () => {
+        return (
+            first_name !== userdata?.data?.first_name ||
+            last_name !== userdata?.data?.last_name ||
+            about_you !== userdata?.data?.about_you ||
+            gender !== userdata?.data?.gender ||
+            address !== userdata?.data?.address ||
+            phone !== userdata?.data?.phone ||
+            city !== userdata?.data?.city ||
+            relation_id !== userdata?.data?.relation_id ||
+            working !== userdata?.data?.working ||
+            avatar !== userdata?.data?.avatar ||
+            cover !== userdata?.data?.cover
+        );
     };
 
     const confirmUpdate = async () => {
         try {
             const formData = new FormData();
-            
-            // Append updated fields only if they are different
+
             if (first_name !== userdata?.data?.first_name) {
                 formData.append("first_name", first_name);
             }
@@ -101,37 +121,28 @@ export default function GeneralSett() {
             if (working !== userdata?.data?.working) {
                 formData.append("working", working);
             }
-    
-            // Handle avatar and cover files
-            if (avatar) {
-                // Append new avatar if user uploaded a new file
+
+            if (avatar !== userdata?.data?.avatar) {
                 formData.append("avatar", avatar);
-            } else if (userdata?.data?.avatar) {
-                // If avatar wasn't updated, don't append anything for avatar
-                formData.append("avatar", userdata?.data?.avatar);
             }
-    
-            if (cover) {
-                // Append new cover if user uploaded a new file
+
+            if (cover !== userdata?.data?.cover) {
                 formData.append("cover", cover);
-            } else if (userdata?.data?.cover) {
-                // If cover wasn't updated, don't append anything for cover
-                formData.append("cover", userdata?.data?.cover);
             }
-    
+
             const response = await api.post("/api/update-user-profile", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-    
+
             if (response.data.code === '200') {
                 const userProfile = await api.get(
                     "/api/get-user-profile?user_id=" + localStorage.getItem("userid")
                 );
-    
+
                 if (userProfile.data.code === "200") {
                     localStorage.setItem("userdata", JSON.stringify(userProfile.data));
                 }
-    
+
                 toast.success(response.data.message);
             } else {
                 toast.error(response.data.message);
@@ -140,8 +151,6 @@ export default function GeneralSett() {
             toast.error("An error occurred.");
         }
     };
-    
-
 
     const { showConfirmationToast } = useConfirmationToast({
         message: "Are you sure you want to save the changes to your general settings?",
@@ -153,7 +162,7 @@ export default function GeneralSett() {
 
     return (
         <div>
-            <Navbar />
+
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

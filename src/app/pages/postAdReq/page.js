@@ -1,14 +1,14 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 
 export default function GamesPage() {
-  useAuth();
+    
 
   const [advertisements, setAdvertisements] = useState([]);
   const api = createAPI();
@@ -32,7 +32,7 @@ export default function GamesPage() {
 
   return (
     <div>
-      <Navbar />
+        
       <div className="container-fluid bg-light">
         <div className="container mt-5 pt-5">
           <div className="row">

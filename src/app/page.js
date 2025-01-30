@@ -8,13 +8,7 @@ const MyPage = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem("token");
-
-      if (token) {
-        router.push("/pages/newsfeed");
-      } else {
-        router.push("/auth/sign-in");
-      }
+      router.push("/pages/newsfeed");
     }
   }, [router]);
 

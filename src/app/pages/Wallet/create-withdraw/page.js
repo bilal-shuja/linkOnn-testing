@@ -1,15 +1,15 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-import useAuth from "@/app/lib/useAuth";
+   
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 export default function CreateWithdraw() {
-    useAuth();
+      
     const router = useRouter();
     const [balance, setBalance] = useState(null);
     const [withdrawMethod, setWithdrawMethod] = useState("");
@@ -88,7 +88,7 @@ export default function CreateWithdraw() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

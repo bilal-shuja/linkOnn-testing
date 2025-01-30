@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+import Cookies from 'js-cookie';
 import { toast } from "react-toastify";
 
-const api = createAPI();
 
 export default function Navbar() {
-  useAuth();
+
+  const api = createAPI();
   const [userdata, setUserdata] = useState(null);
   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
   const [chats, setChats] = useState([]);
@@ -74,12 +74,11 @@ export default function Navbar() {
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("token");
+      Cookies.remove('token', { path: '/' });
       localStorage.removeItem("userdata");
       localStorage.removeItem("siteSetting");
       localStorage.removeItem("userid");
     }
-    router.push("/sign-in");
   };
 
   const toggleOffcanvas = () => {
@@ -296,14 +295,14 @@ export default function Navbar() {
                   </li>
 
                   <li className="d-flex justify-content-center my-2 align-items-center">
-              
-                      <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }}
-                       onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
-                      >
-                        View Profile
-                      
-                      </button>
-                    
+
+                    <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }}
+                      onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
+                    >
+                      View Profile
+
+                    </button>
+
                   </li>
 
                   <li>
@@ -316,7 +315,7 @@ export default function Navbar() {
                   </li>
 
                   <li>
-                    <Link className="dropdown-item py-2" href="#">
+                    <Link className="dropdown-item py-2" href="/pages/Packages">
                       <i className="bi bi-currency-dollar pe-3"></i>
                       Upgrade to Pro
                     </Link>

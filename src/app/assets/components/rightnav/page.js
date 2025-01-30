@@ -1,20 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+import Cookies from 'js-cookie';
 
 export default function Leftnav() {
-  useAuth();
-  const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    Cookies.remove('token', { path: '/' });
     localStorage.removeItem("userdata");
     localStorage.removeItem("siteSetting");
     localStorage.removeItem("userid");
-    router.push("/auth/sign-in");
   };
 
   return (

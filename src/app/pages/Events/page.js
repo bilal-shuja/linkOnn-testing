@@ -1,18 +1,18 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 import Link from "next/link";
 
 export default function Events() {
-  useAuth();
+    
   const [activeTab, setActiveTab] = useState(0);
   const [eventLoading, setEventLoading] = useState({ allEvents: false, myEvents: false });
   const [events, setEvents] = useState([]);
@@ -125,7 +125,7 @@ export default function Events() {
 
   return (
     <div>
-      <Navbar />
+        
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import createAPI from "@/app/lib/axios";
-import Navbar from "@/app/assets/components/navbar/page";
+import RightNavbar from "../../components/right-navbar";
 import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
@@ -12,7 +12,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
+
 export default function UserProfileCard({ params }) {
+
     const { profileId } = use(params);
     const api = createAPI();
     const router = useRouter();
@@ -170,7 +172,13 @@ export default function UserProfileCard({ params }) {
     }, [loading, noMorePosts]);
 
     if (!user || !userdata) {
-        return null;
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
     }
 
     const handlePostDelete = (postId) => {
@@ -693,7 +701,7 @@ export default function UserProfileCard({ params }) {
     };
     return (
         <>
-            <Navbar />
+
             <div className="container mt-5 pt-4">
                 <div className="row d-flex justify-content-between">
 
@@ -2049,133 +2057,7 @@ export default function UserProfileCard({ params }) {
 
                     </div>
 
-                    <div className="col-12 col-lg-4 position-sticky top-0">
-                        <div className="row g-4">
-
-                            <div className="col-12">
-                                <div className="card shadow-lg border-0">
-                                    <div className="card-body p-4">
-                                        <h4>About</h4>
-                                        <p className="text-muted">Full Stack Developer</p>
-                                        <div className="d-flex justify-content-between text-muted">
-
-                                            <p className="fw-semibold">
-                                                {user.gender == 'Male' && (
-                                                    <i className="bi bi-gender-male fa-fw pe-1"></i>
-                                                )}
-                                                {user.gender == 'Female' && (
-                                                    <i className="bi bi-gender-female fa-fw pe-1"></i>
-                                                )}
-                                                {user.gender}
-                                            </p>
-
-                                            <p> <i className="bi bi-person-circle fa-fw pe-1"></i>
-                                                Posts
-                                                <span className="badge bg-danger mx-1">29</span>
-                                            </p>
-                                        </div>
-                                        <p className="text-muted">
-                                            <i className="bi bi-calendar-date fa-fw pe-1"></i>
-                                            DOB:
-                                            <strong className="mx-1">
-                                                {moment(user.date_of_birth).format("MMM DD, YYYY")}
-                                            </strong>
-                                        </p>
-                                        <p className="text-muted"> <i className="bi bi-heart fa-fw pe-1"></i>
-                                            Status:
-                                            <strong className="mx-1">
-                                                {user.relation_id == '0' && (
-                                                    <span>None</span>
-                                                )}
-                                                {user.relation_id == '1' && (
-                                                    <span>Single</span>
-                                                )}
-                                                {user.relation_id == '2' && (
-                                                    <span>In a Relationship</span>
-                                                )}
-                                                {user.relation_id == '3' && (
-                                                    <span>Married</span>
-                                                )}
-                                                {user.relation_id == '4' && (
-                                                    <span>Engaged</span>
-                                                )}
-                                            </strong>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="col-12">
-                                <div className="card shadow-lg border-0">
-                                    <div className="card-body p-4">
-                                        <h4 className="mb-3">Social Links</h4>
-                                        <div className="d-flex justify-content-between mx-3">
-
-
-                                            {user.facebook && user.facebook !== "" && user.facebook !== "#" ? (
-                                                <Link href={user.facebook}>
-                                                    <i className="bi bi-facebook text-primary" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                            {user.twitter && user.twitter !== "" && user.twitter !== "#" ? (
-                                                <Link href={user.twitter}>
-                                                    <i className="bi bi-twitter text-info" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                            {user.instagram && user.instagram !== "" && user.instagram !== "#" ? (
-                                                <Link href={user.instagram}>
-                                                    <i className="bi bi-instagram text-danger" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                            {user.linkedin && user.linkedin !== "" && user.linkedin !== "#" ? (
-                                                <Link href={user.linkedin}>
-                                                    <i className="bi bi-linkedin text-primary" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                            {user.youtube && user.youtube !== "" && user.youtube !== "#" ? (
-                                                <Link href={user.youtube}>
-                                                    <i className="bi bi-youtube text-danger" style={{ fontSize: '1.5rem' }}></i>
-                                                </Link>
-                                            ) : null}
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="col-12">
-                                <div className="card shadow-lg border-0">
-                                    <div className="card-body p-4">
-                                        <div className="d-flex justify-content-between">
-                                            <h4>Photos</h4>
-                                            <button className="btn btn-light text-primary border-0 rounded-1">See all photos</button>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="col-12">
-                                <div className="card shadow-lg border-0">
-                                    <div className="card-body p-4">
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <div className="d-flex align-items-center justify-content-evenly">
-                                                <h4>Friends</h4>
-                                                <span className="badge bg-danger mb-1 mx-1">{user.friends_count}</span>
-                                            </div>
-                                            <button className="btn btn-light text-primary border-0 rounded-1">See all photos</button>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
+                    <RightNavbar user={user} />
 
                 </div>
             </div>
