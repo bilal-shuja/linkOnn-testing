@@ -1,9 +1,9 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 import { toast } from "react-toastify";
 
 export default function BloodReqs() {
-    useAuth();
+      
     const [bloodreqs, setBloodreqs] = useState([]);
     const [userdata, setUserdata] = useState(null);
     const api = createAPI();
@@ -68,7 +68,7 @@ export default function BloodReqs() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-5 pt-5">
                     <div className="row">

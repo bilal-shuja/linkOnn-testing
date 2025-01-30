@@ -1,15 +1,15 @@
 'use client';
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import React, { useState, useEffect } from "react";
 import SettingNavbar from "../settingNav";
 import createAPI from "@/app/lib/axios";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from 'react-toastify';
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function SocialLinks() {
-    useAuth();
+      
     const api = createAPI();
     const [facebook, setFacebook] = useState("");
     const [twitter, setTwitter] = useState("");
@@ -86,7 +86,7 @@ export default function SocialLinks() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

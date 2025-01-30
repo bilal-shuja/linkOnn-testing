@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import createAPI from "@/app/lib/axios";
@@ -145,7 +145,7 @@ export default function JobsPage() {
 
   return (
     <div>
-      <Navbar />
+        
       <div>
         <div className="container-fluid">
           <div

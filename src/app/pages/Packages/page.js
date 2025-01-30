@@ -1,15 +1,15 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
-import useAuth from "@/app/lib/useAuth";
+   
 
 export default function Packages() {
-    useAuth();
+      
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-5 pt-5">
                     <div className="row">

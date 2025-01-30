@@ -1,16 +1,14 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+import Image from "next/image";   
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
-export default function FriendsPage() {
-  useAuth();
+export default function FriendsPage() { 
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [friendsloading, setfriendsLoading] = useState(false);
@@ -185,7 +183,7 @@ export default function FriendsPage() {
 
   return (
     <div>
-      <Navbar />
+        
       <div className="container-fluid bg-light">
         <div className="container mt-5 pt-5">
           <div className="row">

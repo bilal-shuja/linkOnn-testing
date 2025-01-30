@@ -1,16 +1,15 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
  
 import Link from "next/link";
 import moment from "moment";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
 
 export default function Blogs() {
-  useAuth();
+  
   const [error, setError] = useState(null);
   const [blogs, setBlogs] = useState([]);
   const [recentBlogs, setRecentBlogs] = useState([]);
@@ -70,7 +69,7 @@ export default function Blogs() {
 
   return (
     <div>
-      <Navbar />
+        
       <div className="container mt-5">
         {error && <div className="alert alert-danger">{error}</div>}
 

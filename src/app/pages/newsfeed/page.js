@@ -4,21 +4,19 @@ import React from "react";
 import createAPI from "../../lib/axios";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import { useRouter } from "next/navigation";
 import Storycreate from "@/app/pages/storydata/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 // import CryptoJS from 'crypto-js';
 
-
 export default function Newsfeed() {
-  useAuth();
+    
   const router = useRouter();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -682,7 +680,6 @@ export default function Newsfeed() {
 
   return (
     <div>
-      <Navbar />
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">

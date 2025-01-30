@@ -1,14 +1,14 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
-import useAuth from "@/app/lib/useAuth";
+ 
+   
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Image from 'next/image';
 
 export default function MyProducts() {
-    useAuth();
+      
     const router = useRouter();
     const api = createAPI();
     const [userid, setUserid] = useState(null);
@@ -72,7 +72,7 @@ export default function MyProducts() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="bg-primary mt-5 py-5 min-vh-50">
                 <div className="container">
                     <div className="card shadow-lg border-0 p-5">

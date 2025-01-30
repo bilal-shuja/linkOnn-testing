@@ -1,17 +1,17 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import Link from "next/link";
 
 export default function Blood() {
-    useAuth();
+      
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-5 pt-5">
                     <div className="row">

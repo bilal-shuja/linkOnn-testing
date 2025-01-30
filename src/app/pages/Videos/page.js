@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function VideoFeed() {
-    useAuth();
+      
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [lastPostId, setLastPostId] = useState(0);
@@ -365,7 +365,7 @@ export default function VideoFeed() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

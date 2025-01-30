@@ -1,15 +1,15 @@
 'use client'
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import SettingNavbar from "../settingNav";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 
 export default function BlockUsers() {
-    useAuth();
+      
     const [blockedUsers, setBlockedUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [confirmationVisible, setConfirmationVisible] = useState(false);
@@ -63,7 +63,7 @@ export default function BlockUsers() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

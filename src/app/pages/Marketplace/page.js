@@ -1,14 +1,14 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
-import useAuth from "@/app/lib/useAuth";
+ 
+   
 import { useRouter } from 'next/navigation';
 import createAPI from "@/app/lib/axios";
 import Image from 'next/image';
 import { useState, useEffect } from "react";
 
 export default function MarketPlace() {
-    useAuth();
+      
     const api = createAPI();
     const router = useRouter();
     const [products, setProducts] = useState([]);
@@ -48,7 +48,7 @@ export default function MarketPlace() {
         <div>Error: {error}</div>
     ) : (
         <div>
-            <Navbar />
+              
 
             <div className="bg-primary mt-5 py-5">
                 <div className="container">

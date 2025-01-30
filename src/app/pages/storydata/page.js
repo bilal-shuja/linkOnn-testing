@@ -1,17 +1,17 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import { toast } from "react-toastify";
 
 
 export default function Storyform() {
-    useAuth();
+      
     const router = useRouter();
     const [files, setFiles] = useState(null);
     const [caption, setCaption] = useState("");
@@ -174,7 +174,7 @@ export default function Storyform() {
 
     return (
         <div>
-            <Navbar />
+              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">

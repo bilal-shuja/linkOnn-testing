@@ -1,17 +1,17 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
+ 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
-import useAuth from "@/app/lib/useAuth";
+   
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 import { toast } from 'react-toastify';
 
 export default function Notifications() {
-  useAuth();
+    
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -83,7 +83,7 @@ export default function Notifications() {
 
   return (
     <div>
-      <Navbar />
+        
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">

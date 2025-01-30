@@ -1,12 +1,12 @@
 "use client";
 
-import Navbar from "@/app/assets/components/navbar/page";
-import useAuth from "@/app/lib/useAuth";
+ 
+   
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 
 export default function Explore() {
-  useAuth();
+    
   const api = createAPI();
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
@@ -213,7 +213,7 @@ export default function Explore() {
   
   return (
     <div>
-      <Navbar />
+        
       <div className="container-fluid bg-light py-5">
         <div className="container mt-5">
           <div className="row justify-content-center">
