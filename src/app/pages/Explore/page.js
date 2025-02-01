@@ -71,6 +71,7 @@ export default function Explore() {
     try {
       const response = await api.post("/api/search-user", {
         type: "event",
+        
       });
       if (response.data.code === "200") {
         setEvents(response.data.data);

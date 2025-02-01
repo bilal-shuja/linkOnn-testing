@@ -10,13 +10,13 @@ import { useRouter } from "next/navigation";
 import Storycreate from "@/app/pages/storydata/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
 import Image from "next/image";
-   
+
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 // import CryptoJS from 'crypto-js';
 
 export default function Newsfeed() {
-    
+
   const router = useRouter();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -503,45 +503,45 @@ export default function Newsfeed() {
   };
 
 
-    const handleVote = async (optionId, pollId, postId) => {
-        try {
-            const response = await api.post("/api/post/poll-vote", {
-                poll_option_id: optionId,
-                poll_id: pollId,
-                post_id: postId,
-            });
-    
-            if (response.data.status == "200") {
-                setPosts(prevPosts => 
-                    prevPosts.map(post => {
-                        if (post.id === postId) {
-                            const updatedPoll = {
-                                ...post.poll,
-                                poll_total_votes: (post.poll.poll_total_votes || 0) + 1,
-                                poll_options: post.poll.poll_options.map(option => 
-                                    option.id === optionId 
-                                        ? { ...option, no_of_votes: (option.no_of_votes || 0) + 1 }
-                                        : option
-                                )
-                            };
-    
-                            return {
-                                ...post,
-                                poll: updatedPoll
-                            };
-                        }
-                        return post;
-                    })
-                );
-    
-                toast.success(response.data.message);
-            } else {
-                toast.error(response.data.message);
+  const handleVote = async (optionId, pollId, postId) => {
+    try {
+      const response = await api.post("/api/post/poll-vote", {
+        poll_option_id: optionId,
+        poll_id: pollId,
+        post_id: postId,
+      });
+
+      if (response.data.status == "200") {
+        setPosts(prevPosts =>
+          prevPosts.map(post => {
+            if (post.id === postId) {
+              const updatedPoll = {
+                ...post.poll,
+                poll_total_votes: (post.poll.poll_total_votes || 0) + 1,
+                poll_options: post.poll.poll_options.map(option =>
+                  option.id === optionId
+                    ? { ...option, no_of_votes: (option.no_of_votes || 0) + 1 }
+                    : option
+                )
+              };
+
+              return {
+                ...post,
+                poll: updatedPoll
+              };
             }
-        } catch (error) {
-            toast.error("An error occurred while voting. Please try again.");
-        }
-    };
+            return post;
+          })
+        );
+
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("An error occurred while voting. Please try again.");
+    }
+  };
 
   const toggleReplies = async (commentId) => {
     try {
@@ -676,6 +676,11 @@ export default function Newsfeed() {
 
   const handleClick = (userId) => {
     router.push(`/pages/UserProfile/timeline/${userId}`);
+  };
+
+  const handleCopy = (link) => {
+    navigator.clipboard.writeText(link);
+    toast.success("Link copied successfully!");
   };
 
   return (
@@ -1857,22 +1862,24 @@ export default function Newsfeed() {
                           className="dropdown-menu"
                           aria-labelledby="dropdownMenuButton3"
                         >
+
                           <li className=" align-items-center d-flex">
                             <Link
                               className="text-decoration-none dropdown-item text-muted"
-                              href="#"
+                              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <i className="bi bi-facebook pe-2"></i> Share on
-                              Facebook
+                              <i className="bi bi-facebook pe-2"></i> Share on Facebook
                             </Link>
                           </li>
 
                           <li className=" align-items-center d-flex">
                             <Link
                               className="text-decoration-none dropdown-item text-muted"
-                              href="#"
+                              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                             >
                               <i className="bi bi-twitter-x pe-2"></i> Share on
                               X
@@ -1881,12 +1888,15 @@ export default function Newsfeed() {
                           <li className=" align-items-center d-flex">
                             <Link
                               className="text-decoration-none dropdown-item text-muted"
-                              href="#"
+                              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                             >
                               <i className="bi bi-linkedin pe-2"></i> Share on
                               Linkedln
                             </Link>
                           </li>
+
                           <li>
                             <hr className="dropdown-divider" />
                           </li>
@@ -1900,12 +1910,12 @@ export default function Newsfeed() {
                             </Link>
                           </li>
                           <li className=" align-items-center d-flex">
-                            <Link
+                            <span
                               className="text-decoration-none dropdown-item text-muted"
-                              href="#"
+                              onClick={() => handleCopy(post.post_link)}
                             >
                               <i className="bi bi-link pe-2"></i> Copy Post Link
-                            </Link>
+                            </span>
                           </li>
                         </ul>
                       </div>

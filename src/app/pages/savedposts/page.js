@@ -3,15 +3,15 @@
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-   
+
 import { toast } from "react-toastify";
 
 export default function Savedposts() {
-      
+
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -353,21 +353,21 @@ export default function Savedposts() {
                 poll_id: pollId,
                 post_id: postId,
             });
-    
+
             if (response.data.status == "200") {
-                setPosts(prevPosts => 
+                setPosts(prevPosts =>
                     prevPosts.map(post => {
                         if (post.id === postId) {
                             const updatedPoll = {
                                 ...post.poll,
                                 poll_total_votes: (post.poll.poll_total_votes || 0) + 1,
-                                poll_options: post.poll.poll_options.map(option => 
-                                    option.id === optionId 
+                                poll_options: post.poll.poll_options.map(option =>
+                                    option.id === optionId
                                         ? { ...option, no_of_votes: (option.no_of_votes || 0) + 1 }
                                         : option
                                 )
                             };
-    
+
                             return {
                                 ...post,
                                 poll: updatedPoll
@@ -376,7 +376,7 @@ export default function Savedposts() {
                         return post;
                     })
                 );
-    
+
                 toast.success(response.data.message);
             } else {
                 toast.error(response.data.message);
@@ -386,9 +386,14 @@ export default function Savedposts() {
         }
     };
 
+    const handleCopy = (link) => {
+        navigator.clipboard.writeText(link);
+        toast.success("Link copied successfully!");
+    };
+
     return (
         <div>
-              
+
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -839,19 +844,20 @@ export default function Savedposts() {
                                                     <li className=" align-items-center d-flex">
                                                         <Link
                                                             className="text-decoration-none dropdown-item text-muted"
-                                                            href="#"
+                                                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <i className="bi bi-facebook pe-2"></i> Share on
-                                                            Facebook
+                                                            <i className="bi bi-facebook pe-2"></i> Share on Facebook
                                                         </Link>
                                                     </li>
 
                                                     <li className=" align-items-center d-flex">
                                                         <Link
                                                             className="text-decoration-none dropdown-item text-muted"
-                                                            href="#"
+                                                            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                         >
                                                             <i className="bi bi-twitter-x pe-2"></i> Share on
                                                             X
@@ -860,12 +866,15 @@ export default function Savedposts() {
                                                     <li className=" align-items-center d-flex">
                                                         <Link
                                                             className="text-decoration-none dropdown-item text-muted"
-                                                            href="#"
+                                                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                         >
                                                             <i className="bi bi-linkedin pe-2"></i> Share on
                                                             Linkedln
                                                         </Link>
                                                     </li>
+
                                                     <li>
                                                         <hr className="dropdown-divider" />
                                                     </li>
@@ -879,12 +888,12 @@ export default function Savedposts() {
                                                         </Link>
                                                     </li>
                                                     <li className=" align-items-center d-flex">
-                                                        <Link
+                                                        <span
                                                             className="text-decoration-none dropdown-item text-muted"
-                                                            href="#"
+                                                            onClick={() => handleCopy(post.post_link)}
                                                         >
                                                             <i className="bi bi-link pe-2"></i> Copy Post Link
-                                                        </Link>
+                                                        </span>
                                                     </li>
                                                 </ul>
                                             </div>

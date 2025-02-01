@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-   
+
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function VideoFeed() {
-      
+
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [lastPostId, setLastPostId] = useState(0);
@@ -32,38 +32,38 @@ export default function VideoFeed() {
 
     const handlePostDelete = (postId) => {
         showConfirmationToast([postId]);
-      };
-    
-      const handleDelete = async (values) => {
+    };
+
+    const handleDelete = async (values) => {
         const postId = values[0];
-    
+
         try {
-          const response = await api.post("/api/post/action", {
-            post_id: postId,
-            action: "delete",
-          });
-    
-          if (response.data.code == "200") {
-            setPosts((prevPosts) =>
-              prevPosts.filter((post) => post.id !== postId)
-            );
-            toast.success(response.data.message);
-          } else {
-            toast.error(response.data.message);
-          }
+            const response = await api.post("/api/post/action", {
+                post_id: postId,
+                action: "delete",
+            });
+
+            if (response.data.code == "200") {
+                setPosts((prevPosts) =>
+                    prevPosts.filter((post) => post.id !== postId)
+                );
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
+            }
         } catch (error) {
-          toast.error("An error occurred while deleting the post.");
+            toast.error("An error occurred while deleting the post.");
         }
-      };
-    
-        const { showConfirmationToast } = useConfirmationToast({
-          message: 'Are you sure you want to delete this post? This action cannot be undone.',
-          onConfirm: handleDelete,
-          onCancel: () => toast.dismiss(),
-          confirmText: "Confirm",
-          cancelText: "Cancel",
-        });
-      
+    };
+
+    const { showConfirmationToast } = useConfirmationToast({
+        message: 'Are you sure you want to delete this post? This action cannot be undone.',
+        onConfirm: handleDelete,
+        onCancel: () => toast.dismiss(),
+        confirmText: "Confirm",
+        cancelText: "Cancel",
+    });
+
 
     const fetchPosts = async (isInitialLoad = true) => {
         try {
@@ -363,9 +363,14 @@ export default function VideoFeed() {
         }
     };
 
+    const handleCopy = (link) => {
+        navigator.clipboard.writeText(link);
+        toast.success("Link copied successfully!");
+    };
+
     return (
         <div>
-              
+
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -578,19 +583,20 @@ export default function VideoFeed() {
                                                     <li className=" align-items-center d-flex">
                                                         <Link
                                                             className="text-decoration-none dropdown-item text-muted"
-                                                            href="#"
+                                                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <i className="bi bi-facebook pe-2"></i> Share on
-                                                            Facebook
+                                                            <i className="bi bi-facebook pe-2"></i> Share on Facebook
                                                         </Link>
                                                     </li>
 
                                                     <li className=" align-items-center d-flex">
                                                         <Link
                                                             className="text-decoration-none dropdown-item text-muted"
-                                                            href="#"
+                                                            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                         >
                                                             <i className="bi bi-twitter-x pe-2"></i> Share on
                                                             X
@@ -599,7 +605,9 @@ export default function VideoFeed() {
                                                     <li className=" align-items-center d-flex">
                                                         <Link
                                                             className="text-decoration-none dropdown-item text-muted"
-                                                            href="#"
+                                                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                         >
                                                             <i className="bi bi-linkedin pe-2"></i> Share on
                                                             Linkedln
@@ -618,12 +626,12 @@ export default function VideoFeed() {
                                                         </Link>
                                                     </li>
                                                     <li className=" align-items-center d-flex">
-                                                        <Link
+                                                        <span
                                                             className="text-decoration-none dropdown-item text-muted"
-                                                            href="#"
+                                                            onClick={() => handleCopy(post.post_link)}
                                                         >
                                                             <i className="bi bi-link pe-2"></i> Copy Post Link
-                                                        </Link>
+                                                        </span>
                                                     </li>
                                                 </ul>
                                             </div>

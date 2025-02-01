@@ -4,12 +4,11 @@ import Link from "next/link";
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-   
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 export default function Leftnav() {
-    
+
   const [blogs, setBlogs] = useState([]);
   const [loadingBlogs, setLoadingBlogs] = useState(false);
   const [people, setPeople] = useState([]);
@@ -25,10 +24,9 @@ export default function Leftnav() {
   const fetchArticlesBlogs = useCallback(async () => {
     setLoadingBlogs(true);
     try {
-      const response = await api.post("/public_api/recent-blogs");
+      const response = await api.post("/api/recent-blogs");
       if (response.data.code === "200") {
-        const lastFiveBlogs = response.data.data.slice(0, 5);
-        setBlogs(lastFiveBlogs);
+        setBlogs(response.data.data);
       } else {
         toast.error(response.data.message);
       }
@@ -160,11 +158,12 @@ export default function Leftnav() {
             blogs.map((blog) => (
               <div key={blog.id}>
                 <div className="mt-3 mx-2">
-                  <Link className="text-decoration-none" href="#">
+                  <Link className="text-decoration-none" href={`/pages/blogs/blogdetails/${blog.id}`}>
                     {blog.title}
                   </Link>
+
                   <br />
-                  <small className="text-muted">{blog.created_at} ago</small>
+                  <small className="text-muted">{blog.created_at}</small>
                 </div>
                 <hr />
               </div>
