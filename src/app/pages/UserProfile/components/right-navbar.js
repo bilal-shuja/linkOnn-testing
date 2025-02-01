@@ -100,9 +100,12 @@ const RightNavbar = ({ user }) => {
               <p className="text-muted">
                 <i className="bi bi-calendar-date fa-fw pe-1"></i>
                 DOB:
-                <strong className="mx-1">
-                  {moment(user.date_of_birth).format("MMM DD, YYYY")}
-                </strong>
+                {user.date_of_birth && user.date_of_birth.trim() !== "" && (
+                  <strong className="mx-1">
+                    {moment(user.date_of_birth).format("MMM DD, YYYY")}
+                  </strong>
+                )}
+
               </p>
               <p className="text-muted">
                 <i className="bi bi-heart fa-fw pe-1"></i>

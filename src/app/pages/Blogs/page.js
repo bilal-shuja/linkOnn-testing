@@ -1,15 +1,13 @@
 "use client";
 
- 
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
- 
 import Link from "next/link";
 import moment from "moment";
 import Image from "next/image";
 
 export default function Blogs() {
-  
+
   const [error, setError] = useState(null);
   const [blogs, setBlogs] = useState([]);
   const [recentBlogs, setRecentBlogs] = useState([]);
@@ -19,10 +17,9 @@ export default function Blogs() {
 
   const fetchRecentBlogs = async () => {
     try {
-      const response = await api.post("/public_api/recent-blogs");
+      const response = await api.post("/api/recent-blogs");
       if (response.data.code == "200") {
-        const lastFiveBlogs = response.data.data.slice(0, 5);
-        setRecentBlogs(lastFiveBlogs);
+        setRecentBlogs(response.data.data);
       } else {
         if (typeof window !== "undefined") {
           alert(response.data.message);
@@ -50,7 +47,7 @@ export default function Blogs() {
 
   const fetchRecentTags = async () => {
     try {
-      const response = await api.post(`/web_api/recent-tags`);
+      const response = await api.post(`/api/recent-tags`);
       if (response.data.code == "200") {
         setRecentTags(response.data.data);
       } else {
@@ -69,10 +66,8 @@ export default function Blogs() {
 
   return (
     <div>
-        
       <div className="container mt-5">
         {error && <div className="alert alert-danger">{error}</div>}
-
         <div className="row">
           <div className="col-md-8 mt-5">
             <div className="card shadow-lg border-0 p-3">
@@ -104,7 +99,7 @@ export default function Blogs() {
                         </span>
                         <h5 className="card-title">{blog.title}</h5>
                         <Link
-                          href="/pages/Blogs/blogdetails"
+                          href={`/pages/blogs/blogdetails/${blog.id}`}
                           className="text-primary text-decoration-none"
                         >
                           Read more...
@@ -144,15 +139,14 @@ export default function Blogs() {
                   {recentBlogs.map((blog) => (
                     <div key={blog.id}>
                       <Link
-                        href="#"
+                        href={`/pages/blogs/blogdetails/${blog.id}`}
                         className="text-decoration-none text-primary"
                       >
                         {blog.title}
                       </Link>
                       <br />
                       <small className="text-muted">
-                        {" "}
-                        {moment(blog.created_at).format("MMM DD, YYYY")}{" "}
+                        {blog.created_at}
                       </small>
                       <hr />
                     </div>
@@ -164,29 +158,10 @@ export default function Blogs() {
             <div className="card shadow-lg border-0 mt-5 p-3">
               <div className="card-body">
                 <div className="card-title bg-white fw-bold">Tags</div>
-                <div className="card-body">
-                  <ul className="list-inline mb-0 d-flex flex-wrap gap-2">
-                    <li className="list-inline-item m-0">
-                      <button className="btn btn-outline-secondary btn-sm">
-                        Accusamus cum deleni
-                      </button>
-                    </li>
-                    <li className="list-inline-item m-0">
-                      <button className="btn btn-outline-secondary btn-sm">
-                        Eum aliquip quia dis
-                      </button>
-                    </li>
-                    <li className="list-inline-item m-0">
-                      <button className="btn btn-outline-secondary btn-sm">
-                        Culpa voluptas ullam
-                      </button>
-                    </li>
-                  </ul>
-                </div>
                 {recentTags.map((tag, index) => (
                   <Link
                     key={index}
-                    href="#"
+                    href={`/pages/blogs/blogtags/${tag.id}`}
                     className="btn btn-light btn-sm me-2 mb-2 border"
                   >
                     {tag.name}
