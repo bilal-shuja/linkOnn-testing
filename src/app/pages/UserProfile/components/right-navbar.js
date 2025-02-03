@@ -82,45 +82,57 @@ const RightNavbar = ({ user }) => {
     <div className="col-12 col-lg-4 position-sticky top-0">
       <div className="row g-4">
         <div className="col-12">
-          <div className="card shadow-lg border-0">
+          <div className="card shadow-lg border-0 rounded-3 about-card">
             <div className="card-body p-4">
-              <h4>About</h4>
-              <p className="text-muted">{user.about_you}</p>
-              <div className="d-flex justify-content-between text-muted">
-                <p className="fw-semibold">
-                  {user.gender === 'Male' && (
-                    <i className="bi bi-gender-male fa-fw pe-1"></i>
-                  )}
-                  {user.gender === 'Female' && (
-                    <i className="bi bi-gender-female fa-fw pe-1"></i>
-                  )}
-                  {user.gender}
-                </p>
+              {/* Header with Icon */}
+              <div className="d-flex align-items-center mb-3">
+                <i className="bi bi-person-circle text-primary fs-3 me-2"></i>
+                <h4 className="fw-bold mb-0">About</h4>
               </div>
-              <p className="text-muted">
-                <i className="bi bi-calendar-date fa-fw pe-1"></i>
-                DOB:
-                {user.date_of_birth && user.date_of_birth.trim() !== "" && (
-                  <strong className="mx-1">
-                    {moment(user.date_of_birth).format("MMM DD, YYYY")}
-                  </strong>
-                )}
 
+              {/* About Description */}
+              <p className="text-muted about-text">{user.about_you}</p>
+
+              {/* Gender Info */}
+              <div className="d-flex align-items-center text-muted mb-2">
+                {user.gender === 'Male' && (
+                  <i className="bi bi-gender-male text-primary fs-5 me-2"></i>
+                )}
+                {user.gender === 'Female' && (
+                  <i className="bi bi-gender-female text-danger fs-5 me-2"></i>
+                )}
+                <p className="fw-semibold mb-0">{user.gender}</p>
+              </div>
+
+              {/* Date of Birth */}
+              <p className="text-muted d-flex align-items-center">
+                <i className="bi bi-calendar-date fs-5 text-warning me-2"></i>
+                <span>
+                  DOB:
+                  {user.date_of_birth && user.date_of_birth.trim() !== "" && (
+                    <strong className="mx-1">{moment(user.date_of_birth).format("MMM DD, YYYY")}</strong>
+                  )}
+                </span>
               </p>
-              <p className="text-muted">
-                <i className="bi bi-heart fa-fw pe-1"></i>
-                Status:
-                <strong className="mx-1">
-                  {user.relation_id === '0' && 'None'}
-                  {user.relation_id === '1' && 'Single'}
-                  {user.relation_id === '2' && 'In a Relationship'}
-                  {user.relation_id === '3' && 'Married'}
-                  {user.relation_id === '4' && 'Engaged'}
-                </strong>
+
+              {/* Relationship Status */}
+              <p className="text-muted d-flex align-items-center">
+                <i className="bi bi-heart fs-5 text-danger me-2"></i>
+                <span>
+                  Status:
+                  <strong className="mx-1">
+                    {user.relation_id === '0' && 'None'}
+                    {user.relation_id === '1' && 'Single'}
+                    {user.relation_id === '2' && 'In a Relationship'}
+                    {user.relation_id === '3' && 'Married'}
+                    {user.relation_id === '4' && 'Engaged'}
+                  </strong>
+                </span>
               </p>
             </div>
           </div>
         </div>
+
 
         <div className="col-12">
           <div className="card shadow-lg border-0">
@@ -216,63 +228,68 @@ const RightNavbar = ({ user }) => {
         </div>
 
         <div className="col-md-6 col-lg-12">
-          <div className="card shadow-lg border-0">
+          <div className="card shadow-lg border-0 rounded-3">
             <div className="card-body p-4">
-              <div className="d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center justify-content-evenly">
-                  <h4>Friends</h4>
-                  <span className="badge bg-danger mb-1 mx-1">{user.friends_count}</span>
+              {/* Friends Header */}
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex align-items-center">
+                  <h4 className="fw-bold mb-0">Friends</h4>
+                  <span className="badge bg-danger ms-2">{user.friends_count}</span>
                 </div>
-                <button className="btn btn-light text-primary border-0 rounded-1" onClick={handleSeeAllFriends} >See all Friends</button>
+                <button className="btn btn-outline-primary rounded-3 px-3" onClick={handleSeeAllFriends}>
+                  See all
+                </button>
               </div>
-              <div className='my-3'>
-                {loading ? (
-                  <div className="d-flex justify-content-center align-items-center">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
+
+              {/* Loading Spinner */}
+              {loading ? (
+                <div className="d-flex justify-content-center align-items-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="row g-3">
+                  {/* No Friends UI */}
+                  {friendsList.length === 0 ? (
+                    <div className="text-center">
+                      <i className="bi bi-people text-secondary fs-1"></i>
+                      <p className="mt-3 text-secondary fw-semibold fs-4">No Friends</p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="row g-3">
-                    {friendsList.length === 0 ? (
-                      <div className="text-center">
-                        <i className="bi bi-people text-secondary fs-1"></i>
-                        <p className="mt-3 text-secondary fw-semibold fs-4">
-                          No Friends.
-                        </p>
-                      </div>
-                    ) : (
-                      friendsList.map((friend, index) => (
-                        <div key={`${friend.id}-${index}`} className="col-6">
-                          <div className="card shadow-none text-center h-100">
-                            <div className="card-body p-2 pb-0">
-                              <div className="avatar avatar-xl">
-                                <Image
-                                  src={friend.avatar}
-                                  alt={`${friend.first_name} ${friend.last_name}`}
-                                  className="avatar-img rounded-circle"
-                                  width={50}
-                                  height={50}
-                                  onClick={() => router.push(`/pages/UserProfile/timeline/${friend.id}`)}
-                                  style={{ cursor: "pointer" }}
-                                />
-                              </div>
-                              <h6 className="card-title mb-1 mt-3"
-                                onClick={() => router.push(`/pages/UserProfile/timeline/${friend.id}`)}
-                                style={{ cursor: "pointer" }} >
-                                {friend.first_name} {friend.last_name}
-                              </h6>
-                            </div>
-                          </div>
+                  ) : (
+                    friendsList.map((friend, index) => (
+                      <div key={`${friend.id}-${index}`} className="col-6 text-center">
+                        {/* Friend Avatar */}
+                        <div className="friend-avatar mx-auto">
+                          <Image
+                            src={friend.avatar}
+                            alt={`${friend.first_name} ${friend.last_name}`}
+                            className="rounded-circle border border-2 border-light shadow"
+                            width={60}
+                            height={60}
+                            onClick={() => router.push(`/pages/UserProfile/timeline/${friend.id}`)}
+                            style={{ cursor: "pointer" }}
+                          />
                         </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
+                        {/* Friend Name */}
+                        <h6
+                          className="fw-semibold mt-2 text-primary friend-name"
+                          onClick={() => router.push(`/pages/UserProfile/timeline/${friend.id}`)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {friend.first_name} {friend.last_name}
+                        </h6>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+
+
       </div>
     </div>
   );
