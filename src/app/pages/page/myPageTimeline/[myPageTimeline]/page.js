@@ -1,17 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-import Navbar from "@/app/assets/components/navbar/page";
 import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
-import useAuth from "@/app/lib/useAuth";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 export default function MyPageTimeline({ params }) {
 
-    useAuth();
 
     const api = createAPI();
     // const router = useRouter();
@@ -48,7 +45,6 @@ export default function MyPageTimeline({ params }) {
 
     return (
         <>
-            <Navbar />
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
