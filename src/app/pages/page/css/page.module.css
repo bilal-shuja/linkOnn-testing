@@ -1,0 +1,17 @@
+.userTimelineInfoContainer {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 8.5em;
+  }
+
+@media (max-width: 768px) {
+    .userTimelineInfoContainer {
+      display: block; /* Or any other styling you want for mobile */
+    }
+  }
+
+  .pagePostInput:focus {
+    box-shadow: none !important;  /* Removes the glowing effect */
+    outline: none !important;  /* Removes the default focus outline */
+    border-color: #ccc !important;  /* Optional: Change to a subtle border color */
+  }
