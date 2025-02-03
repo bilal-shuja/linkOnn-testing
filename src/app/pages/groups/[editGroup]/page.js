@@ -150,15 +150,15 @@ export default function Groups({params}) {
                                         </div>
 
                                         <div className="col-sm-6 col-lg-6 mb-2">
-                                            <label htmlFor="category" className="form-label text-secondary">Category (required)</label>
+                                            <label htmlFor="category" className="form-label text-secondary">Category</label>
                                             <select 
                                                 className="form-select" 
                                                 aria-label="Default select example"
-                                                value={categories.find(cat => cat.name === sepGroup.category)?.id || ''}
+                                                value={groupCategory || categories.find(cat => cat.name === sepGroup.category)?.id || ''}
                                                 onChange={(e) => setGroupCategory(e.target.value)}
                                             >
                                                 <option>Open this select menu</option>
-                                                {categories.map(category => (
+                                                {categories?.map(category => (
                                                     <option key={category.id} value={category.id}>
                                                         {category.name}
                                                     </option>
