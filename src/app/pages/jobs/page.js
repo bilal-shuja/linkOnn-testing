@@ -56,7 +56,6 @@ export default function JobsPage() {
       .catch((error) => {
 
         if (error)
-          console.log(error)
           toast.error("An error occurred while deleting the job post.");
       })
   };
