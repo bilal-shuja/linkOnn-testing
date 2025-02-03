@@ -1,9 +1,7 @@
 "use client"
 import { useState, useEffect } from "react";
 import { use } from "react";
-import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
-import useAuth from "@/app/lib/useAuth";
 import createAPI from "@/app/lib/axios";
 import { toast } from "react-toastify";
 import { useRouter } from 'next/navigation';
@@ -12,7 +10,6 @@ import Link from "next/link";
 
 export default function EditJob({ params }) {
 
-    useAuth();
 
     const api = createAPI();
     const router = useRouter();
@@ -148,7 +145,6 @@ export default function EditJob({ params }) {
 
     return (
         <>
-            <Navbar />
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
