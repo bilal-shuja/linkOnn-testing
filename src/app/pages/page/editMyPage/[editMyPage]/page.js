@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { use } from "react";
 import Navbar from "@/app/assets/components/navbar/page";
 import Rightnav from "@/app/assets/components/rightnav/page";
-import useAuth from "@/app/lib/useAuth";
 import createAPI from "@/app/lib/axios";
 import { toast } from "react-toastify";
 import { useRouter } from 'next/navigation';
@@ -11,7 +10,7 @@ import Link from "next/link";
 
 
 export default function EditMyPage({ params }) {
-    useAuth();
+
 
     const api = createAPI();
     const router = useRouter();
@@ -75,7 +74,6 @@ export default function EditMyPage({ params }) {
 
         api.post(`/api/get-page-data?page_id=${editMyPage}`)
             .then((res) => {
-                console.log(res.data)
                 if (res.data.code == "200") {
                     setSpecificPageInfo(res.data.data);
                 }

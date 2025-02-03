@@ -1,22 +1,43 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-import Navbar from "@/app/assets/components/navbar/page";
 import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
-import useAuth from "@/app/lib/useAuth";
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+// import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import styles from '../../css/page.module.css';
+import EmojiPicker from 'emoji-picker-react';
+// import { Dropzone, FileMosaic } from "@files-ui/react";
+import RightNav from "../../components/rightNav";
+
+
 
 export default function MyPageTimeline({ params }) {
 
-    useAuth();
 
     const api = createAPI();
-    // const router = useRouter();
+    const userID = localStorage.getItem('userid');
     const { myPageTimeline } = use(params);
     const [pageTimelineData, setPageTimelineData] = useState('');
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [postText, setPostText] = useState("");
+
+    const [color, setColor] = useState("");
+
+
+
+
+    const handlePostTextChange = (e) => { setPostText(e.target.value) };
+
+    const handleEmojiButtonClick = () => {
+        setShowEmojiPicker((prev) => !prev);
+    };
+
+    const handleEmojiSelect = (emoji) => {
+        setPostText((prevText) => prevText + emoji.emoji);
+        setShowEmojiPicker(false);
+    };
 
     function fetchSpecificMyPageTimline() {
 
@@ -35,12 +56,14 @@ export default function MyPageTimeline({ params }) {
     }
 
 
-
-
-
     useEffect(() => {
-        fetchSpecificMyPageTimline()
+        fetchSpecificMyPageTimline();
     }, []);
+
+    const [files, setFiles] = useState([]);
+    const updateFiles = (incommingFiles) => {
+        setFiles(incommingFiles);
+    };
 
 
 
@@ -48,7 +71,6 @@ export default function MyPageTimeline({ params }) {
 
     return (
         <>
-            <Navbar />
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -59,8 +81,8 @@ export default function MyPageTimeline({ params }) {
 
                                 <div className="position-relative">
                                     <Image
-                                        src={ !pageTimelineData?.cover || pageTimelineData.cover.trim() === "" 
-                                            ? '/assets/images/placeholder-image.png' 
+                                        src={!pageTimelineData?.cover || pageTimelineData.cover.trim() === ""
+                                            ? '/assets/images/placeholder-image.png'
                                             : pageTimelineData.cover}
                                         className="card-img-top rounded-top img-fluid"
                                         alt="cover"
@@ -74,8 +96,8 @@ export default function MyPageTimeline({ params }) {
                                     >
                                         <Image
                                             className="rounded-circle border border-white border-3 shadow-sm"
-                                            src={!pageTimelineData?.avatar || pageTimelineData.avatar.trim() === "" 
-                                                ? '/assets/images/placeholder-image.png'  
+                                            src={!pageTimelineData?.avatar || pageTimelineData.avatar.trim() === ""
+                                                ? '/assets/images/placeholder-image.png'
                                                 : pageTimelineData.avatar}
                                             alt="avatar"
                                             width={125}
@@ -90,38 +112,22 @@ export default function MyPageTimeline({ params }) {
                                 </div>
 
                                 <div className="card-body">
-                                    <div className=" mt-1" style={{ marginLeft: '10em' }} >
-                                        <div>
+                                    <div className={` mt-1 ${styles.userTimelineInfoContainer}`}  >
+                                        <div className="user-timeline-info">
                                             <h5 className="text-dark">
                                                 {pageTimelineData?.page_title}
                                             </h5>
-                                                <span className="small text-muted">@{pageTimelineData?.website}</span>
-                                            
-                                            
-                                            {/* 
-                                                {user.first_name} {user.last_name}
-
-                                                {user.user_level.verified_badge === '1'
-                                             && (
-                                            )}
-                                                <i className="bi bi-patch-check-fill text-success ms-2"></i>
-                                            <span className="badge bg-primary mt-1">
-                                                {user.user_level.name == 'Premium' && (
-                                            )}
-                                                <i className="bi bi-diamond pe-1"></i>
-
-                                                {user.user_level.name == 'basic' && (
-                                            )}
-
-                                                <i className="bi bi-star pe-1"></i>
-
-                                                {user.user_level.name == 'Diamond' && (
-                                            )}
-                                                <i className="bi bi-gem pe-1"></i>
-                                                {user.user_level.name}
-                                            </span> */}
-                                            
+                                            <span className="small text-muted">@{pageTimelineData?.website}</span>
                                         </div>
+                                        {
+                                            userID === pageTimelineData.user_id ?
+                                                <div className="edit-btn">
+                                                    <Link href={`/pages/page/editMyPage/${pageTimelineData.id}`} className="btn btn-danger"> <i className="fa fa-pencil"></i> Edit button</Link>
+                                                </div>
+                                                :
+                                                null
+                                        }
+
                                     </div>
                                     <p className="text-muted mt-4 mx-3">
                                         {/* <i className="bi bi-calendar2-plus me-1"></i> */}
@@ -131,7 +137,7 @@ export default function MyPageTimeline({ params }) {
 
                                     <hr className="text-muted" />
 
-                                    
+
                                     <div className="d-flex justify-content-start gap-4 ms-3">
                                         <div
                                             // href={`/pages/UserProfile/timeline/${myPageTimeline}`} 
@@ -157,16 +163,129 @@ export default function MyPageTimeline({ params }) {
                                             {/* href={`/pages/UserProfile/images/${myPageTimeline}`} */}
                                             Followers
                                         </div>
-                                   
+
                                     </div>
                                 </div>
-                              
+
+                            </div>
+
+                            <div className="card shadow-lg border-0 rounded-3 mt-5">
+                                <div className="card-body">
+
+                                    <div className="form-floating">
+                                        <textarea className={`form-control border border-0 ${styles.pagePostInput}`}
+                                            placeholder="Leave a comment here"
+                                            id="floatingTextarea2"
+                                            style={{ height: "150px", backgroundColor: color }}
+                                            value={postText}
+                                            onChange={handlePostTextChange}
+                                        />
+                                        <label htmlFor="floatingTextarea2" className="small text-muted mb-2">Share your thoughts....</label>
+
+                                        <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "10px", top: "10px" }}>😊</button>
+
+                                        {showEmojiPicker && (
+                                            <div
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: '-100px',
+                                                    left: '600px',
+                                                    zIndex: '1000',
+                                                }}
+                                            >
+                                                <EmojiPicker
+                                                    onEmojiClick={handleEmojiSelect}
+                                                    width="100%"
+                                                    height="400px"
+                                                />
+                                            </div>
+                                        )}
+                                        <input
+                                            type="color"
+                                            className="form-control-color mb-4"
+                                            id="exampleColorInput"
+                                            title="Choose your color"
+                                            value={color}
+                                            onChange={(e) => setColor(e.target.value)}
+                                        />
+
+
+                                            <div className="mb-3">
+                                            {/* <label for="formFile" className="form-label">Default file input example</label> */}
+                                            <input className="form-control form-control-sm" type="file" id="formFile"/>
+                                            </div>
+
+                                        {/* <div className="card p-2  mb-2" style={{width:"10em", height: "7em", border:"3px dotted blue" }}>
+                                            <div className="d-flex justify-content-center align-self-center">
+                                                <i className="bi bi-plus " style={{ fontSize: "30px" }}></i> 
+                                             
+                                            </div>
+                                        </div> */}
+
+                                        {/* 
+                                            <Dropzone onChange={updateFiles} value={files}
+                                            className="mb-3"
+                                            style={{ width: '250px', height: '150px' }}
+                                            >
+                                                {files.map((file) => (
+                                                    <div key={file.id}>
+                                                         <FileMosaic {...file} preview 
+                                                    />
+                                                    </div>
+                                                   
+                                                ))}
+                                                </Dropzone> */}
+
+                                        <ul className="nav nav-pills nav-stack  fw-normal justify-content-between">
+                                            <li className="nav-item">
+                                                <button className="nav-link photos_link bg-light py-1  px-2 mb-0 text-muted" href="#!">
+                                                    <i className="bi bi-image-fill text-success pe-2" />
+                                                    Photo
+                                                </button>
+                                            </li>
+                                            <li className="nav-item">
+                                                <button className="nav-link video_link bg-light py-1 px-2 mb-0 text-muted" href="#!">
+                                                    <i className="bi bi-camera-reels-fill text-info pe-2" />
+                                                    Video
+                                                </button>
+                                            </li>
+                                            <li className="nav-item">
+                                                <button className="nav-link audio_link bg-light py-1 px-2 mb-0 text-muted" href="#!">
+                                                    <i className="bi bi-music-note-beamed text-primary pe-2" />
+                                                    Audio
+                                                </button>
+                                            </li>
+                                            <li className="nav-item">
+                                                <button href="#" className="nav-link location_link bg-light py-1 px-2 mb-0 text-muted">
+                                                    <i className="bi bi-geo-alt-fill text-danger pe-2" /> Location
+                                                </button>
+                                            </li>
+                                            <li className="nav-item">
+                                                <button  className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
+                                                    <i className="bi bi-calendar2-event-fill text-danger pe-2" /> Event
+                                                </button>
+                                            </li>
+                                            <li className="nav-item">
+                                                <button href className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" data-bs-toggle="modal" data-bs-target="#pollModel">
+                                                    <i className="fas fa-poll text-info pe-1" /> Poll                  </button>
+                                            </li>
+                                            <li className="nav-item">
+                                                <button href className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" data-bs-toggle="modal" data-bs-target="#fundModel">
+                                                    <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding                  </button>
+                                            </li>
+                                        </ul>
+
+
+
+                                    </div>
+                                </div>
+
                             </div>
 
                         </div>
 
 
-
+                    <RightNav pageTimelineData = {pageTimelineData}/>
 
                     </div>
                 </div>
