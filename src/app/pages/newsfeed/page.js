@@ -694,6 +694,7 @@ export default function Newsfeed() {
 
             <div className="col-md-6 p-3">
               <div id="stories"></div>
+
               <div className="d-flex gap-2 mb-n3">
                 <div>
                   <Storycreate />
@@ -1028,6 +1029,7 @@ export default function Newsfeed() {
                           </li>
                         </ul>
                       </div>
+
                     </div>
                   </div>
 
@@ -1359,6 +1361,7 @@ export default function Newsfeed() {
                         Raise Funding
                       </button>
                     </div>
+                    
                   </div>
                   <div className="d-flex justify-content-center">
                     <button
@@ -1369,6 +1372,7 @@ export default function Newsfeed() {
                     </button>
                   </div>
                 </div>
+                
               </div>
 
               {posts.length === 0 && !loading && (

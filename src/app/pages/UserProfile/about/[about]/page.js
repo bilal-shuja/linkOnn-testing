@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import createAPI from "@/app/lib/axios";
 import RightNavbar from "../../components/right-navbar";
 import Profilecard from "../../components/profile-card";
-import { use } from "react";
 import { toast } from "react-toastify";
 
+
 export default function UserAbout({ params }) {
-    const { about } = use(params);
+    const resolvedParams = use(params);
+    const { about } = resolvedParams;
     const api = createAPI();
+
     const [userdata, setUserData] = useState(null);
     const [user, setUser] = useState(null);
 
@@ -47,92 +49,89 @@ export default function UserAbout({ params }) {
             </div>
         );
     }
+
     return (
         <>
             <div className="container mt-5 pt-4">
                 <div className="row d-flex justify-content-between">
                     <div className="col-12 col-md-8">
-
                         <Profilecard user_id={about} />
 
                         <div className="card shadow-lg border-0 rounded-3 mt-5">
                             <div className="card-body">
-                                <h5 className="fw-bold mt-1 mx-2">Profile Info</h5>
-                                <div className="rounded border px-3 py-2 mb-3 mt-4">
-                                    <div className="d-flex align-items-center justify-content-between">
-                                        <h6 className="fw-semibold">Overview</h6>
-                                    </div>
-                                    <p className="text-muted"> {user.about_you} </p>
-                                </div>
-                                <div className="row g-4">
-                                    <div className="col-6">
-                                        <div className="d-flex align-items-center rounded border px-3 py-2">
-                                            <p className="mb-0 text-muted">
-                                                <i className="bi bi-calendar-date fa-fw me-2"></i> Born: <strong> {user.date_of_birth} </strong>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="d-flex align-items-center rounded border px-3 py-2">
-                                            <p className="mb-0 text-muted">
-                                                <i className="bi bi-heart fa-fw me-2"></i>
-                                                Status:
-                                                <strong className="mx-1">
-                                                    {user.relation_id == '0' && (
-                                                        <span>None</span>
-                                                    )}
-                                                    {user.relation_id == '1' && (
-                                                        <span>Single</span>
-                                                    )}
-                                                    {user.relation_id == '2' && (
-                                                        <span>In a Relationship</span>
-                                                    )}
-                                                    {user.relation_id == '3' && (
-                                                        <span>Married</span>
-                                                    )}
-                                                    {user.relation_id == '4' && (
-                                                        <span>Engaged</span>
-                                                    )}
-                                                </strong>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="d-flex align-items-center rounded border px-3 py-2">
-                                            <p className="mb-0 text-muted">
-                                                <i className="bi bi-briefcase fa-fw me-2"></i> <strong>{user.working?.trim() ? user.working : "None"}</strong>
+                                <h4 className="fw-bold text-primary mb-4">Profile Information</h4>
 
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="d-flex align-items-center rounded border px-3 py-2">
-                                            <p className="mb-0 text-muted">
-                                                <i className="bi bi-telephone fa-fw me-2"></i> Phone No: <strong> {user.phone} </strong>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="d-flex align-items-center rounded border px-3 py-2">
-                                            <p className="mb-0 text-muted">
-                                                <i className="bi bi-envelope fa-fw me-2"></i> Email: <strong> {user.email} </strong>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="d-flex align-items-center rounded border px-3 py-2">
-                                            <p className="mb-0 text-muted">
-                                                <i className="bi bi-geo-alt fa-fw me-2"></i> Lives in: <strong> {user.address} </strong>
-                                            </p>
-                                        </div>
-                                    </div>
+                                {/* Overview Section */}
+                                <div className="rounded border p-3 mb-4 bg-light">
+                                    <h6 className="fw-semibold text-secondary">Overview</h6>
+                                    <p className="text-muted mb-0">{user.about_you || "No overview available."}</p>
+                                </div>
+
+                                {/* Profile Details Grid */}
+                                <div className="row g-4">
+                                    <ProfileDetail
+                                        icon="bi-calendar-date"
+                                        label="Born"
+                                        value={user.date_of_birth || "N/A"}
+                                    />
+                                    <ProfileDetail
+                                        icon="bi-heart"
+                                        label="Status"
+                                        value={getRelationshipStatus(user.relation_id)}
+                                    />
+                                    <ProfileDetail
+                                        icon="bi-briefcase"
+                                        label="Work"
+                                        value={user.working?.trim() ? user.working : "None"}
+                                    />
+                                    <ProfileDetail
+                                        icon="bi-telephone"
+                                        label="Phone No"
+                                        value={user.phone || "N/A"}
+                                    />
+                                    <ProfileDetail
+                                        icon="bi-envelope"
+                                        label="Email"
+                                        value={user.email || "N/A"}
+                                    />
+                                    <ProfileDetail
+                                        icon="bi-geo-alt"
+                                        label="Lives in"
+                                        value={user.address || "N/A"}
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Right Sidebar */}
                     <RightNavbar user={user} />
                 </div>
             </div>
         </>
     );
 }
+
+/* ✅ Component for Profile Detail Items */
+const ProfileDetail = ({ icon, label, value }) => (
+    <div className="col-6">
+        <div className="d-flex align-items-center rounded border px-3 py-2 bg-white shadow-sm">
+            <i className={`bi ${icon} text-primary me-2`} style={{ fontSize: "1.2rem" }}></i>
+            <p className="mb-0 text-muted">
+                {label}: <strong className="text-dark">{value}</strong>
+            </p>
+        </div>
+    </div>
+);
+
+/* ✅ Function to Handle Relationship Status */
+const getRelationshipStatus = (relation_id) => {
+    const statuses = {
+        "0": "None",
+        "1": "Single",
+        "2": "In a Relationship",
+        "3": "Married",
+        "4": "Engaged",
+    };
+    return statuses[relation_id] || "Unknown";
+};

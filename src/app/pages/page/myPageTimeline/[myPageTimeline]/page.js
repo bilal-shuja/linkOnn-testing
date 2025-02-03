@@ -96,7 +96,9 @@ export default function MyPageTimeline({ params }) {
                                                 {pageTimelineData?.page_title}
                                             </h5>
                                                 <span className="small text-muted">@{pageTimelineData?.website}</span>
-{/* 
+                                            
+                                            
+                                            {/* 
                                                 {user.first_name} {user.last_name}
 
                                                 {user.user_level.verified_badge === '1'
@@ -118,6 +120,7 @@ export default function MyPageTimeline({ params }) {
                                                 <i className="bi bi-gem pe-1"></i>
                                                 {user.user_level.name}
                                             </span> */}
+                                            
                                         </div>
                                     </div>
                                     <p className="text-muted mt-4 mx-3">
