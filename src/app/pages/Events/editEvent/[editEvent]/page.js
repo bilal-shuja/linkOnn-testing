@@ -46,9 +46,6 @@ export default function EditEvent({params}) {
   };
 
 
-  // hey there
-
-
     function fetchSpecificEvent() {
 
         api.post("/api/event-details", { event_id: editEvent })
@@ -108,17 +105,6 @@ export default function EditEvent({params}) {
 
     }
    
-
-    // const handleStartDate =(e)=>{   
-    //     const { value } = e.target;
-    //     setStartDate(value);
-    // if (specificEventDetails && new Date(value) < new Date(specificEventDetails.start_date)) {
-    //   setIsInvalid(true);
-    // } else {
-    //   setIsInvalid(false);
-    // }
-
-    // }
 
     useEffect(() => {
         fetchSpecificEvent();

@@ -9,6 +9,7 @@ import Image from "next/image";
    
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import Link from "next/link";
 
 export default function Pages() {
     
@@ -342,9 +343,11 @@ export default function Pages() {
                                   />
 
                                   <div className="card-body">
-                                    <h5 className="card-title mb-1">
+                                    <Link className="card-title mb-1"
+                                     href={`/pages/page/myPageTimeline/${page.id}`}
+                                    >
                                       {page.page_title}
-                                    </h5>
+                                    </Link>
                                     <p className="text-muted">
                                       {page.page_category}
                                     </p>
@@ -358,16 +361,21 @@ export default function Pages() {
                                         <p>{page.post_count || 0} Posts</p>
                                       </div>
                                     </div>
-                                    <div className="d-flex justify-content-around mt-3">
-                                      <button className="btn btn-sm btn-primary">
-                                        Edit Page
-                                      </button>
+                                    <div className="d-flex justify-content-center mt-3">
+                                      <Link className="btn btn-sm btn-outline-info"
+                                        href={`/pages/page/editMyPage/${page.id}`}
+                                      >
+                                      <i className="bi bi-pencil"/> &nbsp;
+                                        Edit
+                                      </Link>
+                                      &nbsp;
                                       <button
-                                        className="btn btn-sm btn-danger"
+                                        className="btn btn-sm btn-outline-danger"
                                         onClick={() =>
                                           handleDeletePage(page.id)
                                         }
                                       >
+                                         <i className="bi bi-trash"/>
                                         Delete
                                       </button>
                                     </div>
