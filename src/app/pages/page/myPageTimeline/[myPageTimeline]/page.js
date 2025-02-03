@@ -261,7 +261,7 @@ export default function MyPageTimeline({ params }) {
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button href="https://demo.socioon.com/events/create-event" className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
+                                                <button  className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
                                                     <i className="bi bi-calendar2-event-fill text-danger pe-2" /> Event
                                                 </button>
                                             </li>

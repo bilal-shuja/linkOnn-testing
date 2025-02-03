@@ -311,9 +311,13 @@ const Profilecard = ({ user_id }) => {
                         <Link href={`/pages/UserProfile/videos/${user_id}`} className={`text-decoration-none ${isActive('videos')}`}>
                             Videos
                         </Link>
-                        <Link href={`/pages/UserProfile/common/${user_id}`} className={`text-decoration-none ${isActive('common')}`}>
-                            Common Interest
-                        </Link>
+
+                        {userdata.data.id !== user_id && (
+                            <Link href={`/pages/UserProfile/common/${user_id}`} className={`text-decoration-none ${isActive('common')}`}>
+                                Common Interest
+                            </Link>
+                        )}
+
                     </div>
                 </div>
             </div>

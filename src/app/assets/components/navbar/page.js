@@ -259,11 +259,12 @@ export default function Navbar() {
                 />
               </Link>
 
-              <div className="dropstart mx-3">
+              <div className="dropdown position-relative mx-3">
+                {/* Profile Avatar Dropdown Toggle */}
                 <Image
                   src={userdata.data.avatar}
                   alt="Profile"
-                  className="rounded-2"
+                  className="rounded-circle profile-avatar shadow-sm"
                   height={40}
                   width={40}
                   role="button"
@@ -271,83 +272,75 @@ export default function Navbar() {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 />
-                <ul className="dropdown-menu my-2 p-3 shadow-lg rounded-3 border-0">
+
+                {/* Dropdown Menu - Responsive & Fully Adaptable */}
+                <ul className="dropdown-menu dropdown-menu-end dropdown-custom">
+
+                  {/* User Info Section */}
+                  <li className="d-flex align-items-center mt-2 mx-3 mb-3">
+                    <Image
+                      src={userdata.data.avatar}
+                      alt="User Avatar"
+                      className="rounded-circle border border-2 border-light shadow-sm"
+                      width={50}
+                      height={50}
+                      unoptimized={true}
+                    />
+                    <div className="ms-3">
+                      <Link href="#" className="text-decoration-none text-dark fw-bold dropdown-username">
+                        {userdata.data.first_name} {userdata.data.last_name}
+                      </Link>
+                      <small className="text-muted d-block">@{userdata.data.username}</small>
+                    </div>
+                  </li>
+
+                  {/* View Profile Button */}
+                  <li className="d-flex justify-content-center my-2">
+                    <button
+                      className="btn btn-outline-primary fw-semibold rounded-pill w-100"
+                      onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
+                    >
+                      <i className="bi bi-person-circle me-2"></i> View Profile
+                    </button>
+                  </li>
+
+                  {/* Settings & Privacy */}
                   <li>
-                    <div className="d-flex align-items-center mt-2 mx-3 mb-3">
-                      <Image
-                        src={userdata.data.avatar}
-                        alt="User Avatar"
-                        className="rounded-3"
-                        width={40}
-                        height={40}
-                        unoptimized={true}
-                      />
-                      <div className="mx-3">
-                        <Link
-                          href="#"
-                          className="text-decoration-none text-dark fw-bold"
-                        >
-                          {userdata.data.first_name} {userdata.data.last_name}
-                        </Link>
-                        <small className="text-muted"> @{userdata.data.username} </small>
+                    <Link className="dropdown-item py-2 d-flex align-items-center" href="/pages/settings/general-settings">
+                      <i className="bi bi-gear pe-3 text-primary"></i> Settings & Privacy
+                    </Link>
+                  </li>
+
+                  {/* Upgrade to Pro */}
+                  <li>
+                    <Link className="dropdown-item py-2 d-flex align-items-center" href="/pages/Packages">
+                      <i className="bi bi-currency-dollar pe-3 text-warning"></i> Upgrade to Pro
+                    </Link>
+                  </li>
+
+                  {/* Dark Mode Toggle */}
+                  <li>
+                    <div className="dropdown-item d-flex align-items-center py-2">
+                      <i className="bi bi-moon-stars pe-3 text-secondary"></i>
+                      <div className="form-check form-switch">
+                        <input className="form-check-input" type="checkbox" id="darkModeSwitch" />
+                        <label className="form-check-label ms-2" htmlFor="darkModeSwitch">Dark Mode</label>
                       </div>
                     </div>
                   </li>
 
-                  <li className="d-flex justify-content-center my-2 align-items-center">
+                  <hr className="dropdown-divider mx-3" />
 
-                    <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }}
-                      onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
-                    >
-                      View Profile
-
-                    </button>
-
-                  </li>
-
+                  {/* Sign Out */}
                   <li>
-                    <Link
-                      className="dropdown-item align-items-center d-flex py-2"
-                      href="/pages/settings/general-settings"
-                    >
-                      <i className="bi bi-gear pe-3"></i> Settings & Privacy
+                    <Link className="dropdown-item py-2 d-flex align-items-center text-danger" href="/auth/sign-in" onClick={handleLogout}>
+                      <i className="bi bi-box-arrow-right pe-3"></i> Sign Out
                     </Link>
                   </li>
 
-                  <li>
-                    <Link className="dropdown-item py-2" href="/pages/Packages">
-                      <i className="bi bi-currency-dollar pe-3"></i>
-                      Upgrade to Pro
-                    </Link>
-                  </li>
-
-                  <li>
-                    <Link className="dropdown-item py-2" href="#">
-                      <div className="form-check form-switch d-flex align-items-center">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id="flexSwitchCheckDefault"
-                        />
-                        <label className="form-check-label ms-2">Dark Theme</label>
-                      </div>
-                    </Link>
-                  </li>
-
-                  <hr />
-
-                  <li>
-                    <Link
-                      className="dropdown-item mx-2 py-2"
-                      href="/auth/sign-in"
-                      onClick={handleLogout}
-                    >
-                      <i className="bi bi-box-arrow-right pe-3"></i>
-                      Sign out
-                    </Link>
-                  </li>
                 </ul>
               </div>
+
 
             </div>
           </div>

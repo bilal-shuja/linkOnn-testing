@@ -8,7 +8,6 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 export default function Leftnav() {
-
   const [blogs, setBlogs] = useState([]);
   const [loadingBlogs, setLoadingBlogs] = useState(false);
   const [people, setPeople] = useState([]);
@@ -77,10 +76,10 @@ export default function Leftnav() {
 
   return (
     <div className="position-sticky top-0">
-      <div className="card mb-3 shadow-lg border-0">
+      <div className="card mb-4 custom-shadow border-0 rounded-4">
         <div className="card-body">
           <div className="d-flex align-items-center justify-content-between">
-            <h6 className="mb-0">People you may know</h6>
+            <h6 className="mb-0 fw-bold">People You May Know</h6>
             <button className="border-0 bg-transparent" onClick={fetchPeopleRecommendations}>
               <i className="bi bi-arrow-clockwise text-primary fs-5"></i>
             </button>
@@ -94,8 +93,9 @@ export default function Leftnav() {
             </div>
           ) : people.length > 0 ? (
             people.map((person) => (
-              <div key={person.id} className="d-flex align-items-center justify-content-between mt-2 p-2">
-                <div className="d-flex align-items-center"
+              <div key={person.id} className="d-flex align-items-center justify-content-between mt-3 p-2 hover-effect rounded-3">
+                <div
+                  className="d-flex align-items-center"
                   style={{ cursor: 'pointer' }}
                   onClick={() => router.push(`/pages/UserProfile/timeline/${person.id}`)}
                 >
@@ -108,7 +108,7 @@ export default function Leftnav() {
                     style={{ objectFit: 'cover' }}
                   />
                   <div className="ms-3">
-                    <h6 className="mb-0 text-truncate" style={{ maxWidth: '150px' }}>
+                    <h6 className="mb-0 text-truncate text-dark fw-bold" style={{ maxWidth: '150px' }}>
                       {`${person.first_name} ${person.last_name}`}
                     </h6>
                     <p className="text-muted mb-0 text-truncate">@{person.username}</p>
@@ -133,16 +133,16 @@ export default function Leftnav() {
             <p className="text-center text-muted mt-3">No people recommendations available</p>
           )}
 
-          <Link href="/pages/Friends" className="btn btn-outline-primary w-100 mt-3 border border-1">
-            View more
+          <Link href="/pages/Friends" className="btn btn-gradient w-100 mt-3">
+            View More
           </Link>
         </div>
       </div>
 
-      <div className="card mb-3 shadow-lg border-0">
+      <div className="card mb-4 custom-shadow border-0 rounded-4">
         <div className="card-body">
           <div className="d-flex align-items-center justify-content-between">
-            <h6 className="mb-0">Articles & Blogs</h6>
+            <h6 className="mb-0 fw-bold">Articles & Blogs</h6>
             <button className="border-0" onClick={fetchArticlesBlogs}>
               <i className="bi bi-arrow-clockwise text-primary"></i>
             </button>
@@ -158,7 +158,7 @@ export default function Leftnav() {
             blogs.map((blog) => (
               <div key={blog.id}>
                 <div className="mt-3 mx-2">
-                  <Link className="text-decoration-none" href={`/pages/blogs/blogdetails/${blog.id}`}>
+                  <Link className="text-decoration-none fw-bold text-dark hover-text" href={`/pages/blogs/blogdetails/${blog.id}`}>
                     {blog.title}
                   </Link>
 
@@ -169,11 +169,11 @@ export default function Leftnav() {
               </div>
             ))
           ) : (
-            <p>No blogs available</p>
+            <p className="text-center text-muted">No blogs available</p>
           )}
 
-          <Link href="/pages/Blogs" className="btn btn-outline-primary w-100 mt-3 border border-1">
-            View more
+          <Link href="/pages/Blogs" className="btn btn-gradient w-100 mt-3">
+            View More
           </Link>
         </div>
       </div>
