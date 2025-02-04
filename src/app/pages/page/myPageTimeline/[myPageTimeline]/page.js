@@ -1,15 +1,16 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import createAPI from "@/app/lib/axios";
-import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "react-toastify";
-// import useConfirmationToast from "@/app/hooks/useConfirmationToast";
-import styles from '../../css/page.module.css';
+import createAPI from "@/app/lib/axios";
 import EmojiPicker from 'emoji-picker-react';
-// import { Dropzone, FileMosaic } from "@files-ui/react";
+import styles from '../../css/page.module.css';
 import RightNav from "../../components/rightNav";
+import React, { useState, useEffect } from "react";
+import PostPollModal from "../../Modal/PostPollModal";
+// import { Dropzone, FileMosaic } from "@files-ui/react";
+// import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 
 
 
@@ -24,6 +25,69 @@ export default function MyPageTimeline({ params }) {
     const [postText, setPostText] = useState("");
 
     const [color, setColor] = useState("");
+
+
+    const [images, setImages] = useState([]);
+    const [videoFiles, setVideoFiles] = useState([]);
+    const [audioFiles, setAudioFiles] = useState([]);
+
+    const [location, setLocation] = useState('');
+
+
+    const [photoSection, setPhotoSection] = useState(false);
+    const [videoSection, setVideoSection] = useState(false);
+    const [audioSection, setAudioSection] = useState(false);
+
+    const [showLocationField, setShowLocationField] = useState(false);
+
+    const [pollModal, setPollModal] = useState(false);
+
+
+    const handleImageChange = (event) => {
+        const files = Array.from(event.target.files);
+        const newImages = files.map((file) => ({
+            file,
+            url: URL.createObjectURL(file),
+        }));
+        setImages([...images, ...newImages]);
+    };
+
+    const removeImage = (index) => {
+        const updatedImages = images.filter((_, i) => i !== index);
+        setImages(updatedImages);
+    };
+
+
+
+    const handleFileChange = (event) => {
+        const files = Array.from(event.target.files);
+        const newVideos = files.map((file) => ({
+            file,
+            url: URL.createObjectURL(file),
+        }));
+        setVideoFiles((prevFiles) => [...prevFiles, ...newVideos]);
+    };
+
+    const removeVideo = (index) => {
+        const updatedVideos = videoFiles.filter((_, i) => i !== index);
+        setVideoFiles(updatedVideos);
+    };
+
+
+    const handleAudioChange = (event) => {
+        const files = Array.from(event.target.files);
+        const newAudio = files.map((file) => ({
+            file,
+            url: URL.createObjectURL(file),
+        }));
+        setAudioFiles((prevFiles) => [...prevFiles, ...newAudio]);
+    };
+
+    const removeAudio = (index) => {
+        const updatedVideos = audioFiles.filter((_, i) => i !== index);
+        setAudioFiles(updatedVideos);
+    };
+
 
 
 
@@ -60,10 +124,7 @@ export default function MyPageTimeline({ params }) {
         fetchSpecificMyPageTimline();
     }, []);
 
-    const [files, setFiles] = useState([]);
-    const updateFiles = (incommingFiles) => {
-        setFiles(incommingFiles);
-    };
+
 
 
 
@@ -112,7 +173,7 @@ export default function MyPageTimeline({ params }) {
                                 </div>
 
                                 <div className="card-body">
-                                    <div className={` mt-1 ${styles.userTimelineInfoContainer}`}  >
+                                    <div className={`mt-1 ${styles.userTimelineInfoContainer}`}>
                                         <div className="user-timeline-info">
                                             <h5 className="text-dark">
                                                 {pageTimelineData?.page_title}
@@ -169,7 +230,7 @@ export default function MyPageTimeline({ params }) {
 
                             </div>
 
-                            <div className="card shadow-lg border-0 rounded-3 mt-5">
+                            <div className="card shadow-lg border-0 rounded-3 mt-3">
                                 <div className="card-body">
 
                                     <div className="form-floating">
@@ -209,69 +270,215 @@ export default function MyPageTimeline({ params }) {
                                             onChange={(e) => setColor(e.target.value)}
                                         />
 
+                                        {
+                                            photoSection ?
+                                                <>
+                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                        {images.map((img, index) => (
+                                                            <div key={index} style={{ position: "relative", display: "inline-block" }}>
 
-                                            <div className="mb-3">
-                                            {/* <label for="formFile" className="form-label">Default file input example</label> */}
-                                            <input className="form-control form-control-sm" type="file" id="formFile"/>
-                                            </div>
+                                                                <button
+                                                                    onClick={() => removeImage(index)}
+                                                                    style={{
+                                                                        position: "absolute",
+                                                                        top: "-5px",
+                                                                        right: "-5px",
+                                                                        color: "white",
+                                                                        border: "none",
+                                                                        borderRadius: "50%",
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-trash text-danger" />
+                                                                </button>
 
-                                        {/* <div className="card p-2  mb-2" style={{width:"10em", height: "7em", border:"3px dotted blue" }}>
-                                            <div className="d-flex justify-content-center align-self-center">
-                                                <i className="bi bi-plus " style={{ fontSize: "30px" }}></i> 
-                                             
-                                            </div>
-                                        </div> */}
-
-                                        {/* 
-                                            <Dropzone onChange={updateFiles} value={files}
-                                            className="mb-3"
-                                            style={{ width: '250px', height: '150px' }}
-                                            >
-                                                {files.map((file) => (
-                                                    <div key={file.id}>
-                                                         <FileMosaic {...file} preview 
-                                                    />
+                                                                <Image
+                                                                    className="mb-3"
+                                                                    src={img.url}
+                                                                    alt={`Preview ${index}`}
+                                                                    width={50}
+                                                                    height={50}
+                                                                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "5px" }}
+                                                                />
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                   
-                                                ))}
-                                                </Dropzone> */}
+
+
+                                                    <div className="col-lg-12 mb-3">
+                                                        <input className="form-control form-control-sm" type="file" id="formFile" onChange={handleImageChange} multiple />
+                                                    </div>
+                                                </>
+
+                                                :
+                                                ""
+
+                                        }
+
+
+
+                                        {
+                                            videoSection ?
+                                                <>
+
+                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                        {videoFiles.map((video, index) => (
+                                                            <div key={index} style={{ position: "relative", display: "inline-block" }}>
+
+                                                                <button
+                                                                    onClick={() => removeVideo(index)}
+                                                                    style={{
+                                                                        position: "absolute",
+                                                                        top: "10px",
+                                                                        right: "-5px",
+                                                                        color: "white",
+                                                                        border: "none",
+                                                                        borderRadius: "50%",
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-trash text-danger" />
+                                                                </button>
+
+                                                                <video width="120" height="120" controls>
+                                                                    <source src={video.url} type={video.file.type} />
+                                                                    Your browser does not support the video tag.
+                                                                </video>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    <div className="col-lg-12 mb-3">
+                                                        <input
+                                                            className="form-control form-control-sm"
+                                                            type="file"
+                                                            id="formFile"
+                                                            accept="video/*"
+                                                            multiple
+                                                            onChange={handleFileChange}
+                                                        />
+
+
+                                                    </div>
+                                                </>
+                                                :
+                                                ""
+                                        }
+
+
+                                        {
+                                            audioSection ?
+                                                <>
+
+                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                        {audioFiles.map((audio, index) => (
+                                                            <div key={index} style={{ position: "relative", display: "inline-block" }}>
+
+                                                                <button
+                                                                    onClick={() => removeAudio(index)}
+                                                                    style={{
+                                                                        position: "absolute",
+                                                                        top: "10px",
+                                                                        right: "-5px",
+                                                                        color: "white",
+                                                                        border: "none",
+                                                                        borderRadius: "50%",
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-trash text-danger" />
+                                                                </button>
+
+                                                                <audio width="120" height="120" controls>
+                                                                    <source src={audio.url} type={audio.file.type} />
+                                                                    Your browser does not support the video tag.
+                                                                </audio>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    <div className="col-lg-12 mb-3">
+                                                        <input
+                                                            className="form-control form-control-sm"
+                                                            type="file"
+                                                            id="formFile"
+                                                            accept="audio/*"
+                                                            multiple
+                                                            onChange={handleAudioChange}
+                                                        />
+
+
+                                                    </div>
+                                                </>
+                                                :
+                                                ""
+                                        }
+
+
+                                        {
+                                            showLocationField ?
+                                                <div className="col-lg-12 mb-2">
+                                                    <label className="form-label text-muted"> <i className="bi bi-geo-alt-fill"></i> location</label>
+                                                    <input className="form-control" placeholder="Where are you at?" onChange={(e) => setLocation(e.target.value)} />
+                                                </div>
+                                                :
+                                                ""
+
+                                        }
+
+
+
+
+
+
 
                                         <ul className="nav nav-pills nav-stack  fw-normal justify-content-between">
                                             <li className="nav-item">
-                                                <button className="nav-link photos_link bg-light py-1  px-2 mb-0 text-muted" href="#!">
+                                                <button className="nav-link photos_link bg-light py-1  px-2 mb-0 text-muted"
+                                                    onClick={() => setPhotoSection(!photoSection)}
+                                                >
                                                     <i className="bi bi-image-fill text-success pe-2" />
                                                     Photo
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button className="nav-link video_link bg-light py-1 px-2 mb-0 text-muted" href="#!">
+                                                <button className="nav-link video_link bg-light py-1 px-2 mb-0 text-muted"
+                                                    onClick={() => setVideoSection(!videoSection)}
+                                                >
                                                     <i className="bi bi-camera-reels-fill text-info pe-2" />
                                                     Video
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button className="nav-link audio_link bg-light py-1 px-2 mb-0 text-muted" href="#!">
+                                                <button className="nav-link audio_link bg-light py-1 px-2 mb-0 text-muted"
+                                                    onClick={() => setAudioSection(!audioSection)}
+
+                                                >
                                                     <i className="bi bi-music-note-beamed text-primary pe-2" />
                                                     Audio
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button href="#" className="nav-link location_link bg-light py-1 px-2 mb-0 text-muted">
+                                                <button className="nav-link location_link bg-light py-1 px-2 mb-0 text-muted"
+                                                    onClick={() => setShowLocationField(!showLocationField)}
+                                                >
                                                     <i className="bi bi-geo-alt-fill text-danger pe-2" /> Location
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button  className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
+                                                <Link href={'/pages/Events/create-event'} className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
                                                     <i className="bi bi-calendar2-event-fill text-danger pe-2" /> Event
+                                                </Link>
+                                            </li>
+                                            <li className="nav-item">
+                                                <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={()=> setPollModal(!pollModal)}>
+                                                    <i className="fas fa-poll text-info pe-1" /> Poll
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button href className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" data-bs-toggle="modal" data-bs-target="#pollModel">
-                                                    <i className="fas fa-poll text-info pe-1" /> Poll                  </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button href className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" data-bs-toggle="modal" data-bs-target="#fundModel">
-                                                    <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding                  </button>
+                                                <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" data-bs-toggle="modal" data-bs-target="#fundModel">
+                                                    <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding
+                                                </button>
                                             </li>
                                         </ul>
 
@@ -282,10 +489,29 @@ export default function MyPageTimeline({ params }) {
 
                             </div>
 
+                            <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
+                                <div className="my-sm-5 py-sm-5 text-center">
+                                    <i className="display-1 text-secondary bi bi-card-list" />
+                                    <h5 className="mt-2 mb-3 text-body text-muted">No More Posts to Show</h5>
+                                </div>
+                            </div>
+
+
                         </div>
 
 
-                    <RightNav pageTimelineData = {pageTimelineData}/>
+                        <RightNav pageTimelineData={pageTimelineData} />
+
+
+                        {
+                            pollModal === true?
+                            <PostPollModal
+                            pollModal = {pollModal}
+                            setPollModal = {setPollModal}
+                            />
+                            :
+                            ""
+                        }
 
                     </div>
                 </div>

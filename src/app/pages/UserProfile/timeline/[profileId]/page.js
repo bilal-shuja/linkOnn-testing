@@ -1068,6 +1068,7 @@ export default function UserProfileCard({ params }) {
                                                 Raise Funding
                                             </button>
                                         </div>
+                                        
                                     </div>
                                     <div className="d-flex justify-content-center">
                                         <button
