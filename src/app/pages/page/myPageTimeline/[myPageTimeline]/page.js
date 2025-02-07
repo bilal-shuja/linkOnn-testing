@@ -8,9 +8,11 @@ import EmojiPicker from 'emoji-picker-react';
 import styles from '../../css/page.module.css';
 import RightNav from "../../components/rightNav";
 import PostPollModal from "../../Modal/PostPollModal";
+import FundingModal from "../../Modal/FundingModal";
 import { ReactionBarSelector } from '@charkour/react-reactions';
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import { set } from "lodash";
 // import { Dropzone, FileMosaic } from "@files-ui/react";
 // import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 // import { FacebookSelector } from 'react-reactions';
@@ -31,8 +33,14 @@ export default function MyPageTimeline({ params }) {
 
 
     const [images, setImages] = useState([]);
+    const fileImageRef = useRef(null);
+
     const [videoFiles, setVideoFiles] = useState([]);
+    const fileVideoRef = useRef(null);
+
     const [audioFiles, setAudioFiles] = useState([]);
+    const fileAudioRef = useRef(null);
+
 
     const [location, setLocation] = useState('');
 
@@ -44,6 +52,7 @@ export default function MyPageTimeline({ params }) {
     const [showLocationField, setShowLocationField] = useState(false);
 
     const [pollModal, setPollModal] = useState(false);
+    const [fundingModal, setFundingModal] = useState(false);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [noMorePosts, setNoMorePosts] = useState(false);
@@ -61,7 +70,35 @@ export default function MyPageTimeline({ params }) {
     const [showReplyInput, setShowReplyInput] = useState({});
     const [repliesData, setRepliesData] = useState({});
 
+    const [showReactions, setShowReactions] = useState(false);
 
+    const [selectedReaction, setSelectedReaction] = useState(null);
+    const [isOpen, setIsOpen] = useState(false);
+
+
+
+    const endpoint = "/api/post/create";
+
+    const reactionEmojis = {
+        satisfaction: "👍",
+        love: "❤️",
+        happy: "😂",
+        surprise: "😮",
+        sad: "😢",
+        angry: "😡"
+    };
+
+    const handleReactionSelect = (reaction) => {
+        setSelectedReaction(reactionEmojis[reaction] || "😊");
+        setShowReactions(false);
+        // LikePost(postId, reaction);
+    };
+
+
+
+    const toggleOptions = () => {
+        setIsOpen(!isOpen);
+    };
 
 
 
@@ -76,9 +113,16 @@ export default function MyPageTimeline({ params }) {
         setImages([...images, ...newImages]);
     };
 
+
     const removeImage = (index) => {
         const updatedImages = images.filter((_, i) => i !== index);
         setImages(updatedImages);
+
+        if (updatedImages.length === 0 && fileImageRef.current) {
+            fileImageRef.current.value = "";
+        }
+
+
     };
 
 
@@ -95,7 +139,13 @@ export default function MyPageTimeline({ params }) {
     const removeVideo = (index) => {
         const updatedVideos = videoFiles.filter((_, i) => i !== index);
         setVideoFiles(updatedVideos);
+
+        if (updatedVideos.length === 0 && fileVideoRef.current) {
+            fileVideoRef.current.value = "";
+        }
     };
+
+
 
 
     const handleAudioChange = (event) => {
@@ -108,8 +158,14 @@ export default function MyPageTimeline({ params }) {
     };
 
     const removeAudio = (index) => {
-        const updatedVideos = audioFiles.filter((_, i) => i !== index);
-        setAudioFiles(updatedVideos);
+        const updatedAudios = audioFiles.filter((_, i) => i !== index);
+        setAudioFiles(updatedAudios);
+
+        if (updatedAudios.length === 0 && fileVideoRef.current) {
+            fileAudioRef.current.value = "";
+        }
+
+
     };
 
 
@@ -395,6 +451,7 @@ export default function MyPageTimeline({ params }) {
             toast.error("Error while reacting to the Post");
         }
     };
+
     const handleCommentToggle = async (postId) => {
         setShowList(!showList);
 
@@ -529,32 +586,102 @@ export default function MyPageTimeline({ params }) {
     }, []);
 
 
-    const [showReactions, setShowReactions] = useState(false);
 
-    const [selectedReaction, setSelectedReaction] = useState(null);
 
-    const reactionEmojis = {
-        satisfaction: "👍",
-        love: "❤️",
-        happy: "😂",
-        surprise: "😮",
-        sad: "😢",
-        angry: "😡"
+
+
+    const uploadPost = async (donationData = {}) => {
+
+
+        // ${pollText}
+
+      
+
+        try {
+
+            const formData = new FormData();
+            const combinedText = `${postText}  ${donationData.donationTitle}`;
+
+            formData.append("page_id", myPageTimeline);
+            if (combinedText) formData.append("post_text", combinedText);
+            if (location) formData.append("post_location", location);
+
+            if (images) images.map((image) => formData.append("images[]", image.file))
+            if (videoFiles) videoFiles.map((videoFile) => formData.append("video", videoFile.file));
+            if (audioFiles) audioFiles.map((audioFile) => formData.append("audio", audioFile.file));
+
+
+
+            if (donationData.donationAmount) {
+                formData.append("amount", donationData.donationAmount);
+            }
+            if (donationData.donationDescription) {
+                formData.append("description", donationData.donationDescription);
+            }
+         
+            formData.append("donation_image", donationData.donationImage);
+            
+
+
+
+
+
+
+            // if (donationData.donationDescription)
+            //     if (donationData.donationAmount)
+            //      if (donationData.donationImage)
+
+
+            // if (pollText) {
+            //     postType = "poll";
+
+            // } 
+            // else 
+            let postType = "post";
+            if (donationData.donationAmount) {
+                postType = "donation";
+            }
+
+            formData.append("post_type", postType);
+
+
+            const response = await api.post(endpoint, formData, {
+
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+
+            });
+
+
+            if (response.data.code == "200") {
+                toast.success(response.data.message)
+                setPosts([response.data.data, ...posts]);
+                setPostText("");
+                setLocation("");
+                setImages([]);
+                setVideoFiles([]);
+                setAudioFiles([]);
+                setPhotoSection(false);
+                setVideoSection(false);
+                setAudioSection(false);
+                setShowLocationField(false);
+
+                setFundingModal(false);
+            } else {
+                toast.error("Error from server: " + response.data.message)
+            }
+        }
+
+        catch (error) {
+            console.log(error)
+            toast.error(error.response.data.message)
+        }
     };
 
-    const handleReactionSelect = (reaction) => {
-        setSelectedReaction(reactionEmojis[reaction] || "😊"); 
-        setShowReactions(false); 
-        // LikePost(postId, reaction);
-    };
 
-    const [isOpen, setIsOpen] = useState(false);
 
-    const toggleOptions = () => {
-        setIsOpen(!isOpen);
-      };
 
- 
     return (
         <>
             <div className="container-fluid bg-light">
@@ -658,15 +785,15 @@ export default function MyPageTimeline({ params }) {
                             <div className="card shadow-lg border-0 rounded-3 mt-3">
                                 <div className="card-body">
 
-                                    <div className="form-floating">
-                                        <textarea className={`form-control border border-0 ${styles.pagePostInput}`}
+                                    <div className="form-floating mb-4">
+                                        <textarea className={`form-control border border-0 ${styles.pagePostInput} `}
                                             placeholder="Leave a comment here"
                                             id="floatingTextarea2"
                                             style={{ height: "150px", backgroundColor: color }}
                                             value={postText}
                                             onChange={handlePostTextChange}
                                         />
-                                        <label htmlFor="floatingTextarea2" className="small text-muted mb-2">Share your thoughts....</label>
+                                        <label htmlFor="floatingTextarea2" className="small text-muted ">Share your thoughts....</label>
 
                                         <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "10px", top: "10px" }}>😊</button>
 
@@ -687,7 +814,7 @@ export default function MyPageTimeline({ params }) {
                                             </div>
                                         )}
 
-                                 
+
 
                                         {/* <input
                                             type="color"
@@ -698,30 +825,31 @@ export default function MyPageTimeline({ params }) {
                                             onChange={(e) => setColor(e.target.value)}
                                         /> */}
 
-<div className={`d-flex ${styles.optionsContainer} mb-2`}>
-      <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptions} >
-      <i class="bi bi-palette-fill"></i>
-      </button>
-      <div className={`${styles.colorOptions} ${isOpen ? styles.open : ''}`}>
-        <div className={styles.colorOption} style={{ backgroundColor: '#FFFFFF' }}></div>
-        <div className={styles.colorOption} style={{ backgroundColor: '#c600ff' }}></div>
-        <div className={styles.colorOption} style={{ backgroundColor: '#000000' }}></div>
-        <div className={styles.colorOption} style={{ backgroundColor: '#C70039' }}></div>
-        <div className={styles.colorOption} style={{ backgroundColor: '#900C3F' }}></div>
-        <div className={styles.colorOption} style={{ backgroundColor: '#581845' }}></div>
-        <div className={styles.colorOption} style={{ backgroundColor: '#FF5733' }}></div>
-        <div className={styles.colorOption} style={{ backgroundColor: '#00a859' }}></div>
+                                        <div className={`d-flex ${styles.optionsContainer} mb-2`}>
+                                            <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptions} >
+                                                <i className="bi bi-palette-fill"></i>
+                                            </button>
+                                            <div className={`${styles.colorOptions} ${isOpen ? styles.open : ''}`}>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#FFFFFF' }}></div>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#c600ff' }}></div>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#000000' }}></div>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#C70039' }}></div>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#900C3F' }}></div>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#581845' }}></div>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#FF5733' }}></div>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#00a859' }}></div>
 
-        <div className={styles.colorOption} style={{ backgroundColor: '#0098da' }}></div>
+                                                <div className={styles.colorOption} style={{ backgroundColor: '#0098da' }}></div>
 
 
-        <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)' }}></div>
-        <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)' }}></div>
-        <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)' }}></div>
+                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)' }}></div>
+                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)' }}></div>
+                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)' }}></div>
 
-        
-      </div>
-    </div>
+
+                                            </div>
+                                        </div>
+                                        <hr />
                                         {
                                             photoSection ?
                                                 <>
@@ -758,7 +886,14 @@ export default function MyPageTimeline({ params }) {
 
 
                                                     <div className="col-lg-12 mb-3">
-                                                        <input className="form-control form-control-sm" type="file" id="formFile" onChange={handleImageChange} multiple />
+                                                        <label className="form-label text-muted"> <i className="bi bi-image-fill"></i> Photos</label>
+                                                        <input className="form-control form-control-sm"
+                                                            type="file"
+                                                            id="formFile"
+                                                            onChange={handleImageChange}
+                                                            ref={fileImageRef}
+                                                            multiple
+                                                        />
                                                     </div>
                                                 </>
 
@@ -766,8 +901,6 @@ export default function MyPageTimeline({ params }) {
                                                 ""
 
                                         }
-
-
 
                                         {
                                             videoSection ?
@@ -778,11 +911,12 @@ export default function MyPageTimeline({ params }) {
                                                             <div key={index} style={{ position: "relative", display: "inline-block" }}>
 
                                                                 <button
+
                                                                     onClick={() => removeVideo(index)}
                                                                     style={{
                                                                         position: "absolute",
-                                                                        top: "10px",
-                                                                        right: "-5px",
+                                                                        top: "20px",
+                                                                        right: "-15px",
                                                                         color: "white",
                                                                         border: "none",
                                                                         borderRadius: "50%",
@@ -792,7 +926,7 @@ export default function MyPageTimeline({ params }) {
                                                                     <i className="bi bi-trash text-danger" />
                                                                 </button>
 
-                                                                <video width="120" height="120" controls>
+                                                                <video width="150" height="150" controls>
                                                                     <source src={video.url} type={video.file.type} />
                                                                     Your browser does not support the video tag.
                                                                 </video>
@@ -801,6 +935,7 @@ export default function MyPageTimeline({ params }) {
                                                     </div>
 
                                                     <div className="col-lg-12 mb-3">
+                                                        <label className="form-label text-muted"> <i className="bi bi-camera-reels-fill"></i> Videos</label>
                                                         <input
                                                             className="form-control form-control-sm"
                                                             type="file"
@@ -808,6 +943,7 @@ export default function MyPageTimeline({ params }) {
                                                             accept="video/*"
                                                             multiple
                                                             onChange={handleFileChange}
+                                                            ref={fileVideoRef}
                                                         />
 
 
@@ -824,14 +960,14 @@ export default function MyPageTimeline({ params }) {
 
                                                     <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
                                                         {audioFiles.map((audio, index) => (
-                                                            <div key={index} style={{ position: "relative", display: "inline-block" }}>
+                                                            <div key={index} style={{ position: "relative" }}>
 
                                                                 <button
                                                                     onClick={() => removeAudio(index)}
                                                                     style={{
                                                                         position: "absolute",
-                                                                        top: "10px",
-                                                                        right: "-5px",
+                                                                        top: "-12px",
+                                                                        right: "-10px",
                                                                         color: "white",
                                                                         border: "none",
                                                                         borderRadius: "50%",
@@ -841,7 +977,7 @@ export default function MyPageTimeline({ params }) {
                                                                     <i className="bi bi-trash text-danger" />
                                                                 </button>
 
-                                                                <audio width="120" height="120" controls>
+                                                                <audio width="150" height="120" controls>
                                                                     <source src={audio.url} type={audio.file.type} />
                                                                     Your browser does not support the video tag.
                                                                 </audio>
@@ -850,6 +986,7 @@ export default function MyPageTimeline({ params }) {
                                                     </div>
 
                                                     <div className="col-lg-12 mb-3">
+                                                        <label className="form-label text-muted"> <i className="bi bi-music-note-beamed"></i> Audio</label>
                                                         <input
                                                             className="form-control form-control-sm"
                                                             type="file"
@@ -857,6 +994,7 @@ export default function MyPageTimeline({ params }) {
                                                             accept="audio/*"
                                                             multiple
                                                             onChange={handleAudioChange}
+                                                            ref={fileAudioRef}
                                                         />
 
 
@@ -887,7 +1025,13 @@ export default function MyPageTimeline({ params }) {
                                         <ul className="nav nav-pills nav-stack  fw-normal justify-content-between">
                                             <li className="nav-item">
                                                 <button className="nav-link photos_link bg-light py-1  px-2 mb-0 text-muted"
-                                                    onClick={() => setPhotoSection(!photoSection)}
+                                                    onClick={() => {
+                                                        setPhotoSection(!photoSection)
+                                                        setVideoSection(false)
+                                                        setAudioSection(false)
+                                                        setShowLocationField(false)
+
+                                                    }}
                                                 >
                                                     <i className="bi bi-image-fill text-success pe-2" />
                                                     Photo
@@ -895,7 +1039,13 @@ export default function MyPageTimeline({ params }) {
                                             </li>
                                             <li className="nav-item">
                                                 <button className="nav-link video_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => setVideoSection(!videoSection)}
+                                                    onClick={() => {
+                                                        setVideoSection(!videoSection)
+                                                        setPhotoSection(false)
+                                                        setAudioSection(false)
+                                                        setShowLocationField(false)
+
+                                                    }}
                                                 >
                                                     <i className="bi bi-camera-reels-fill text-info pe-2" />
                                                     Video
@@ -903,7 +1053,12 @@ export default function MyPageTimeline({ params }) {
                                             </li>
                                             <li className="nav-item">
                                                 <button className="nav-link audio_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => setAudioSection(!audioSection)}
+                                                    onClick={() => {
+                                                        setAudioSection(!audioSection)
+                                                        setPhotoSection(false)
+                                                        setVideoSection(false)
+                                                        setShowLocationField(false)
+                                                    }}
 
                                                 >
                                                     <i className="bi bi-music-note-beamed text-primary pe-2" />
@@ -912,7 +1067,12 @@ export default function MyPageTimeline({ params }) {
                                             </li>
                                             <li className="nav-item">
                                                 <button className="nav-link location_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => setShowLocationField(!showLocationField)}
+                                                    onClick={() => {
+                                                        setShowLocationField(!showLocationField)
+                                                        setPhotoSection(false)
+                                                        setVideoSection(false)
+                                                        setAudioSection(false)
+                                                    }}
                                                 >
                                                     <i className="bi bi-geo-alt-fill text-danger pe-2" /> Location
                                                 </button>
@@ -928,7 +1088,7 @@ export default function MyPageTimeline({ params }) {
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" data-bs-toggle="modal" data-bs-target="#fundModel">
+                                                <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={() => setFundingModal(!fundingModal)}>
                                                     <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding
                                                 </button>
                                             </li>
@@ -937,29 +1097,21 @@ export default function MyPageTimeline({ params }) {
 
 
                                     </div>
+
+                                    <div className="d-flex justify-content-between mt-3">
+
+                                        <button className={`btn w-100 ${styles.btnSuccessPost}`} onClick={uploadPost}>
+                                            <i className="bi bi-send"></i>&nbsp;
+                                            Post
+                                        </button>
+                                    </div>
                                 </div>
 
                             </div>
 
 
 
-
-
-                            {
-                                pollModal === true ?
-                                    <PostPollModal
-                                        pollModal={pollModal}
-                                        setPollModal={setPollModal}
-                                        posts={posts}
-                                        setPosts={setPosts}
-                                        myPageTimeline={myPageTimeline}
-                                    />
-                                    :
-                                    ""
-                            }
-
-
-                            {posts.map((post, index) => (
+                            {posts?.map((post, index) => (
                                 <div
                                     key={`${post.id}-${index}`}
                                     className="card mb-4 shadow-lg border-0 rounded-1 mt-4"
@@ -1006,17 +1158,26 @@ export default function MyPageTimeline({ params }) {
 
                                                         <span
                                                             style={{ cursor: 'pointer' }}
-                                                            onClick={() => handleClick(post.user.id)}
+                                                        // onClick={() => handleClick(post.user.id)}
                                                         >
-                                                            {post.user.first_name} {post.user.last_name} <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
+                                                            {post?.user.first_name} {post?.user.last_name}  {post?.post_location && post.post_location !== "" && (
+                                                                <span className="text-primary ms-1">
+                                                                    <small className="text-dark"> is in </small>
+                                                                    {/* {post.post_location} */}
+                                                                    <i className="bi bi-geo-fill"></i>
+                                                                    <a
+                                                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post?.post_location)}`}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-primary text-decoration-none"
+                                                                    >
+                                                                        {post.post_location}
+                                                                    </a>
+                                                                </span>
+                                                            )} <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
                                                         </span>
 
-                                                        {post.post_location && post.post_location !== "" && (
-                                                            <span className="text-primary">
-                                                                <small className="text-dark"> is in </small>
-                                                                {post.post_location}
-                                                            </span>
-                                                        )}
+
                                                     </h6>
                                                     <small className="text-secondary">
                                                         {post.created_human} -
@@ -1043,64 +1204,63 @@ export default function MyPageTimeline({ params }) {
                                                 </div>
                                             </div>
 
-                                            <div>
-                                                <div className="dropstart">
-                                                    <button
-                                                        className="btn border-0"
-                                                        type="button"
-                                                        id="dropdownMenuButton2"
-                                                        data-bs-toggle="dropdown"
-                                                        aria-expanded="false"
-                                                    >
-                                                        <i className="bi bi-caret-down"></i>
-                                                    </button>
-                                                    <ul
-                                                        className="dropdown-menu dropdown-menu-light"
-                                                        aria-labelledby="dropdownMenuButton2"
-                                                    >
+                                            <div className="dropstart">
+                                                <button
+                                                    className="btn border-0"
+                                                    type="button"
+                                                    id="dropdownMenuButton2"
+                                                    data-bs-toggle="dropdown"
+                                                    aria-expanded="false"
+                                                >
+                                                    <i className="bi bi-caret-down"></i>
+                                                </button>
+                                                <ul
+                                                    className="dropdown-menu dropdown-menu-light"
+                                                    aria-labelledby="dropdownMenuButton2"
+                                                >
+                                                    <li className="align-items-center d-flex">
+                                                        <Link
+                                                            className="text-decoration-none dropdown-item text-secondary"
+                                                            href="#"
+                                                        >
+                                                            <i className="bi bi-bookmark pe-2"></i> Save
+                                                            post
+                                                        </Link>
+                                                    </li>
+                                                    <li>
+                                                        <hr className="dropdown-divider" />
+                                                    </li>
+                                                    <li className=" align-items-center d-flex">
+                                                        <Link
+                                                            className="text-decoration-none dropdown-item text-secondary"
+                                                            href="#"
+                                                        >
+                                                            <i className="bi bi-flag pe-2"></i> Report Post
+                                                        </Link>
+                                                    </li>
+                                                    <li className=" align-items-center d-flex">
+                                                        <Link
+                                                            className="text-decoration-none dropdown-item text-secondary"
+                                                            href="#"
+                                                        >
+                                                            <i className="bi bi-box-arrow-up-right pe-2"></i>
+                                                            Open post in new tab
+                                                        </Link>
+                                                    </li>
+                                                    {post.user.id == userID && (
                                                         <li className="align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
+                                                            <button
+                                                                className="btn dropdown-item text-secondary"
+                                                                onClick={() => handlePostDelete(post.id)}
                                                             >
-                                                                <i className="bi bi-bookmark pe-2"></i> Save
-                                                                post
-                                                            </Link>
+                                                                <i className="bi bi-trash3 pe-2"></i>
+                                                                Delete Post
+                                                            </button>
                                                         </li>
-                                                        <li>
-                                                            <hr className="dropdown-divider" />
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-flag pe-2"></i> Report Post
-                                                            </Link>
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                                                Open post in new tab
-                                                            </Link>
-                                                        </li>
-                                                        {post.user.id == userID && (
-                                                            <li className="align-items-center d-flex">
-                                                                <button
-                                                                    className="btn dropdown-item text-secondary"
-                                                                    onClick={() => handlePostDelete(post.id)}
-                                                                >
-                                                                    <i className="bi bi-trash3 pe-2"></i>
-                                                                    Delete Post
-                                                                </button>
-                                                            </li>
-                                                        )}
-                                                    </ul>
-                                                </div>
+                                                    )}
+                                                </ul>
                                             </div>
+
 
                                         </div>
 
@@ -1174,6 +1334,60 @@ export default function MyPageTimeline({ params }) {
                                                             );
                                                         })}
                                                     </ul>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="container mt-5">
+                                            {post?.donation && (
+                                                <div>
+                                                    <Image
+                                                        src={post?.donation?.image}
+                                                        alt={post.donation.title}
+                                                        className="img-fluid d-block mx-auto"
+                                                        width={450}
+                                                        height={300}
+                                                        style={{
+                                                            objectFit: "cover",
+                                                        }}
+                                                    />
+
+                                                    <div className="card-body text-center">
+                                                        <h5 className="card-title">
+                                                            {post.donation.title}
+                                                        </h5>
+                                                        <p className="card-text">
+                                                            {post.donation.description}
+                                                        </p>
+                                                        <div className="progress mb-3">
+                                                            <div
+                                                                className="progress-bar"
+                                                                role="progressbar"
+                                                                style={{
+                                                                    width: `${(post.donation.collected_amount /
+                                                                        post.donation.amount) *
+                                                                        100
+                                                                        }%`,
+                                                                }}
+                                                                aria-valuenow={post.donation.collected_amount}
+                                                                aria-valuemin="0"
+                                                                aria-valuemax={post.donation.amount}
+                                                            ></div>
+                                                        </div>
+                                                        <div className="d-flex align-items-center justify-content-between">
+                                                            <p className="text-muted">
+                                                                {post.donation.collected_amount} Collected
+                                                            </p>
+                                                            <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+                                                            <button
+                                                                className="btn btn-primary btn-sm"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#DonateModal"
+                                                            >
+                                                                Donate
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
@@ -1296,9 +1510,9 @@ export default function MyPageTimeline({ params }) {
                                                         key={index}
                                                         src={image.media_path}
                                                         alt={`Post image ${index + 1}`}
-                                                        className="img-fluid mt-1"
-                                                        width={600}
-                                                        height={300}
+                                                        className="img-fluid m-1"
+                                                        width={400}
+                                                        height={200}
                                                         style={{
                                                             objectFit: "cover",
                                                         }}
@@ -1357,7 +1571,7 @@ export default function MyPageTimeline({ params }) {
                                                 </div>
                                             )}
 
-                                            {post.video && (
+                                            {post?.video && (
                                                 <div
                                                     className="media-container mt-1"
                                                     style={{ width: "100%", height: "auto" }}
@@ -1379,7 +1593,7 @@ export default function MyPageTimeline({ params }) {
                                                 </div>
                                             )}
 
-                                            {post.audio && (
+                                            {post?.audio && (
                                                 <div className="media-container w-100">
                                                     <audio controls className="w-100">
                                                         <source src={post.audio.media_path} />
@@ -1387,6 +1601,28 @@ export default function MyPageTimeline({ params }) {
                                                     </audio>
                                                 </div>
                                             )}
+
+
+                                            {
+                                                post?.post_location && (
+                                                    <div className="media-container text-center w-100 mt-3">
+                                                        <span className="text-muted">
+                                                            <i className="bi bi-geo-alt-fill"></i> {post.post_location}
+                                                        </span>
+
+                                                        {/* <iframe
+                                                        width="100%"
+                                                        height="250"
+                                                        style={{ border: 0, borderRadius: "8px" }}
+                                                        loading="lazy"
+                                                        allowFullScreen
+                                                        referrerPolicy="no-referrer-when-downgrade"
+                                                        src={`https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(post.post_location)}`}
+                                                    ></iframe> */}
+                                                    </div>
+                                                )
+
+                                            }
                                         </div>
 
                                         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
@@ -1426,13 +1662,12 @@ export default function MyPageTimeline({ params }) {
 
 
                                             <div style={{ position: "relative", display: "inline-block" }}>
-                                                {/* Reaction Button */}
                                                 <button
                                                     className="btn border-0 d-flex align-items-center"
                                                     onMouseEnter={() => setShowReactions(true)}
                                                     onMouseLeave={() => setShowReactions(false)}
                                                     onClick={() => {
-                                                      
+
                                                         setShowReactions(!showReactions);
                                                         // LikePost(post.id);
                                                     }}
@@ -1443,7 +1678,7 @@ export default function MyPageTimeline({ params }) {
                                                     Reaction
                                                 </button>
 
-                                              
+
                                                 {showReactions && (
                                                     <div
                                                         style={{
@@ -1452,9 +1687,8 @@ export default function MyPageTimeline({ params }) {
                                                             left: "0",
                                                             zIndex: 1000,
                                                             backgroundColor: "white",
-                                                            // padding: "15px",
                                                             borderRadius: "5px",
-                                                           
+
                                                         }}
                                                         onMouseEnter={() => setShowReactions(true)}
                                                         onMouseLeave={() => setShowReactions(false)}
@@ -1792,6 +2026,37 @@ export default function MyPageTimeline({ params }) {
                         </div>
 
                         <RightNav pageTimelineData={pageTimelineData} />
+
+
+                        {
+                            pollModal === true ?
+                                <PostPollModal
+                                    pollModal={pollModal}
+                                    setPollModal={setPollModal}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                    myPageTimeline={myPageTimeline}
+                                    endpoint={endpoint}
+                                />
+                                :
+                                ""
+                        }
+
+
+                        {
+                            fundingModal === true ?
+                                <FundingModal
+                                    fundingModal={fundingModal}
+                                    setFundingModal={setFundingModal}
+                                    // posts={posts}
+                                    // setPosts={setPosts}
+                                    // myPageTimeline={myPageTimeline}
+                                    // endpoint={endpoint}
+                                    uploadPost={uploadPost}
+                                />
+                                :
+                                ""
+                        }
 
 
 

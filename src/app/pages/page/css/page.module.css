@@ -16,7 +16,18 @@
     border-color: #ccc !important;  /* Optional: Change to a subtle border color */
   }
 
-/* ColorOptions.module.css */
+  .btnSuccessPost {
+    color: #0cbc87;
+    border: 1px solid;
+    background-color: rgba(12, 188, 135, 0.1);
+}
+
+.btnSuccessPost:hover {
+    /* background-color: rgba(12, 188, 135, 0.2); */
+    color: white;
+    background-color: #0cbc87;
+}
+
 .optionsContainer {
   position: relative;
 }

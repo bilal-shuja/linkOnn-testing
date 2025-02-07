@@ -46,9 +46,11 @@ export default function UserProfileCard({ params }) {
     const [showList, setShowList] = useState(false);
     const [showvideo, setShowvideo] = useState(false);
     const [audio, setaudio] = useState([]);
+
     const [donationTitle, setDonationTitle] = useState("");
     const [donationAmount, setDonationAmount] = useState("");
     const [donationDescription, setDonationDescription] = useState("");
+    
     const [showReplies, setShowReplies] = useState({});
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
@@ -1070,6 +1072,7 @@ export default function UserProfileCard({ params }) {
                                         </div>
                                         
                                     </div>
+
                                     <div className="d-flex justify-content-center">
                                         <button
                                             className="btn btn-outline-success mt-3 w-50"
@@ -1078,6 +1081,7 @@ export default function UserProfileCard({ params }) {
                                             <i className="bi bi-send"></i> Post
                                         </button>
                                     </div>
+
                                 </div>
                             </div>
                         )}
@@ -1164,6 +1168,7 @@ export default function UserProfileCard({ params }) {
                                                     )}
                                                 </small>
                                             </div>
+                                            
                                         </div>
 
                                         <div>
