@@ -1,5 +1,6 @@
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import { toast } from "react-toastify";
 import React, { useState, useEffect } from "react";
 
 export default function FundingModal({ fundingModal, setFundingModal, uploadPost }) {
@@ -15,19 +16,17 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
 
     const handleDonationDescription = (e) => { setDonationDescription(e.target.value) };
 
-    const handleDonationImage = (e) => {
-        const files = e.target.files[0];
+    // const handleDonationImage = (e) => {
+    //     const files = e.target.files[0];
 
-        setDonationImage(files);
+    //     setDonationImage(files);
 
-        // console.log(files);
-        // if (files.length > 0) {
-           
-        // }
-    };
+    // };
 
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
         const donationData = {
             donationTitle,
             donationAmount,
@@ -35,8 +34,15 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
             donationImage,
         };
 
+        if (!donationAmount) {
+           
+           toast.warning("Donation Amount is required");
+        }
 
-        await uploadPost(donationData);
+        else{
+            await uploadPost(donationData);
+
+        }
 
         // Reset the modal state
         // setDonationTitle("");
@@ -62,71 +68,72 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label className="form-label text-muted">
-                            Donation Title
-                        </label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={donationTitle}
-                            onChange={handleDonationTitle}
-                        />
-                    </div>
-                    <div>
-                        <label className="form-label text-muted">
-                            Donation Image
-                        </label>
-                        <input
-                            className="form-control"
-                            type="file"
-                            onChange={handleDonationImage}
-                            accept="image/*"
-                        />
-                    </div>
-                
-                    <div>
-                        <label className="form-label text-muted">
-                            Donation Amount
-                        </label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            value={donationAmount}
-                            onChange={handleDonationAmount}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="form-label text-muted">
-                            Donation Description
-                        </label>
-                        <textarea
-                            type="text"
-                            className="form-control"
-                            rows="2"
-                            value={donationDescription}
-                            onChange={handleDonationDescription}
-                        />
-                    </div>
+                        <div>
+                            <label className="form-label text-muted">
+                                Donation Title
+                            </label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={donationTitle}
+                                onChange={handleDonationTitle}
+                            />
+                        </div>
+                        <div>
+                            <label className="form-label text-muted">
+                                Donation Image
+                            </label>
+                            <input
+                                className="form-control"
+                                type="file"
+                                onChange={(e)=> setDonationImage(e.target.files[0])}
+                                accept="image/*"
+                            />
+                        </div>
 
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
-                        onClick={handleSubmit}
-                    >
-                       Create Fund
-                    </button>
-                    <Button
-                        className='btn bg-dark border border-0'
-                        onClick={() => setFundingModal(false)}
-                    >Close</Button>
-                    </form>
+                        <div>
+                            <label className="form-label text-muted">
+                                Donation Amount
+                            </label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                value={donationAmount}
+                                onChange={handleDonationAmount}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="form-label text-muted">
+                                Donation Description
+                            </label>
+                            <textarea
+                                type="text"
+                                className="form-control"
+                                rows="2"
+                                value={donationDescription}
+                                onChange={handleDonationDescription}
+                            />
+                        </div>
+
                 </Modal.Body>
+
                 <Modal.Footer>
-                   
-                </Modal.Footer>
+                <button
+                            type="submit"
+                            className="btn btn-primary"
+                            onClick={handleSubmit}
+                        >
+                            Create Fund
+                        </button>
+                        &nbsp;
+                        <Button
+                            className='btn bg-dark border border-0'
+                            onClick={() => setFundingModal(false)}
+                        >Close
+                        </Button>
+                    </Modal.Footer>
+
             </Modal>
 
         </>

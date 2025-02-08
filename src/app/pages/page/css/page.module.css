@@ -69,3 +69,45 @@
 .colorOption:hover {
   transform: scale(1.1);
 }
+
+.postImages {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+}
+
+.gridOne {
+  grid-template-columns: 1fr;
+}
+
+.gridTwo {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.gridThree {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.gridThree .imageContainer:first-child {
+  grid-column: span 2;
+}
+
+.gridFour {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.gridMore {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.imageContainer {
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.postImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
