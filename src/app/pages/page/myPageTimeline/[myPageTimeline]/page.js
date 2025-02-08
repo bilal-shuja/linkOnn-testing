@@ -7,11 +7,12 @@ import createAPI from "@/app/lib/axios";
 import EmojiPicker from 'emoji-picker-react';
 import styles from '../../css/page.module.css';
 import RightNav from "../../components/rightNav";
-import PostPollModal from "../../Modal/PostPollModal";
 import FundingModal from "../../Modal/FundingModal";
+import PostPollModal from "../../Modal/PostPollModal";
+import MakeDonationModal from "../../Modal/MakeDonationModal";
 import { ReactionBarSelector } from '@charkour/react-reactions';
-import React, { useState, useEffect, useCallback, useRef } from "react";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { set } from "lodash";
 // import { Dropzone, FileMosaic } from "@files-ui/react";
 // import useConfirmationToast from "@/app/hooks/useConfirmationToast";
@@ -53,6 +54,9 @@ export default function MyPageTimeline({ params }) {
 
     const [pollModal, setPollModal] = useState(false);
     const [fundingModal, setFundingModal] = useState(false);
+    const [donationModal, setDonationModal] = useState(false);
+    const [donationID, setDonationID] = useState("");
+
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [noMorePosts, setNoMorePosts] = useState(false);
@@ -87,6 +91,27 @@ export default function MyPageTimeline({ params }) {
         sad: "😢",
         angry: "😡"
     };
+
+    const getGridClass = (count) => {
+        switch (count) {
+          case 1:
+            return styles.gridOne;
+          case 2:
+            return styles.gridTwo;
+          case 3:
+            return styles.gridThree;
+          case 4:
+            return styles.gridFour;
+          default:
+            return styles.gridMore;
+        }
+      };
+
+    // if (!posts?.images || posts?.images.length === 0) return null;
+
+    //   const sortedImages = [...posts.images].sort((a, b) => b.height - a.height);
+
+    //   const [tallImage, ...smallImages] = sortedImages;
 
     const handleReactionSelect = (reaction) => {
         setSelectedReaction(reactionEmojis[reaction] || "😊");
@@ -595,12 +620,14 @@ export default function MyPageTimeline({ params }) {
 
         // ${pollText}
 
-      
+        // ${donationData.donationTitle}
 
         try {
 
             const formData = new FormData();
-            const combinedText = `${postText}  ${donationData.donationTitle}`;
+            const combinedText = donationData.donationTitle
+                ? `${postText} ${donationData.donationTitle}`
+                : postText;
 
             formData.append("page_id", myPageTimeline);
             if (combinedText) formData.append("post_text", combinedText);
@@ -618,25 +645,9 @@ export default function MyPageTimeline({ params }) {
             if (donationData.donationDescription) {
                 formData.append("description", donationData.donationDescription);
             }
-         
-            formData.append("donation_image", donationData.donationImage);
-            
 
+            if (donationData.donationImage) formData.append("donation_image", donationData.donationImage);
 
-
-
-
-
-            // if (donationData.donationDescription)
-            //     if (donationData.donationAmount)
-            //      if (donationData.donationImage)
-
-
-            // if (pollText) {
-            //     postType = "poll";
-
-            // } 
-            // else 
             let postType = "post";
             if (donationData.donationAmount) {
                 postType = "donation";
@@ -668,13 +679,14 @@ export default function MyPageTimeline({ params }) {
                 setShowLocationField(false);
 
                 setFundingModal(false);
-            } else {
+            }
+            else {
+                console.log(response)
                 toast.error("Error from server: " + response.data.message)
             }
         }
 
         catch (error) {
-            console.log(error)
             toast.error(error.response.data.message)
         }
     };
@@ -685,7 +697,7 @@ export default function MyPageTimeline({ params }) {
     return (
         <>
             <div className="container-fluid bg-light">
-                <div className="container mt-3 pt-5">
+                <div className="container mt-3 pt-2">
                     <div className="row">
 
                         <div className="col-12 col-md-8">
@@ -1022,7 +1034,7 @@ export default function MyPageTimeline({ params }) {
 
 
 
-                                        <ul className="nav nav-pills nav-stack  fw-normal justify-content-between">
+                                        <ul className={`nav nav-pills nav-stack  fw-normal d-flex justify-content-evenly  `}>
                                             <li className="nav-item">
                                                 <button className="nav-link photos_link bg-light py-1  px-2 mb-0 text-muted"
                                                     onClick={() => {
@@ -1114,7 +1126,7 @@ export default function MyPageTimeline({ params }) {
                             {posts?.map((post, index) => (
                                 <div
                                     key={`${post.id}-${index}`}
-                                    className="card mb-4 shadow-lg border-0 rounded-1 mt-4"
+                                    className="card  shadow-lg border-0 rounded-1 mb-2"
                                 >
                                     <div className="card-body">
                                         <div className="d-flex align-items-center justify-content-between">
@@ -1267,13 +1279,13 @@ export default function MyPageTimeline({ params }) {
                                         <hr className="my-2 text-muted" />
 
                                         {post.post_type !== "donation" && (
-                                            <p
-                                                className="mt-4"
+                                            <span
+                                                className=""
                                                 dangerouslySetInnerHTML={{ __html: post.post_text }}
                                             />
                                         )}
 
-                                        <div className="d-flex justify-content-center flex-wrap mb-3">
+                                        <div className="d-flex justify-content-center flex-wrap mb-1">
                                             {post.poll && post.poll.poll_options && (
                                                 <div className="w-100">
                                                     <ul className="list-unstyled">
@@ -1338,187 +1350,111 @@ export default function MyPageTimeline({ params }) {
                                             )}
                                         </div>
 
-                                        <div className="container mt-5">
-                                            {post?.donation && (
-                                                <div>
-                                                    <Image
-                                                        src={post?.donation?.image}
-                                                        alt={post.donation.title}
-                                                        className="img-fluid d-block mx-auto"
-                                                        width={450}
-                                                        height={300}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
+                                        {/* <div className="container mt-5"> */}
+                                        {post?.donation && (
+                                            <div>
+                                                <Image
+                                                    src={post?.donation?.image}
+                                                    alt={post.donation.title}
+                                                    className="img-fluid d-block mx-auto"
+                                                    width={400}
+                                                    height={200}
+                                                    style={{
+                                                        objectFit: "cover",
+                                                    }}
+                                                    loader={({ src }) => src}
+                                                />
 
-                                                    <div className="card-body text-center">
-                                                        <h5 className="card-title">
-                                                            {post.donation.title}
-                                                        </h5>
-                                                        <p className="card-text">
-                                                            {post.donation.description}
+                                                <div className="card-body text-center">
+                                                    <h5 className="card-title">
+                                                        {post.donation.title}
+                                                    </h5>
+                                                    <p className="card-text">
+                                                        {post.donation.description}
+                                                    </p>
+                                                    <div className="progress mb-3">
+                                                        <div
+                                                            className="progress-bar"
+                                                            role="progressbar"
+                                                            style={{
+                                                                width: `${(post.donation.collected_amount /
+                                                                    post.donation.amount) *
+                                                                    100
+                                                                    }%`,
+                                                            }}
+                                                            aria-valuenow={post.donation.collected_amount}
+                                                            aria-valuemin="0"
+                                                            aria-valuemax={post.donation.amount}
+                                                        ></div>
+                                                    </div>
+                                                    <div className="d-flex align-items-center justify-content-between">
+                                                        <p className="text-muted">
+                                                            {post.donation.collected_amount} Collected
                                                         </p>
-                                                        <div className="progress mb-3">
-                                                            <div
-                                                                className="progress-bar"
-                                                                role="progressbar"
-                                                                style={{
-                                                                    width: `${(post.donation.collected_amount /
-                                                                        post.donation.amount) *
-                                                                        100
-                                                                        }%`,
-                                                                }}
-                                                                aria-valuenow={post.donation.collected_amount}
-                                                                aria-valuemin="0"
-                                                                aria-valuemax={post.donation.amount}
-                                                            ></div>
-                                                        </div>
-                                                        <div className="d-flex align-items-center justify-content-between">
-                                                            <p className="text-muted">
-                                                                {post.donation.collected_amount} Collected
-                                                            </p>
-                                                            <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
-                                                            <button
-                                                                className="btn btn-primary btn-sm"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#DonateModal"
-                                                            >
-                                                                Donate
-                                                            </button>
-                                                        </div>
+                                                        <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+                                                        {
+                                                            post.donation.collected_amount < post.donation.amount &&
+                                                            (
+                                                                <button
+                                                                    className="btn btn-primary btn-sm"
+                                                                    onClick={() => {
+                                                                        setDonationModal(!donationModal)
+
+                                                                        setDonationID(post.donation.id)
+                                                                    }}
+                                                                >
+                                                                    Donate
+                                                                </button>
+                                                            )
+
+                                                        }
+
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                        {/* 
-            <div className="container mt-5">
-                {post.donation && (
-                    <div>
-                        <Image
-                            src={post.donation.image}
-                            alt={post.donation.title}
-                            className="img-fluid"
-                            width={500}
-                            height={300}
-                            style={{
-                                objectFit: "cover",
-                            }}
-                        />
+                                            </div>
+                                        )}
+                                        {/* </div> */}
 
-                        <div className="card-body text-center">
-                            <h5 className="card-title">
-                                {post.donation.title}
-                            </h5>
-                            <p className="card-text">
-                                {post.donation.description}
-                            </p>
-                            <div className="progress mb-3">
-                                <div
-                                    className="progress-bar"
-                                    role="progressbar"
-                                    style={{
-                                        width: `${(post.donation.collected_amount /
-                                            post.donation.amount) *
-                                            100
-                                            }%`,
-                                    }}
-                                    aria-valuenow={post.donation.collected_amount}
-                                    aria-valuemin="0"
-                                    aria-valuemax={post.donation.amount}
-                                ></div>
-                            </div>
-                            <div className="d-flex align-items-center justify-content-between">
-                                <p className="text-muted">
-                                    {post.donation.collected_amount} Collected
-                                </p>
-                                <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
-                                <button
-                                    className="btn btn-primary btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#DonateModal"
-                                >
-                                    Donate
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+                                        <div className="d-flex justify-content-center flex-wrap">
 
-            <div
-                className="modal fade"
-                id="DonateModal"
-                tabIndex="-1"
-                aria-labelledby="ModalLabel"
-                aria-hidden="true"
-            >
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5
-                                className="modal-title fw-semibold"
-                                id="fundModalLabel"
-                            >
-                                Donate Amount
-                            </h5>
-                            <button
-                                type="button"
-                                className="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                            ></button>
-                        </div>
-                        <div className="modal-body">
-                            <div>
-                                <label className="form-label">Amount</label>
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    value={donate}
-                                    onChange={donateAmount}
-                                />
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={() =>
-                                    handleDonationsend(post.donation.id)
-                                }
-                            >
-                                Save changes
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-dark"
-                                data-bs-dismiss="modal"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div> */}
-
-                                        <div className="d-flex justify-content-center flex-wrap mb-3">
-                                            {post.images &&
-                                                post.images.length > 0 &&
+                                            <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
+                                                {
+                                                post.images && post.images.length > 0 &&
                                                 post.images.map((image, index) => (
+                                                    <div key={index} className={styles.imageContainer}>
+                                                        <Image
+                                                            src={image.media_path}
+                                                            alt={`Post image ${index + 1}`}
+                                                            width={400}
+                                                            height={300}
+                                                            className={styles.postImage}
+                                                            style={{ objectFit: "cover" }}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
+                                            {post.images && post.images.length > 0 &&
+                                                post.images?.map((image, index) => (
+                                                    <div key={index} className={styles.imageContainer}
+                                                 
+                                                    
+                                                    >
                                                     <Image
-                                                        key={index}
+                                                     
                                                         src={image.media_path}
                                                         alt={`Post image ${index + 1}`}
-                                                        className="img-fluid m-1"
                                                         width={400}
                                                         height={200}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
+                                                        className={`img-fluid ${styles.postImage}`}
+                                                        loader={({ src }) => src}
+
                                                     />
+                                                    </div>
 
                                                 ))}
+                                                 </div> */}
 
                                             {post.event && post.event.cover && (
                                                 <div>
@@ -1554,7 +1490,6 @@ export default function MyPageTimeline({ params }) {
                                                     />
                                                     <div className="row mt-3">
                                                         <div className="col-md-9">
-                                                            <p></p>
                                                             <h6><b>{post.product.product_name}</b></h6>
                                                             <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
                                                             <br />
@@ -2053,6 +1988,22 @@ export default function MyPageTimeline({ params }) {
                                     // myPageTimeline={myPageTimeline}
                                     // endpoint={endpoint}
                                     uploadPost={uploadPost}
+                                />
+                                :
+                                ""
+                        }
+
+
+                        {
+                            donationModal === true ?
+                                <MakeDonationModal
+                                    donationID={donationID}
+                                    donationModal={donationModal}
+                                    setDonationModal={setDonationModal}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                // myPageTimeline={myPageTimeline}
+                                // endpoint={endpoint}
                                 />
                                 :
                                 ""
