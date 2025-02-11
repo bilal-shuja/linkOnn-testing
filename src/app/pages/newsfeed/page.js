@@ -2,7 +2,7 @@
 
 import React from "react";
 import createAPI from "../../lib/axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
@@ -10,10 +10,10 @@ import { useRouter } from "next/navigation";
 import Storycreate from "@/app/pages/storydata/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
 import Image from "next/image";
-
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
-// import CryptoJS from 'crypto-js';
+import Greatjob from "./GreatJob";
+import CupofCoffee from "./CupofCoffee";
 
 export default function Newsfeed() {
 
@@ -24,6 +24,7 @@ export default function Newsfeed() {
   const [lastPostId, setLastPostId] = useState(0);
   const [limit] = useState(5);
   const [page, setPage] = useState(1);
+  const [userId, setUserId] = useState(null);
   const [noMorePosts, setNoMorePosts] = useState(false);
   const [commentText, setCommentText] = useState({});
   const [showComments, setShowComments] = useState({});
@@ -58,8 +59,17 @@ export default function Newsfeed() {
   const [currentUserStories, setCurrentUserStories] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+  const [activeGreatJobId, setActiveGreatJobId] = useState(null);
 
   const api = createAPI();
+
+  const fileImageRef = useRef(null);
+
+  const fileVideoRef = useRef(null);
+
+  const fileAudioRef = useRef(null);
+
 
   const handlePostDelete = (postId) => {
     showConfirmationToast([postId]);
@@ -200,10 +210,18 @@ export default function Newsfeed() {
       setUserdata(JSON.parse(data));
     }
   }, []);
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUserId = localStorage.getItem("userid");
+      setUserId(storedUserId);
+    }
+  }, []);
+  
   if (!userdata) {
     return;
   }
-
+  
   const openStoryCarousel = (userStories, startIndex = 0) => {
     setCurrentUserStories(userStories);
     setCurrentIndex(startIndex);
@@ -333,13 +351,6 @@ export default function Newsfeed() {
 
   const handleLocationTextChange = (e) => { setlocationText(e.target.value) };
 
-  const handleFileChange = (e) => {
-    const files = e.target.files;
-    if (files.length > 0) {
-      setImages(Array.from(files));
-    }
-  };
-
   const handleDonationImage = (e) => {
     const files = e.target.files;
     if (files.length > 0) {
@@ -347,18 +358,49 @@ export default function Newsfeed() {
     }
   };
 
-  const handleaudioChange = (e) => {
-    const audioFiles = e.target.files;
-    if (audioFiles.length > 0) {
-      setaudio(Array.from(audioFiles));
+  const handleImageChange = (event) => {
+    const files = event.target.files;
+    if (files) {
+      const newImages = Array.from(files).map((file) => ({
+        file,
+        url: URL.createObjectURL(file),
+      }));
+      setImages((prevImages) => [...prevImages, ...newImages]);
     }
   };
 
   const handlevideoChange = (e) => {
     const videoFiles = e.target.files;
     if (videoFiles.length > 0) {
-      setvideo(Array.from(videoFiles));
+      const newVideos = Array.from(videoFiles).map((file) => ({
+        file,
+        url: URL.createObjectURL(file),
+      }));
+      setvideo((prevVideos) => [...prevVideos, ...newVideos]);
     }
+  };
+
+  const removeImage = (index) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
+
+  const removeVideo = (index) => {
+    setvideo((prevVideos) => prevVideos.filter((_, i) => i !== index));
+  };
+
+  const handleaudioChange = (event) => {
+    const files = Array.from(event.target.files);
+    const newAudio = files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+    setaudio((prevFiles) => [...prevFiles, ...newAudio]);
+  };
+
+  const removeAudio = (index) => {
+    const updatedAudios = audio.filter((_, i) => i !== index);
+    setaudio(updatedAudios);
   };
 
   const handlePostTextChange = (e) => { setPostText(e.target.value) };
@@ -392,12 +434,12 @@ export default function Newsfeed() {
       formData.append("amount", donationAmount);
       formData.append("poll_option", options);
       formData.append("post_location", locationText);
-      images.forEach((image) => formData.append("images[]", image));
+      images.forEach((image) => formData.append("images[]", image.file));
       donationImage.forEach((image) =>
         formData.append("donation_image", image)
       );
-      audio.forEach((audioFile) => formData.append("audio", audioFile));
-      video.forEach((videoFile) => formData.append("video", videoFile));
+      audio.forEach((audioFile) => formData.append("audio", audioFile.file));
+      video.forEach((videoFile) => formData.append("video", videoFile.file));
 
       let postType = "post";
       if (pollText) {
@@ -683,6 +725,24 @@ export default function Newsfeed() {
     toast.success("Link copied successfully!");
   };
 
+  // Function to open/close Cup of Coffee modal
+  const openModalCupCoffee = (id) => {
+    setActiveCupCoffeeId(id);
+    setActiveGreatJobId(null); // Ensure other modal closes
+  };
+  const closeModalCupCoffee = () => {
+    setActiveCupCoffeeId(null);
+  };
+
+  // Function to open/close Great Job modal
+  const openModalGreatJob = (id) => {
+    setActiveGreatJobId(id);
+    setActiveCupCoffeeId(null); // Ensure other modal closes
+  };
+  const closeModalGreatJob = () => {
+    setActiveGreatJobId(null);
+  };
+
   return (
     <div>
       <div className="container-fluid bg-light">
@@ -701,16 +761,6 @@ export default function Newsfeed() {
                 </div>
 
                 <div className="container-fluid">
-                  {loading && (
-                    <div
-                      className="spinner-grow text-secondary mt-5"
-                      role="status"
-                    >
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                  )}
-
-                  {error && <div className="alert alert-danger">{error}</div>}
 
                   <div className="carousel">
                     <div
@@ -1072,43 +1122,168 @@ export default function Newsfeed() {
                       </label>
                       <input
                         type="text"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         placeholder="Where are you at?"
                         value={locationText}
                         onChange={handleLocationTextChange}
                       />
                     </div>
                   )}
+
                   {showimg && (
-                    <input
-                      className="form-control w-75 mt-3"
-                      type="file"
-                      id="imageFile"
-                      onChange={handleFileChange}
-                      accept="image/*"
-                      multiple
-                    />
+                    <div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "10px",
+                          marginTop: "5px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {images.map((img, index) => (
+                          <div key={index} style={{ position: "relative", display: "inline-block" }}>
+                            <button
+                              onClick={() => removeImage(index)}
+                              style={{
+                                position: "absolute",
+                                top: "-5px",
+                                right: "-5px",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "50%",
+                                backgroundColor: "red",
+                                width: "20px",
+                                height: "20px",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <i className="bi bi-trash text-light"></i>
+                            </button>
+
+                            <Image
+                              className="mb-3"
+                              src={img.url}
+                              alt={`Preview ${index}`}
+                              width={100}
+                              height={100}
+                              style={{ objectFit: "cover", borderRadius: "5px" }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="col-lg-12 mb-3">
+                        <label className="form-label text-muted">
+                          <i className="bi bi-image-fill"></i> Photos
+                        </label>
+                        <input
+                          className="form-control form-control-sm"
+                          type="file"
+                          id="formFile"
+                          onChange={handleImageChange}
+                          ref={fileImageRef}
+                          multiple
+                          accept="image/*"
+                        />
+                      </div>
+                    </div>
                   )}
 
-                  {showaudio && (
-                    <input
-                      className="form-control w-75 mt-3"
-                      type="file"
-                      id="audiofile"
-                      onChange={handleaudioChange}
-                      accept="audio/*"
-                    />
-                  )}
 
                   {showvideo && (
-                    <input
-                      className="form-control w-75 mt-3 mb-3"
-                      type="file"
-                      id="videofile"
-                      onChange={handlevideoChange}
-                      accept="video/*"
-                      multiple
-                    />
+                    <div>
+                      <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                        {video.map((video, index) => (
+                          <div key={index} style={{ position: "relative", display: "inline-block" }}>
+
+                            <button
+
+                              onClick={() => removeVideo(index)}
+                              style={{
+                                position: "absolute",
+                                top: "20px",
+                                right: "-15px",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "50%",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <i className="bi bi-trash text-danger" />
+                            </button>
+
+                            <video width="150" height="150" controls>
+                              <source src={video.url} type={video.file.type} />
+                              Your browser does not support the video tag.
+                            </video>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="col-lg-12 mb-3">
+                        <label className="form-label text-muted">
+                          <i className="bi bi-camera-reels-fill"></i> Videos
+                        </label>
+                        <input
+                          className="form-control form-control-sm"
+                          type="file"
+                          id="videofile"
+                          onChange={handlevideoChange}
+                          ref={fileVideoRef}
+                          accept="video/*"
+                          multiple
+                        />
+                      </div>
+                    </div>
+                  )}
+
+
+                  {showaudio && (
+                    <div>
+                      <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                        {audio.map((audio, index) => (
+                          <div key={index} style={{ position: "relative" }}>
+
+                            <button
+                              onClick={() => removeAudio(index)}
+                              style={{
+                                position: "absolute",
+                                top: "-12px",
+                                right: "-10px",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "50%",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <i className="bi bi-trash text-danger" />
+                            </button>
+
+                            <audio width="150" height="120" controls>
+                              <source src={audio.url} type={audio.file.type} />
+                              Your browser does not support the video tag.
+                            </audio>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="col-lg-12 mb-3">
+                        <label className="form-label text-muted">
+                          <i className="bi bi-music-note-beamed"></i> Audio
+                        </label>
+                        <input
+                          className="form-control form-control-sm"
+                          type="file"
+                          id="audiofile"
+                          onChange={handleaudioChange}
+                          ref={fileAudioRef}
+                          accept="audio/*"
+                        />
+                      </div>
+                    </div>
                   )}
 
                   <div className="d-flex flex-wrap justify-content-evenly">
@@ -1361,7 +1536,7 @@ export default function Newsfeed() {
                         Raise Funding
                       </button>
                     </div>
-                    
+
                   </div>
                   <div className="d-flex justify-content-center">
                     <button
@@ -1372,7 +1547,7 @@ export default function Newsfeed() {
                     </button>
                   </div>
                 </div>
-                
+
               </div>
 
               {posts.length === 0 && !loading && (
@@ -1928,19 +2103,42 @@ export default function Newsfeed() {
                     <hr className="my-1" />
 
                     <div className="d-flex mb-3 mt-2">
-                      <button
-                        className="btn me-2 d-flex align-items-center rounded-1"
-                        style={{
-                          backgroundColor: "#C19A6B",
-                          borderRadius: "10px",
-                          color: "#fff",
-                        }}
-                      >
-                        <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                      </button>
-                      <button className="btn btn-danger d-flex align-items-center rounded-1">
-                        <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                      </button>
+
+
+
+                      {userId && post.user_id !== userId && (
+                        <button
+                          className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                          onClick={() => openModalCupCoffee(post.id)}
+                          style={{
+                            backgroundColor: "#A87F50",
+                            borderRadius: "10px",
+                            color: "#fff",
+                          }}
+                        >
+                          <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                        </button>
+                      )}
+
+
+                      {activeCupCoffeeId === post.id && (
+                        <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                      )}
+
+
+                      {userId && post.user_id !== userId && (
+                        <button
+                          className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                          onClick={() => openModalGreatJob(post.id)}
+                        >
+                          <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                        </button>
+                      )}
+
+
+                      {activeGreatJobId === post.id && (
+                        <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                      )}
                     </div>
 
                     {showComments[post.id] && (
