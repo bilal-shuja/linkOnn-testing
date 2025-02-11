@@ -7,6 +7,7 @@ import createAPI from "@/app/lib/axios";
 import EmojiPicker from 'emoji-picker-react';
 import styles from '../../css/page.module.css';
 import RightNav from "../../components/rightNav";
+import PageImagesLayout from "./pageImagesLayout";
 import FundingModal from "../../Modal/FundingModal";
 import PostPollModal from "../../Modal/PostPollModal";
 import MakeDonationModal from "../../Modal/MakeDonationModal";
@@ -73,15 +74,13 @@ export default function MyPageTimeline({ params }) {
     const [showReplies, setShowReplies] = useState({});
     const [showReplyInput, setShowReplyInput] = useState({});
     const [repliesData, setRepliesData] = useState({});
-
-    const [showReactions, setShowReactions] = useState(false);
-
-    const [selectedReaction, setSelectedReaction] = useState(null);
-    const [isOpen, setIsOpen] = useState(false);
-
-
+    
+    const [postReactions, setPostReactions] = useState({});
+    const [activeReactionPost, setActiveReactionPost] = useState(null);
+    const [isOpenColorPalette, setIsOpenColorPalette] = useState(false);
 
     const endpoint = "/api/post/create";
+
 
     const reactionEmojis = {
         satisfaction: "👍",
@@ -92,51 +91,84 @@ export default function MyPageTimeline({ params }) {
         angry: "😡"
     };
 
-    const getGridClass = (count) => {
-        switch (count) {
-          case 1:
-            return styles.gridOne;
-          case 2:
-            return styles.gridTwo;
-          case 3:
-            return styles.gridThree;
-          case 4:
-            return styles.gridFour;
-          default:
-            return styles.gridMore;
+
+
+    const handleReactionSelect = (reaction, postId) => {
+        const updatedReactions = {
+            ...postReactions,
+            [postId]: reactionEmojis[reaction] || "😊"
+        };
+
+        setPostReactions(updatedReactions);
+        setActiveReactionPost(null);
+
+        // Save to local storage
+        localStorage.setItem("postReactions", JSON.stringify(updatedReactions));
+    };
+
+
+
+    useEffect(() => {
+        const storedReactions = JSON.parse(localStorage.getItem("postReactions")) || {};
+        setPostReactions(storedReactions);
+    }, []);
+
+    const toggleOptionsColorPalette = () => {
+        setIsOpenColorPalette(!isOpenColorPalette);
+        
+    };
+
+
+    const gradientMap = {
+        'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)': '_2j79',
+        'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)': '_2j80',
+        'linear-gradient(45deg, #5d6374 0%, #16181d 100%)': '_2j81'
+    };
+    
+    const reverseGradientMap = {
+        '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
+        '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
+        '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
+    };
+
+
+    const handleColorSelect = (colorValue) => {
+        if (colorValue.includes('gradient')) {
+            const shortCode = gradientMap[colorValue] || encodeURIComponent(colorValue);
+            setColor(shortCode);
+        } else {
+            setColor(colorValue);
         }
-      };
-
-    // if (!posts?.images || posts?.images.length === 0) return null;
-
-    //   const sortedImages = [...posts.images].sort((a, b) => b.height - a.height);
-
-    //   const [tallImage, ...smallImages] = sortedImages;
-
-    const handleReactionSelect = (reaction) => {
-        setSelectedReaction(reactionEmojis[reaction] || "😊");
-        setShowReactions(false);
-        // LikePost(postId, reaction);
     };
 
-
-
-    const toggleOptions = () => {
-        setIsOpen(!isOpen);
+    const getDisplayColor = (color) => {
+        if (color?.startsWith('_')) {
+            return reverseGradientMap[color] || color;
+        }
+        return color;
     };
-
 
 
 
 
     const handleImageChange = (event) => {
         const files = Array.from(event.target.files);
-        const newImages = files.map((file) => ({
-            file,
-            url: URL.createObjectURL(file),
-        }));
-        setImages([...images, ...newImages]);
-    };
+        if (images.length + files.length > 10) {
+            alert("You can only upload a maximum of 10 images at a time.");
+            fileImageRef.current.value = "";
+            return;
+
+        }
+        else {
+            const newImages = files.map((file) => ({
+                file,
+                url: URL.createObjectURL(file),
+            }));
+            setImages([...images, ...newImages]);
+        }
+
+    }
+
 
 
     const removeImage = (index) => {
@@ -654,6 +686,8 @@ export default function MyPageTimeline({ params }) {
             }
 
             formData.append("post_type", postType);
+            formData.append("bg_color", color);
+            
 
 
             const response = await api.post(endpoint, formData, {
@@ -664,12 +698,18 @@ export default function MyPageTimeline({ params }) {
 
             });
 
+            
+
 
             if (response.data.code == "200") {
                 toast.success(response.data.message)
                 setPosts([response.data.data, ...posts]);
                 setPostText("");
                 setLocation("");
+                setColor("");
+
+                setIsOpenColorPalette(false);
+
                 setImages([]);
                 setVideoFiles([]);
                 setAudioFiles([]);
@@ -681,7 +721,6 @@ export default function MyPageTimeline({ params }) {
                 setFundingModal(false);
             }
             else {
-                console.log(response)
                 toast.error("Error from server: " + response.data.message)
             }
         }
@@ -801,7 +840,8 @@ export default function MyPageTimeline({ params }) {
                                         <textarea className={`form-control border border-0 ${styles.pagePostInput} `}
                                             placeholder="Leave a comment here"
                                             id="floatingTextarea2"
-                                            style={{ height: "150px", backgroundColor: color }}
+                                            style={{ height: "150px", background: getDisplayColor(color) 
+                                            }}
                                             value={postText}
                                             onChange={handlePostTextChange}
                                         />
@@ -838,25 +878,46 @@ export default function MyPageTimeline({ params }) {
                                         /> */}
 
                                         <div className={`d-flex ${styles.optionsContainer} mb-2`}>
-                                            <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptions} >
+                                            <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
                                                 <i className="bi bi-palette-fill"></i>
                                             </button>
-                                            <div className={`${styles.colorOptions} ${isOpen ? styles.open : ''}`}>
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#FFFFFF' }}></div>
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#c600ff' }}></div>
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#000000' }}></div>
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#C70039' }}></div>
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#900C3F' }}></div>
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#581845' }}></div>
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#FF5733' }}></div>
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#00a859' }}></div>
+                                            <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
 
-                                                <div className={styles.colorOption} style={{ backgroundColor: '#0098da' }}></div>
+                                                 {/* Solid Colors */}
+                                                    {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
+                                                        <div 
+                                                            key={solidColor}
+                                                            className={styles.colorOption} 
+                                                            style={{ background: solidColor }}  
+                                                            onClick={() => handleColorSelect(solidColor)}
+                                                        />
+                                                    ))}
+
+                                                    {/* Gradient Colors */}
+                                                    {Object.keys(gradientMap).map((gradient) => (
+                                                        <div 
+                                                            key={gradient}
+                                                            className={styles.colorOption} 
+                                                            style={{ background: gradient }}  
+                                                            onClick={() => handleColorSelect(gradient)}
+                                                        />
+                                                    ))}
+
+                                                {/* <div className={styles.colorOption} style={{ background: '#FFFFFF' }}  onClick={()=> handleColorSelect('#FFFFFF')}></div>
+                                                <div className={styles.colorOption} style={{ background: '#c600ff' }}  onClick={()=> handleColorSelect('#c600ff')}></div>
+                                                <div className={styles.colorOption} style={{ background: '#000000' }}  onClick={()=> handleColorSelect('#000000')}></div>
+                                                <div className={styles.colorOption} style={{ background: '#C70039' }}  onClick={()=> handleColorSelect('#C70039')}></div>
+                                                <div className={styles.colorOption} style={{ background: '#900C3F' }}  onClick={()=> handleColorSelect('#900C3F')}></div>
+                                                <div className={styles.colorOption} style={{ background: '#581845' }}  onClick={()=> handleColorSelect('#581845')}></div>
+                                                <div className={styles.colorOption} style={{ background: '#FF5733' }}  onClick={()=> handleColorSelect('#FF5733')}></div>
+                                                <div className={styles.colorOption} style={{ background: '#00a859' }}  onClick={()=> handleColorSelect('#00a859')}></div>
+
+                                                <div className={styles.colorOption} style={{ background: '#0098da' }}  onClick={()=> handleColorSelect('#0098da')}></div>
 
 
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)' }}></div>
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)' }}></div>
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)' }}></div>
+                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)')}></div>
+                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)')}></div>
+                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #5d6374 0%, #16181d 100%)')}></div> */}
 
 
                                             </div>
@@ -1123,300 +1184,314 @@ export default function MyPageTimeline({ params }) {
 
 
 
-                            {posts?.map((post, index) => (
-                                <div
-                                    key={`${post.id}-${index}`}
-                                    className="card  shadow-lg border-0 rounded-1 mb-2"
-                                >
-                                    <div className="card-body">
-                                        <div className="d-flex align-items-center justify-content-between">
-                                            <div className="d-flex align-items-center">
+                            {posts?.map((post, index) => {
 
-                                                <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                                                    onClick={() => handleClick(post.user.id)} >
+                                return (
 
-                                                    <Link href="#">
-                                                        <Image
-                                                            className="avatar-img rounded-circle"
-                                                            src={post.user.avatar}
-                                                            alt="User Avatar"
-                                                            width={50}
-                                                            height={50}
-                                                            style={{ objectFit: 'cover' }}
-                                                        />
-                                                    </Link>
-
-                                                    {post.user.is_verified === '1' && (
-                                                        <div
-                                                            className="bg-light rounded-circle d-flex align-items-center justify-content-center"
-                                                            style={{
-                                                                position: 'absolute',
-                                                                bottom: '0',
-                                                                right: '0',
-                                                                width: '20px',
-                                                                height: '20px',
-                                                                fontSize: '1.2rem',
-                                                                padding: '2px',
-                                                            }}
-                                                        >
-                                                            <i className="bi bi-check-circle-fill text-success"></i>
-                                                        </div>
-                                                    )}
-
-                                                </div>
-
-                                                <div className="mx-2">
-                                                    <h6 className="card-title">
-
-                                                        <span
-                                                            style={{ cursor: 'pointer' }}
-                                                        // onClick={() => handleClick(post.user.id)}
-                                                        >
-                                                            {post?.user.first_name} {post?.user.last_name}  {post?.post_location && post.post_location !== "" && (
-                                                                <span className="text-primary ms-1">
-                                                                    <small className="text-dark"> is in </small>
-                                                                    {/* {post.post_location} */}
-                                                                    <i className="bi bi-geo-fill"></i>
-                                                                    <a
-                                                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post?.post_location)}`}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className="text-primary text-decoration-none"
-                                                                    >
-                                                                        {post.post_location}
-                                                                    </a>
-                                                                </span>
-                                                            )} <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
-                                                        </span>
+                                    <div key={`${post.id}-${index}`} className="card shadow-lg border-0 rounded-1 mb-2 mt-2">
+                                        <div className="card-body" >
 
 
-                                                    </h6>
-                                                    <small className="text-secondary">
-                                                        {post.created_human} -
-                                                        {post.privacy === '1' && (
-                                                            <i className="bi bi-globe-asia-australia mx-1 text-primary"></i>
-                                                        )}
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <div className="d-flex align-items-center">
 
-                                                        {post.privacy === '2' && (
-                                                            <i className=" bi bi-people-fill mx-1 text-primary"></i>
-                                                        )}
+                                                    <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                                                        onClick={() => handleClick(post.user.id)} >
 
-                                                        {post.privacy === '4' && (
-                                                            <i className=" bi bi-people mx-1 text-primary"></i>
-                                                        )}
-
-                                                        {post.privacy === '5' && (
-                                                            <i className=" bi bi-briefcase mx-1 text-primary"></i>
-                                                        )}
-
-                                                        {post.privacy === '3' && (
-                                                            <i className=" bi bi-lock-fill mx-1 text-primary"></i>
-                                                        )}
-                                                    </small>
-                                                </div>
-                                            </div>
-
-                                            <div className="dropstart">
-                                                <button
-                                                    className="btn border-0"
-                                                    type="button"
-                                                    id="dropdownMenuButton2"
-                                                    data-bs-toggle="dropdown"
-                                                    aria-expanded="false"
-                                                >
-                                                    <i className="bi bi-caret-down"></i>
-                                                </button>
-                                                <ul
-                                                    className="dropdown-menu dropdown-menu-light"
-                                                    aria-labelledby="dropdownMenuButton2"
-                                                >
-                                                    <li className="align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-bookmark pe-2"></i> Save
-                                                            post
+                                                        <Link href="#">
+                                                            <Image
+                                                                className="avatar-img rounded-circle"
+                                                                src={post.user.avatar}
+                                                                alt="User Avatar"
+                                                                width={50}
+                                                                height={50}
+                                                                style={{ objectFit: 'cover' }}
+                                                            />
                                                         </Link>
-                                                    </li>
-                                                    <li>
-                                                        <hr className="dropdown-divider" />
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-flag pe-2"></i> Report Post
-                                                        </Link>
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                                            Open post in new tab
-                                                        </Link>
-                                                    </li>
-                                                    {post.user.id == userID && (
-                                                        <li className="align-items-center d-flex">
-                                                            <button
-                                                                className="btn dropdown-item text-secondary"
-                                                                onClick={() => handlePostDelete(post.id)}
+
+                                                        {post.user.is_verified === '1' && (
+                                                            <div
+                                                                className="bg-light rounded-circle d-flex align-items-center justify-content-center"
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    bottom: '0',
+                                                                    right: '0',
+                                                                    width: '20px',
+                                                                    height: '20px',
+                                                                    fontSize: '1.2rem',
+                                                                    padding: '2px',
+                                                                }}
                                                             >
-                                                                <i className="bi bi-trash3 pe-2"></i>
-                                                                Delete Post
-                                                            </button>
-                                                        </li>
-                                                    )}
-                                                </ul>
-                                            </div>
+                                                                <i className="bi bi-check-circle-fill text-success"></i>
+                                                            </div>
+                                                        )}
 
+                                                    </div>
 
-                                        </div>
+                                                    <div className="mx-2">
+                                                        <h6 className="card-title">
 
-                                        <hr className="my-2 text-muted" />
-
-                                        {post.post_type !== "donation" && (
-                                            <span
-                                                className=""
-                                                dangerouslySetInnerHTML={{ __html: post.post_text }}
-                                            />
-                                        )}
-
-                                        <div className="d-flex justify-content-center flex-wrap mb-1">
-                                            {post.poll && post.poll.poll_options && (
-                                                <div className="w-100">
-                                                    <ul className="list-unstyled">
-                                                        {post.poll.poll_options.map((option) => {
-                                                            const totalVotes =
-                                                                post.poll.poll_total_votes || 0;
-                                                            const percentage =
-                                                                totalVotes > 0
-                                                                    ? Math.round(
-                                                                        (option.no_of_votes / totalVotes) * 100
-                                                                    )
-                                                                    : 0;
-
-                                                            return (
-                                                                <li key={option.id} className="mb-3 w-100">
-                                                                    <div className="d-flex align-items-center justify-content-between">
-                                                                        <div
-                                                                            className="progress flex-grow-1"
-                                                                            style={{
-                                                                                height: "30px",
-                                                                                cursor: "pointer",
-                                                                            }}
-                                                                            onClick={() =>
-                                                                                handleVote(
-                                                                                    option.id,
-                                                                                    post.poll.id,
-                                                                                    post.id
-                                                                                )
-                                                                            }
+                                                            <span
+                                                                style={{ cursor: 'pointer' }}
+                                                            // onClick={() => handleClick(post.user.id)}
+                                                            >
+                                                                {post?.user.first_name} {post?.user.last_name}  {post?.post_location && post.post_location !== "" && (
+                                                                    <span className="text-primary ms-1">
+                                                                        <small className="text-dark"> is in </small>
+                                                                        {/* {post.post_location} */}
+                                                                        <i className="bi bi-geo-fill"></i>
+                                                                        <a
+                                                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post?.post_location)}`}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="text-primary text-decoration-none"
                                                                         >
-                                                                            <div
-                                                                                className="progress-bar"
-                                                                                role="progressbar"
-                                                                                style={{
-                                                                                    width: `${percentage}%`,
-                                                                                    backgroundColor: "#66b3ff",
-                                                                                }}
-                                                                                aria-valuenow={percentage}
-                                                                                aria-valuemin="0"
-                                                                                aria-valuemax="100"
-                                                                            >
-                                                                                <div
-                                                                                    className="progress-text w-100 text-secondary fs-6 fw-bold"
-                                                                                    style={{
-                                                                                        position: "absolute",
-                                                                                        overflow: "hidden",
-                                                                                        textOverflow: "ellipsis",
-                                                                                        whiteSpace: "nowrap",
-                                                                                    }}
-                                                                                >
-                                                                                    {option.option_text}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <span className="px-3">{percentage}%</span>
-                                                                    </div>
-                                                                </li>
-                                                            );
-                                                        })}
+                                                                            {post.post_location}
+                                                                        </a>
+                                                                    </span>
+                                                                )} <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
+                                                            </span>
+
+
+                                                        </h6>
+                                                        <small className="text-secondary">
+                                                            {post.created_human} -
+                                                            {post.privacy === '1' && (
+                                                                <i className="bi bi-globe-asia-australia mx-1 text-primary"></i>
+                                                            )}
+
+                                                            {post.privacy === '2' && (
+                                                                <i className=" bi bi-people-fill mx-1 text-primary"></i>
+                                                            )}
+
+                                                            {post.privacy === '4' && (
+                                                                <i className=" bi bi-people mx-1 text-primary"></i>
+                                                            )}
+
+                                                            {post.privacy === '5' && (
+                                                                <i className=" bi bi-briefcase mx-1 text-primary"></i>
+                                                            )}
+
+                                                            {post.privacy === '3' && (
+                                                                <i className=" bi bi-lock-fill mx-1 text-primary"></i>
+                                                            )}
+                                                        </small>
+                                                    </div>
+                                                </div>
+
+                                                <div className="dropstart">
+                                                    <button
+                                                        className="btn border-0"
+                                                        type="button"
+                                                        id="dropdownMenuButton2"
+                                                        data-bs-toggle="dropdown"
+                                                        aria-expanded="false"
+                                                    >
+                                                        <i className="bi bi-caret-down"></i>
+                                                    </button>
+                                                    <ul
+                                                        className="dropdown-menu dropdown-menu-light"
+                                                        aria-labelledby="dropdownMenuButton2"
+                                                    >
+                                                        <li className="align-items-center d-flex">
+                                                            <Link
+                                                                className="text-decoration-none dropdown-item text-secondary"
+                                                                href="#"
+                                                            >
+                                                                <i className="bi bi-bookmark pe-2"></i> Save
+                                                                post
+                                                            </Link>
+                                                        </li>
+                                                        <li>
+                                                            <hr className="dropdown-divider" />
+                                                        </li>
+                                                        <li className=" align-items-center d-flex">
+                                                            <Link
+                                                                className="text-decoration-none dropdown-item text-secondary"
+                                                                href="#"
+                                                            >
+                                                                <i className="bi bi-flag pe-2"></i> Report Post
+                                                            </Link>
+                                                        </li>
+                                                        <li className=" align-items-center d-flex">
+                                                            <Link
+                                                                className="text-decoration-none dropdown-item text-secondary"
+                                                                href={`/post/${post.id}`} target="_blank" rel="noopener noreferrer"
+                                                            >
+                                                                <i className="bi bi-box-arrow-up-right pe-2"></i>
+                                                                Open post in new tab
+                                                            </Link>
+                                                        </li>
+                                                        {post.user.id == userID && (
+                                                            <li className="align-items-center d-flex">
+                                                                <button
+                                                                    className="btn dropdown-item text-secondary"
+                                                                    onClick={() => handlePostDelete(post.id)}
+                                                                >
+                                                                    <i className="bi bi-trash3 pe-2"></i>
+                                                                    Delete Post
+                                                                </button>
+                                                            </li>
+                                                        )}
                                                     </ul>
                                                 </div>
-                                            )}
-                                        </div>
 
-                                        {/* <div className="container mt-5"> */}
-                                        {post?.donation && (
-                                            <div>
-                                                <Image
-                                                    src={post?.donation?.image}
-                                                    alt={post.donation.title}
-                                                    className="img-fluid d-block mx-auto"
-                                                    width={400}
-                                                    height={200}
-                                                    style={{
-                                                        objectFit: "cover",
+
+                                            </div>
+
+                                            <hr className="my-2 text-muted" />
+                                            {
+                                                 post.bg_color && (
+                                                    <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1" 
+                                                    style={{ 
+                                                        background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color, 
+                                                        padding: "160px 27px" 
                                                     }}
-                                                    loader={({ src }) => src}
-                                                />
-
-                                                <div className="card-body text-center">
-                                                    <h5 className="card-title">
-                                                        {post.donation.title}
-                                                    </h5>
-                                                    <p className="card-text">
-                                                        {post.donation.description}
-                                                    </p>
-                                                    <div className="progress mb-3">
-                                                        <div
-                                                            className="progress-bar"
-                                                            role="progressbar"
-                                                            style={{
-                                                                width: `${(post.donation.collected_amount /
-                                                                    post.donation.amount) *
-                                                                    100
-                                                                    }%`,
-                                                            }}
-                                                            aria-valuenow={post.donation.collected_amount}
-                                                            aria-valuemin="0"
-                                                            aria-valuemax={post.donation.amount}
-                                                        ></div>
+                                                    >
+                                                        <span  className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span> 
                                                     </div>
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <p className="text-muted">
-                                                            {post.donation.collected_amount} Collected
+                                                 )
+                                            }
+                                        
+
+                                            {post.post_type !== "donation" &&  !post.bg_color && (
+                                                <span
+                                                    dangerouslySetInnerHTML={{ __html: post.post_text }}
+                                                />
+                                            )}
+
+                                            <div className="d-flex justify-content-center flex-wrap mb-1">
+                                                {post.poll && post.poll.poll_options && (
+                                                    <div className="w-100">
+                                                        <ul className="list-unstyled">
+                                                            {post.poll.poll_options.map((option) => {
+                                                                const totalVotes =
+                                                                    post.poll.poll_total_votes || 0;
+                                                                const percentage =
+                                                                    totalVotes > 0
+                                                                        ? Math.round(
+                                                                            (option.no_of_votes / totalVotes) * 100
+                                                                        )
+                                                                        : 0;
+
+                                                                return (
+                                                                    <li key={option.id} className="mb-3 w-100">
+                                                                        <div className="d-flex align-items-center justify-content-between">
+                                                                            <div
+                                                                                className="progress flex-grow-1"
+                                                                                style={{
+                                                                                    height: "30px",
+                                                                                    cursor: "pointer",
+                                                                                }}
+                                                                                onClick={() =>
+                                                                                    handleVote(
+                                                                                        option.id,
+                                                                                        post.poll.id,
+                                                                                        post.id
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <div
+                                                                                    className="progress-bar"
+                                                                                    role="progressbar"
+                                                                                    style={{
+                                                                                        width: `${percentage}%`,
+                                                                                        backgroundColor: "#66b3ff",
+                                                                                    }}
+                                                                                    aria-valuenow={percentage}
+                                                                                    aria-valuemin="0"
+                                                                                    aria-valuemax="100"
+                                                                                >
+                                                                                    <div
+                                                                                        className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                                                        style={{
+                                                                                            position: "absolute",
+                                                                                            overflow: "hidden",
+                                                                                            textOverflow: "ellipsis",
+                                                                                            whiteSpace: "nowrap",
+                                                                                        }}
+                                                                                    >
+                                                                                        {option.option_text}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <span className="px-3">{percentage}%</span>
+                                                                        </div>
+                                                                    </li>
+                                                                );
+                                                            })}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* <div className="container mt-5"> */}
+                                            {post?.donation && (
+                                                <div>
+                                                    <Image
+                                                        src={post?.donation?.image}
+                                                        alt={post.donation.title}
+                                                        className="img-fluid d-block mx-auto"
+                                                        width={400}
+                                                        height={200}
+                                                        style={{
+                                                            objectFit: "cover",
+                                                        }}
+                                                        loader={({ src }) => src}
+                                                    />
+
+                                                    <div className="card-body text-center">
+                                                        <h5 className="card-title">
+                                                            {post.donation.title}
+                                                        </h5>
+                                                        <p className="card-text">
+                                                            {post.donation.description}
                                                         </p>
-                                                        <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
-                                                        {
-                                                            post.donation.collected_amount < post.donation.amount &&
-                                                            (
-                                                                <button
-                                                                    className="btn btn-primary btn-sm"
-                                                                    onClick={() => {
-                                                                        setDonationModal(!donationModal)
+                                                        <div className="progress mb-3">
+                                                            <div
+                                                                className="progress-bar"
+                                                                role="progressbar"
+                                                                style={{
+                                                                    width: `${(post.donation.collected_amount /
+                                                                        post.donation.amount) *
+                                                                        100
+                                                                        }%`,
+                                                                }}
+                                                                aria-valuenow={post.donation.collected_amount}
+                                                                aria-valuemin="0"
+                                                                aria-valuemax={post.donation.amount}
+                                                            ></div>
+                                                        </div>
+                                                        <div className="d-flex align-items-center justify-content-between">
+                                                            <p className="text-muted">
+                                                                {post.donation.collected_amount} Collected
+                                                            </p>
+                                                            <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+                                                            {
+                                                                post.donation.collected_amount < post.donation.amount &&
+                                                                (
+                                                                    <button
+                                                                        className="btn btn-primary btn-sm"
+                                                                        onClick={() => {
+                                                                            setDonationModal(!donationModal)
 
-                                                                        setDonationID(post.donation.id)
-                                                                    }}
-                                                                >
-                                                                    Donate
-                                                                </button>
-                                                            )
+                                                                            setDonationID(post.donation.id)
+                                                                        }}
+                                                                    >
+                                                                        Donate
+                                                                    </button>
+                                                                )
 
-                                                        }
+                                                            }
 
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        {/* </div> */}
+                                            )}
+                                            {/* </div> */}
 
-                                        <div className="d-flex justify-content-center flex-wrap">
-
+                                            <div className="d-flex justify-content-center flex-wrap">
+                                                {/* 
                                             <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
                                                 {
                                                 post.images && post.images.length > 0 &&
@@ -1432,9 +1507,11 @@ export default function MyPageTimeline({ params }) {
                                                         />
                                                     </div>
                                                 ))}
-                                            </div>
 
-                                            {/* <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
+                                       
+                                            </div> */}
+
+                                                {/* <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
                                             {post.images && post.images.length > 0 &&
                                                 post.images?.map((image, index) => (
                                                     <div key={index} className={styles.imageContainer}
@@ -1456,96 +1533,105 @@ export default function MyPageTimeline({ params }) {
                                                 ))}
                                                  </div> */}
 
-                                            {post.event && post.event.cover && (
-                                                <div>
-                                                    <Image
-                                                        src={post.event.cover}
-                                                        alt="Event Cover"
-                                                        className="img-fluid mt-1"
-                                                        width={500}
-                                                        height={300}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
 
-                                                    <h5 className="fw-bold mt-2">{post.event.name}</h5>
-                                                    <button className="badge btn-primary rounded-pill mt-3">
-                                                        {post.event.start_date}
-                                                    </button>
-                                                </div>
-                                            )}
+                                                <PageImagesLayout key={`${post.id}-${index}`} post={post} />
 
-                                            {post.product && (
-                                                <div>
-                                                    <Image
-                                                        src={post.product.images[0].image}
-                                                        alt="Product"
-                                                        className="img-fluid"
-                                                        width={600}
-                                                        height={400}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
-                                                    <div className="row mt-3">
-                                                        <div className="col-md-9">
-                                                            <h6><b>{post.product.product_name}</b></h6>
-                                                            <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
-                                                            <br />
-                                                            <span><b>Category: </b>{post.product.category}</span>
-                                                            <br />
-                                                            <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
-                                                        </div>
-                                                        <div className="col-md-3 mt-4">
-                                                            <Link href="#" >
-                                                                <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
-                                                            </Link>
+
+
+
+
+                                                {post.event && post.event.cover && (
+                                                    <div>
+                                                        <Image
+                                                            src={post.event.cover}
+                                                            alt="Event Cover"
+                                                            className="img-fluid mt-1"
+                                                            width={500}
+                                                            height={300}
+                                                            style={{
+                                                                objectFit: "cover",
+                                                            }}
+                                                        />
+
+                                                        <h5 className="fw-bold mt-2">{post.event.name}</h5>
+                                                        <button className="badge btn-primary rounded-pill mt-3">
+                                                            {post.event.start_date}
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {post.product && (
+                                                    <div>
+                                                        <Image
+                                                            src={post.product.images[0].image}
+                                                            alt="Product"
+                                                            className="img-fluid"
+                                                            width={600}
+                                                            height={400}
+                                                            style={{
+                                                                objectFit: "cover",
+                                                            }}
+                                                        />
+                                                        <div className="row mt-3">
+                                                            <div className="col-md-9">
+                                                                <h6><b>{post.product.product_name}</b></h6>
+                                                                <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
+                                                                <br />
+                                                                <span><b>Category: </b>{post.product.category}</span>
+                                                                <br />
+                                                                <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
+                                                            </div>
+                                                            <div className="col-md-3 mt-4">
+                                                                <Link href="#" >
+                                                                    <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
+                                                                </Link>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {post?.video && (
-                                                <div
-                                                    className="media-container mt-1"
-                                                    style={{ width: "100%", height: "auto" }}
-                                                >
-                                                    <video
-                                                        controls
-                                                        style={{
-                                                            objectFit: "cover",
-                                                            width: "100%",
-                                                            height: "auto",
-                                                        }}
+                                                {post?.video && (
+                                                    <div
+                                                        className="media-container mt-1"
+                                                        style={{ width: "100%", height: "auto" }}
                                                     >
-                                                        <source
-                                                            src={post.video.media_path}
-                                                            type="video/mp4"
-                                                        />
-                                                        Your browser does not support the video tag.
-                                                    </video>
-                                                </div>
-                                            )}
+                                                        <video
+                                                            controls
+                                                            style={{
+                                                                objectFit: "cover",
+                                                                width: "100%",
+                                                                height: "auto",
+                                                            }}
+                                                        >
+                                                            <source
+                                                                src={post.video.media_path}
+                                                                type="video/mp4"
+                                                            />
+                                                            Your browser does not support the video tag.
+                                                        </video>
+                                                    </div>
+                                                )}
 
-                                            {post?.audio && (
-                                                <div className="media-container w-100">
-                                                    <audio controls className="w-100">
-                                                        <source src={post.audio.media_path} />
-                                                        Your browser does not support the audio tag.
-                                                    </audio>
-                                                </div>
-                                            )}
 
 
-                                            {
-                                                post?.post_location && (
-                                                    <div className="media-container text-center w-100 mt-3">
-                                                        <span className="text-muted">
-                                                            <i className="bi bi-geo-alt-fill"></i> {post.post_location}
-                                                        </span>
+                                                {post?.audio && (
+                                                    <div className="media-container w-100">
+                                                        <audio controls className="w-100">
+                                                            <source src={post.audio.media_path} />
+                                                            Your browser does not support the audio tag.
+                                                        </audio>
+                                                    </div>
+                                                )}
 
-                                                        {/* <iframe
+
+                                                {
+                                                    post?.post_location && (
+                                                        <div className="media-container text-center w-100 mt-3">
+                                                            <span className="text-muted">
+                                                                <i className="bi bi-geo-alt-fill"></i> {post.post_location}
+                                                            </span>
+
+                                                            {/* <iframe
                                                         width="100%"
                                                         height="250"
                                                         style={{ border: 0, borderRadius: "8px" }}
@@ -1554,40 +1640,40 @@ export default function MyPageTimeline({ params }) {
                                                         referrerPolicy="no-referrer-when-downgrade"
                                                         src={`https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(post.post_location)}`}
                                                     ></iframe> */}
-                                                    </div>
-                                                )
+                                                        </div>
+                                                    )
 
-                                            }
-                                        </div>
-
-                                        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
-                                            <div className="d-flex align-items-center mb-2 mb-md-0">
-                                                <span className="me-2">
-                                                    {post.reaction ? post.reaction.count || 0 : 0}
-                                                </span>
-                                                <i className="bi bi-hand-thumbs-up"></i>
+                                                }
                                             </div>
-                                            <div className="d-flex flex-wrap align-items-center text-muted">
-                                                <span className="me-3 d-flex align-items-center">
-                                                    <i className="bi bi-eye me-1"></i>
-                                                    {post.view_count || 0}
-                                                </span>
-                                                <span className="me-3 d-flex align-items-center">
-                                                    <i className="bi bi-chat-dots me-1"></i>
-                                                    {post.comment_count || 0} comments
-                                                </span>
-                                                <span className="d-flex align-items-center">
-                                                    <i className="bi bi-share me-1"></i>
-                                                    {post.share_count || 0} Shares
-                                                </span>
+
+                                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
+                                                <div className="d-flex align-items-center mb-2 mb-md-0">
+                                                    <span className="me-2">
+                                                        {post.reaction ? post.reaction.count || 0 : 0}
+                                                    </span>
+                                                    <i className="bi bi-hand-thumbs-up"></i>
+                                                </div>
+                                                <div className="d-flex flex-wrap align-items-center text-muted">
+                                                    <span className="me-3 d-flex align-items-center">
+                                                        <i className="bi bi-eye me-1"></i>
+                                                        {post.view_count || 0}
+                                                    </span>
+                                                    <span className="me-3 d-flex align-items-center">
+                                                        <i className="bi bi-chat-dots me-1"></i>
+                                                        {post.comment_count || 0} comments
+                                                    </span>
+                                                    <span className="d-flex align-items-center">
+                                                        <i className="bi bi-share me-1"></i>
+                                                        {post.share_count || 0} Shares
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <hr className="my-1" />
+                                            <hr className="my-1" />
 
-                                        <div className="d-flex justify-content-between">
+                                            <div className="d-flex justify-content-between">
 
-                                            {/* <button
+                                                {/* <button
                                                 className="btn border-0 d-flex align-items-center"
                                                 onClick={() => LikePost(post.id)}
                                             >
@@ -1596,356 +1682,364 @@ export default function MyPageTimeline({ params }) {
 
 
 
-                                            <div style={{ position: "relative", display: "inline-block" }}>
+                                                <div style={{ position: "relative", display: "inline-block" }}>
+                                                    <button
+                                                        className="btn border-0 d-flex align-items-center"
+                                                        onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                        onMouseLeave={() => setActiveReactionPost(null)}
+                                                        onClick={() => {
+                                                            setActiveReactionPost(activeReactionPost === post.id ? null : post.id);
+                                                        }}
+                                                    >
+                                                        <span style={{ fontSize: "18px", marginRight: "8px" }}>
+                                                            {postReactions[post.id] || "😊"}
+                                                        </span>
+                                                        Reaction
+                                                    </button>
+
+
+                                                    {activeReactionPost === post.id && (
+                                                        <div
+                                                            style={{
+                                                                position: "absolute",
+                                                                bottom: "100%",
+                                                                left: "0",
+                                                                zIndex: 1000,
+                                                                backgroundColor: "white",
+                                                                borderRadius: "5px",
+                                                            }}
+                                                            onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                            onMouseLeave={() => setActiveReactionPost(null)}
+                                                        >
+                                                            <ReactionBarSelector
+                                                                onSelect={(reaction) => handleReactionSelect(reaction, post.id)}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+
                                                 <button
                                                     className="btn border-0 d-flex align-items-center"
-                                                    onMouseEnter={() => setShowReactions(true)}
-                                                    onMouseLeave={() => setShowReactions(false)}
-                                                    onClick={() => {
+                                                    onClick={() => handleCommentToggle(post.id)}
+                                                >
+                                                    <i className="bi bi-chat me-2"></i> Comments
+                                                </button>
 
-                                                        setShowReactions(!showReactions);
-                                                        // LikePost(post.id);
+                                                <div className="dropdown">
+                                                    <button
+                                                        className="btn border-0"
+                                                        type="button"
+                                                        id="dropdownMenuButton3"
+                                                        data-bs-toggle="dropdown"
+                                                        aria-expanded="false"
+                                                    >
+                                                        <i className="bi bi-share me-2"></i> Share
+                                                    </button>
+
+                                                    <ul
+                                                        className="dropdown-menu"
+                                                        aria-labelledby="dropdownMenuButton3"
+                                                    >
+                                                        <li className=" align-items-center d-flex">
+                                                            <Link
+                                                                className="text-decoration-none dropdown-item text-muted"
+                                                                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                <i className="bi bi-facebook pe-2"></i> Share on Facebook
+                                                            </Link>
+                                                        </li>
+
+                                                        <li className=" align-items-center d-flex">
+                                                            <Link
+                                                                className="text-decoration-none dropdown-item text-muted"
+                                                                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                <i className="bi bi-twitter-x pe-2"></i> Share on
+                                                                X
+                                                            </Link>
+                                                        </li>
+                                                        <li className=" align-items-center d-flex">
+                                                            <Link
+                                                                className="text-decoration-none dropdown-item text-muted"
+                                                                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                <i className="bi bi-linkedin pe-2"></i> Share on
+                                                                Linkedln
+                                                            </Link>
+                                                        </li>
+
+                                                        <li>
+                                                            <hr className="dropdown-divider" />
+                                                        </li>
+                                                        <li className=" align-items-center d-flex">
+                                                            <Link
+                                                                className="text-decoration-none dropdown-item text-muted custom-hover"
+                                                                href="#"
+                                                            >
+                                                                <i className="bi bi-bookmark-check pe-2"></i> Post
+                                                                on Timeline
+                                                            </Link>
+                                                        </li>
+                                                        <li className=" align-items-center d-flex">
+                                                            <span
+                                                                className="text-decoration-none dropdown-item text-muted"
+                                                                onClick={() => handleCopy(post.post_link)}
+                                                            >
+                                                                <i className="bi bi-link pe-2"></i> Copy Post Link
+                                                            </span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                            <hr className="my-1" />
+
+                                            <div className="d-flex mb-3 mt-2">
+                                                <button
+                                                    className="btn me-2 d-flex align-items-center rounded-1"
+                                                    style={{
+                                                        backgroundColor: "#C19A6B",
+                                                        borderRadius: "10px",
+                                                        color: "#fff",
                                                     }}
                                                 >
-                                                    <span style={{ fontSize: "18px", marginRight: "8px" }}>
-                                                        {selectedReaction ? selectedReaction : "😊"}
-                                                    </span>
-                                                    Reaction
+                                                    <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
                                                 </button>
-
-
-                                                {showReactions && (
-                                                    <div
-                                                        style={{
-                                                            position: "absolute",
-                                                            bottom: "100%",
-                                                            left: "0",
-                                                            zIndex: 1000,
-                                                            backgroundColor: "white",
-                                                            borderRadius: "5px",
-
-                                                        }}
-                                                        onMouseEnter={() => setShowReactions(true)}
-                                                        onMouseLeave={() => setShowReactions(false)}
-                                                    >
-                                                        <ReactionBarSelector onSelect={handleReactionSelect} />
-                                                    </div>
-                                                )}
+                                                <button className="btn btn-danger d-flex align-items-center rounded-1">
+                                                    <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                </button>
                                             </div>
 
-                                            <button
-                                                className="btn border-0 d-flex align-items-center"
-                                                onClick={() => handleCommentToggle(post.id)}
-                                            >
-                                                <i className="bi bi-chat me-2"></i> Comments
-                                            </button>
+                                            {showComments[post.id] && (
+                                                <div className="mt-2">
+                                                    {comments[post.id] && comments[post.id].length > 0 ? (
+                                                        comments[post.id].map((comment) => (
+                                                            <div key={comment.id} className="mb-3">
+                                                                <div className="d-flex">
+                                                                    <Image
+                                                                        src={comment.avatar}
+                                                                        alt="Profile"
+                                                                        className="rounded-circle me-1 mt-2"
+                                                                        width={40}
+                                                                        height={40}
+                                                                        style={{
+                                                                            objectFit: "cover",
+                                                                        }}
+                                                                    />
 
-                                            <div className="dropdown">
-                                                <button
-                                                    className="btn border-0"
-                                                    type="button"
-                                                    id="dropdownMenuButton3"
-                                                    data-bs-toggle="dropdown"
-                                                    aria-expanded="false"
-                                                >
-                                                    <i className="bi bi-share me-2"></i> Share
-                                                </button>
-
-                                                <ul
-                                                    className="dropdown-menu"
-                                                    aria-labelledby="dropdownMenuButton3"
-                                                >
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-muted"
-                                                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            <i className="bi bi-facebook pe-2"></i> Share on Facebook
-                                                        </Link>
-                                                    </li>
-
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-muted"
-                                                            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            <i className="bi bi-twitter-x pe-2"></i> Share on
-                                                            X
-                                                        </Link>
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-muted"
-                                                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            <i className="bi bi-linkedin pe-2"></i> Share on
-                                                            Linkedln
-                                                        </Link>
-                                                    </li>
-
-                                                    <li>
-                                                        <hr className="dropdown-divider" />
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-bookmark-check pe-2"></i> Post
-                                                            on Timeline
-                                                        </Link>
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <span
-                                                            className="text-decoration-none dropdown-item text-muted"
-                                                            onClick={() => handleCopy(post.post_link)}
-                                                        >
-                                                            <i className="bi bi-link pe-2"></i> Copy Post Link
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <hr className="my-1" />
-
-                                        <div className="d-flex mb-3 mt-2">
-                                            <button
-                                                className="btn me-2 d-flex align-items-center rounded-1"
-                                                style={{
-                                                    backgroundColor: "#C19A6B",
-                                                    borderRadius: "10px",
-                                                    color: "#fff",
-                                                }}
-                                            >
-                                                <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                            </button>
-                                            <button className="btn btn-danger d-flex align-items-center rounded-1">
-                                                <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                            </button>
-                                        </div>
-
-                                        {showComments[post.id] && (
-                                            <div className="mt-2">
-                                                {comments[post.id] && comments[post.id].length > 0 ? (
-                                                    comments[post.id].map((comment) => (
-                                                        <div key={comment.id} className="mb-3">
-                                                            <div className="d-flex">
-                                                                <Image
-                                                                    src={comment.avatar}
-                                                                    alt="Profile"
-                                                                    className="rounded-circle me-1 mt-2"
-                                                                    width={40}
-                                                                    height={40}
-                                                                    style={{
-                                                                        objectFit: "cover",
-                                                                    }}
-                                                                />
-
-                                                                <div className="mb-3">
-                                                                    <div className="card border-0 bg-light w-100 mx-2 p-2">
-                                                                        <div className="flex-grow-1 mx-2">
-                                                                            <div className="d-flex align-items-center justify-content-between">
-                                                                                <p className="mb-0 fw-bold">
-                                                                                    {comment.first_name}{" "}
-                                                                                    {comment.last_name}
+                                                                    <div className="mb-3">
+                                                                        <div className="card border-0 bg-light w-100 mx-2 p-2">
+                                                                            <div className="flex-grow-1 mx-2">
+                                                                                <div className="d-flex align-items-center justify-content-between">
+                                                                                    <p className="mb-0 fw-bold">
+                                                                                        {comment.first_name}{" "}
+                                                                                        {comment.last_name}
+                                                                                    </p>
+                                                                                    <small className="text-muted lead-font-size">
+                                                                                        {comment.created_human}
+                                                                                    </small>
+                                                                                </div>
+                                                                                <p className="mb-1">
+                                                                                    {comment.comment || "No text available"}
                                                                                 </p>
-                                                                                <small className="text-muted lead-font-size">
-                                                                                    {comment.created_human}
-                                                                                </small>
                                                                             </div>
-                                                                            <p className="mb-1">
-                                                                                {comment.comment || "No text available"}
-                                                                            </p>
+                                                                        </div>
+
+                                                                        <div className="mx-3">
+                                                                            <button
+                                                                                className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                onClick={() =>
+                                                                                    LikeComment(post.id, comment.id)
+                                                                                }
+                                                                            >
+                                                                                <i className="bi bi-hand-thumbs-up"></i>{" "}
+                                                                                Like {comment.like_count}
+                                                                            </button>
+                                                                            <button
+                                                                                className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                onClick={() =>
+                                                                                    handleToggleReplyInput(comment.id)
+                                                                                }
+                                                                            >
+                                                                                Reply
+                                                                            </button>
+
+                                                                            <button
+                                                                                className="btn text-dark p-0 text-danger text-decoration-none"
+                                                                                onClick={() =>
+                                                                                    handleCommentDelete(comment.id, post.id)
+                                                                                }
+                                                                            >
+                                                                                Delete
+                                                                            </button>
+                                                                            <button
+                                                                                className="btn text-secondary p-0 me-3 text-decoration-none mx-3"
+                                                                                onClick={() => toggleReplies(comment.id)}
+                                                                            >
+                                                                                ({comment.reply_count}) Replies
+                                                                            </button>
                                                                         </div>
                                                                     </div>
-
-                                                                    <div className="mx-3">
-                                                                        <button
-                                                                            className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                            onClick={() =>
-                                                                                LikeComment(post.id, comment.id)
-                                                                            }
-                                                                        >
-                                                                            <i className="bi bi-hand-thumbs-up"></i>{" "}
-                                                                            Like {comment.like_count}
-                                                                        </button>
-                                                                        <button
-                                                                            className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                            onClick={() =>
-                                                                                handleToggleReplyInput(comment.id)
-                                                                            }
-                                                                        >
-                                                                            Reply
-                                                                        </button>
-
-                                                                        <button
-                                                                            className="btn text-dark p-0 text-danger text-decoration-none"
-                                                                            onClick={() =>
-                                                                                handleCommentDelete(comment.id, post.id)
-                                                                            }
-                                                                        >
-                                                                            Delete
-                                                                        </button>
-                                                                        <button
-                                                                            className="btn text-secondary p-0 me-3 text-decoration-none mx-3"
-                                                                            onClick={() => toggleReplies(comment.id)}
-                                                                        >
-                                                                            ({comment.reply_count}) Replies
-                                                                        </button>
-                                                                    </div>
                                                                 </div>
-                                                            </div>
 
-                                                            {showReplies[comment.id] &&
-                                                                repliesData[comment.id] && (
-                                                                    <div className="ms-4 mt-2">
-                                                                        {repliesData[comment.id].length > 0 ? (
-                                                                            repliesData[comment.id].map((reply) => (
-                                                                                <div
-                                                                                    key={reply.id}
-                                                                                    className="d-flex mb-2 mx-5"
-                                                                                >
-                                                                                    <Image
-                                                                                        src={reply.avatar}
-                                                                                        alt="Profile"
-                                                                                        className="rounded-circle me-1 mt-2"
-                                                                                        width={40}
-                                                                                        height={40}
-                                                                                        style={{
-                                                                                            objectFit: "cover",
-                                                                                        }}
-                                                                                    />
+                                                                {showReplies[comment.id] &&
+                                                                    repliesData[comment.id] && (
+                                                                        <div className="ms-4 mt-2">
+                                                                            {repliesData[comment.id].length > 0 ? (
+                                                                                repliesData[comment.id].map((reply) => (
+                                                                                    <div
+                                                                                        key={reply.id}
+                                                                                        className="d-flex mb-2 mx-5"
+                                                                                    >
+                                                                                        <Image
+                                                                                            src={reply.avatar}
+                                                                                            alt="Profile"
+                                                                                            className="rounded-circle me-1 mt-2"
+                                                                                            width={40}
+                                                                                            height={40}
+                                                                                            style={{
+                                                                                                objectFit: "cover",
+                                                                                            }}
+                                                                                        />
 
-                                                                                    <div className="mb-3">
-                                                                                        <div className="card border-0 bg-light w-100 mx-2 p-2">
-                                                                                            <div className="flex-grow-1 mx-2">
-                                                                                                <div className="d-flex align-items-center justify-content-between">
-                                                                                                    <p className="mb-0 fw-bold">
-                                                                                                        {reply.first_name}{" "}
-                                                                                                        {reply.last_name}
+                                                                                        <div className="mb-3">
+                                                                                            <div className="card border-0 bg-light w-100 mx-2 p-2">
+                                                                                                <div className="flex-grow-1 mx-2">
+                                                                                                    <div className="d-flex align-items-center justify-content-between">
+                                                                                                        <p className="mb-0 fw-bold">
+                                                                                                            {reply.first_name}{" "}
+                                                                                                            {reply.last_name}
+                                                                                                        </p>
+                                                                                                        <small className="text-muted lead-font-size">
+                                                                                                            {reply.created_human}
+                                                                                                        </small>
+                                                                                                    </div>
+                                                                                                    <p className="mb-1">
+                                                                                                        {reply.comment}
                                                                                                     </p>
-                                                                                                    <small className="text-muted lead-font-size">
-                                                                                                        {reply.created_human}
-                                                                                                    </small>
                                                                                                 </div>
-                                                                                                <p className="mb-1">
-                                                                                                    {reply.comment}
-                                                                                                </p>
+                                                                                            </div>
+
+                                                                                            <div className="mx-3">
+                                                                                                <button
+                                                                                                    className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                                    onClick={() =>
+                                                                                                        commentReplyLike(reply.id)
+                                                                                                    }
+                                                                                                >
+                                                                                                    <i className="bi bi-hand-thumbs-up"></i>{" "}
+                                                                                                    Like {reply.like_count}
+                                                                                                </button>
+                                                                                                <button
+                                                                                                    className="btn text-dark p-0 text-danger text-decoration-none"
+                                                                                                    onClick={() =>
+                                                                                                        handleCommentreplyDelete(
+                                                                                                            reply.id
+                                                                                                        )
+                                                                                                    }
+                                                                                                >
+                                                                                                    Delete
+                                                                                                </button>
                                                                                             </div>
                                                                                         </div>
-
-                                                                                        <div className="mx-3">
-                                                                                            <button
-                                                                                                className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                                                onClick={() =>
-                                                                                                    commentReplyLike(reply.id)
-                                                                                                }
-                                                                                            >
-                                                                                                <i className="bi bi-hand-thumbs-up"></i>{" "}
-                                                                                                Like {reply.like_count}
-                                                                                            </button>
-                                                                                            <button
-                                                                                                className="btn text-dark p-0 text-danger text-decoration-none"
-                                                                                                onClick={() =>
-                                                                                                    handleCommentreplyDelete(
-                                                                                                        reply.id
-                                                                                                    )
-                                                                                                }
-                                                                                            >
-                                                                                                Delete
-                                                                                            </button>
-                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            ))
-                                                                        ) : (
-                                                                            <p className="mx-5">
-                                                                                No replies available
-                                                                            </p>
-                                                                        )}
+                                                                                ))
+                                                                            ) : (
+                                                                                <p className="mx-5">
+                                                                                    No replies available
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+
+                                                                {showReplyInput[comment.id] && (
+                                                                    <div className="mt-2 w-75 mx-5">
+                                                                        <div className="input-group">
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control"
+                                                                                placeholder="Write a reply..."
+                                                                                aria-label="Reply"
+                                                                                value={commentreplyText[comment.id] || ""}
+                                                                                onChange={(e) =>
+                                                                                    setCommentreplyText((prevState) => ({
+                                                                                        ...prevState,
+                                                                                        [comment.id]: e.target.value,
+                                                                                    }))
+                                                                                }
+                                                                            />
+                                                                            <button
+                                                                                className="btn btn-primary"
+                                                                                type="button"
+                                                                                onClick={() =>
+                                                                                    ReplyComment(
+                                                                                        comment.id,
+                                                                                        commentreplyText[comment.id]
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                Submit
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 )}
-
-                                                            {showReplyInput[comment.id] && (
-                                                                <div className="mt-2 w-75 mx-5">
-                                                                    <div className="input-group">
-                                                                        <input
-                                                                            type="text"
-                                                                            className="form-control"
-                                                                            placeholder="Write a reply..."
-                                                                            aria-label="Reply"
-                                                                            value={commentreplyText[comment.id] || ""}
-                                                                            onChange={(e) =>
-                                                                                setCommentreplyText((prevState) => ({
-                                                                                    ...prevState,
-                                                                                    [comment.id]: e.target.value,
-                                                                                }))
-                                                                            }
-                                                                        />
-                                                                        <button
-                                                                            className="btn btn-primary"
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                ReplyComment(
-                                                                                    comment.id,
-                                                                                    commentreplyText[comment.id]
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            Submit
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="form-control w-100 d-flex justify-content-center">
+                                                            No Comments Yet!
                                                         </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="form-control w-100 d-flex justify-content-center">
-                                                        No Comments Yet!
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                                    )}
+                                                </div>
+                                            )}
 
 
 
-                                        <div className="d-flex align-items-center mt-3">
-                                            <Image
-                                                src={userdata.data.avatar}
-                                                alt="User Avatar"
-                                                className="rounded-5"
-                                                width={40}
-                                                height={40}
-                                            />
-                                            <form className="position-relative w-100 ms-2">
-                                                <input
-                                                    type="text"
-                                                    className="form-control bg-light border-1 rounded-2"
-                                                    placeholder="Add a comment..."
-                                                    value={commentText[post.id] || ""}
-                                                    onChange={(e) => handleCommentTextChange(e, post.id)}
+                                            <div className="d-flex align-items-center mt-3">
+                                                <Image
+                                                    src={userdata.data.avatar}
+                                                    alt="User Avatar"
+                                                    className="rounded-5"
+                                                    width={40}
+                                                    height={40}
                                                 />
-                                                <button
-                                                    className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                    type="button"
-                                                    onClick={() => handleCommentSubmit(post.id)}
-                                                >
-                                                    <i className="bi bi-send"></i>
-                                                </button>
-                                            </form>
+                                                <form className="position-relative w-100 ms-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control bg-light border-1 rounded-2"
+                                                        placeholder="Add a comment..."
+                                                        value={commentText[post.id] || ""}
+                                                        onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                    />
+                                                    <button
+                                                        className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                        type="button"
+                                                        onClick={() => handleCommentSubmit(post.id)}
+                                                    >
+                                                        <i className="bi bi-send"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+
+
                                         </div>
-
-
                                     </div>
-                                </div>
-                            ))}
+
+
+                                )
+
+
+                            }
+
+                            )}
+
+
 
 
                             <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
