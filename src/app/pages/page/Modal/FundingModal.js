@@ -62,7 +62,7 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
                 aria-labelledby="contained-modal-title-vcenter"
                 centered
             >
-                <Modal.Header >
+                <Modal.Header>
                     <Modal.Title id="contained-modal-title-vcenter">
                         Raise Funding
                     </Modal.Title>
