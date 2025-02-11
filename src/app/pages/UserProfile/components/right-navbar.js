@@ -236,8 +236,8 @@ const RightNavbar = ({ user }) => {
                   <h4 className="fw-bold mb-0">Friends</h4>
                   <span className="badge bg-danger ms-2">{user.friends_count}</span>
                 </div>
-                <button className="btn btn-outline-primary rounded-3 px-3" onClick={handleSeeAllFriends}>
-                  See all
+                <button className="btn btn-light text-primary border-0 rounded-1" onClick={handleSeeAllFriends}>
+                  See all Friends
                 </button>
               </div>
 

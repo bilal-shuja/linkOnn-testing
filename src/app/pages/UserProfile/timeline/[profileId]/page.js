@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import createAPI from "@/app/lib/axios";
 import RightNavbar from "../../components/right-navbar";
 import Image from "next/image";
@@ -10,13 +10,19 @@ import EmojiPicker from 'emoji-picker-react';
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import UserImagesLayout from "./userImagesLayout";
 import Profilecard from "../../components/profile-card";
+import Greatjob from "./GreatJob";
+import CupofCoffee from "./CupofCoffee";
 
 export default function UserProfileCard({ params }) {
 
     const { profileId } = use(params);
     const api = createAPI();
     const router = useRouter();
+    const [userId, setUserId] = useState(null);
+    const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+    const [activeGreatJobId, setActiveGreatJobId] = useState(null);
     const [page, setPage] = useState(1);
     const [userdata, setUserData] = useState(null);
     const [lastPostId, setLastPostId] = useState(0);
@@ -28,11 +34,12 @@ export default function UserProfileCard({ params }) {
     const [error, setError] = useState(null);
     const [dropdownSelection, setDropdownSelection] = useState("PUBLIC");
     const [success, setSuccess] = useState("");
-    const [options, setOptions] = useState(["", ""]);
+    const [options, setOptions] = useState([""]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showLocation, setShowLocation] = useState(false);
     const [showimg, setShowimg] = useState(false);
     const [video, setvideo] = useState([]);
+    const [images, setImages] = useState([]);
     const [comments, setComments] = useState({});
     const [showComments, setShowComments] = useState({});
     const [commentText, setCommentText] = useState({});
@@ -42,19 +49,22 @@ export default function UserProfileCard({ params }) {
     const [donationImage, setDonationImage] = useState([]);
     const [privacy, setPrivacy] = useState(0);
     const [locationText, setlocationText] = useState("");
-    const [images, setImages] = useState([]);
     const [showList, setShowList] = useState(false);
     const [showvideo, setShowvideo] = useState(false);
     const [audio, setaudio] = useState([]);
-
     const [donationTitle, setDonationTitle] = useState("");
     const [donationAmount, setDonationAmount] = useState("");
     const [donationDescription, setDonationDescription] = useState("");
-    
     const [showReplies, setShowReplies] = useState({});
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
     const [repliesData, setRepliesData] = useState({});
+
+    const fileImageRef = useRef(null);
+
+    const fileVideoRef = useRef(null);
+
+    const fileAudioRef = useRef(null);
 
 
     const handleDelete = useCallback(async (values) => {
@@ -111,6 +121,13 @@ export default function UserProfileCard({ params }) {
         const data = localStorage.getItem("userdata");
         if (data) {
             setUserData(JSON.parse(data));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUserId = localStorage.getItem("userid");
+            setUserId(storedUserId);
         }
     }, []);
 
@@ -242,16 +259,54 @@ export default function UserProfileCard({ params }) {
         setShowimg((prev) => !prev);
     };
 
+    const handleImageChange = (event) => {
+        const files = event.target.files;
+        if (files) {
+            const newImages = Array.from(files).map((file) => ({
+                file,
+                url: URL.createObjectURL(file),
+            }));
+            setImages((prevImages) => [...prevImages, ...newImages]);
+        }
+    };
+
+    const handlevideoChange = (e) => {
+        const videoFiles = e.target.files;
+        if (videoFiles.length > 0) {
+            const newVideos = Array.from(videoFiles).map((file) => ({
+                file,
+                url: URL.createObjectURL(file),
+            }));
+            setvideo((prevVideos) => [...prevVideos, ...newVideos]);
+        }
+    };
+
+    const removeImage = (index) => {
+        setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    };
+
+
+    const removeVideo = (index) => {
+        setvideo((prevVideos) => prevVideos.filter((_, i) => i !== index));
+    };
+
+    const handleaudioChange = (event) => {
+        const files = Array.from(event.target.files);
+        const newAudio = files.map((file) => ({
+            file,
+            url: URL.createObjectURL(file),
+        }));
+        setaudio((prevFiles) => [...prevFiles, ...newAudio]);
+    };
+
+    const removeAudio = (index) => {
+        const updatedAudios = audio.filter((_, i) => i !== index);
+        setaudio(updatedAudios);
+    };
+
     const handlePostTextChange = (e) => { setPostText(e.target.value) };
     const handlePollTextChange = (e) => { setPollText(e.target.value) };
     const handleLocationTextChange = (e) => { setlocationText(e.target.value) };
-
-    const handleFileChange = (e) => {
-        const files = e.target.files;
-        if (files.length > 0) {
-            setImages(Array.from(files));
-        }
-    };
 
     const handleDonationImage = (e) => {
         const files = e.target.files;
@@ -260,19 +315,7 @@ export default function UserProfileCard({ params }) {
         }
     };
 
-    const handleaudioChange = (e) => {
-        const audioFiles = e.target.files;
-        if (audioFiles.length > 0) {
-            setaudio(Array.from(audioFiles));
-        }
-    };
 
-    const handlevideoChange = (e) => {
-        const videoFiles = e.target.files;
-        if (videoFiles.length > 0) {
-            setvideo(Array.from(videoFiles));
-        }
-    };
 
     const handleEmojiButtonClick = () => {
         setShowEmojiPicker((prev) => !prev);
@@ -310,12 +353,12 @@ export default function UserProfileCard({ params }) {
             formData.append("amount", donationAmount);
             formData.append("poll_option", options);
             formData.append("post_location", locationText);
-            images.forEach((image) => formData.append("images[]", image));
+            images.forEach((image) => formData.append("images[]", image.file));
             donationImage.forEach((image) =>
                 formData.append("donation_image", image)
             );
-            audio.forEach((audioFile) => formData.append("audio", audioFile));
-            video.forEach((videoFile) => formData.append("video", videoFile));
+            audio.forEach((audioFile) => formData.append("audio", audioFile.file));
+            video.forEach((videoFile) => formData.append("video", videoFile.file));
 
             let postType = "post";
             if (pollText) {
@@ -338,6 +381,10 @@ export default function UserProfileCard({ params }) {
                 toast.success(response.data.message)
                 setPosts([response.data.data, ...posts]);
                 setPostText("");
+                setShowimg(false);
+                setShowvideo(false);
+                setShowaudio(false);
+                setShowLocation(false);
                 setError("");
                 setImages([]);
                 setaudio([]);
@@ -650,6 +697,24 @@ export default function UserProfileCard({ params }) {
         toast.success("Link copied successfully!");
     };
 
+    // Function to open/close Cup of Coffee modal
+    const openModalCupCoffee = (id) => {
+        setActiveCupCoffeeId(id);
+        setActiveGreatJobId(null); // Ensure other modal closes
+    };
+    const closeModalCupCoffee = () => {
+        setActiveCupCoffeeId(null);
+    };
+
+    // Function to open/close Great Job modal
+    const openModalGreatJob = (id) => {
+        setActiveGreatJobId(id);
+        setActiveCupCoffeeId(null); // Ensure other modal closes
+    };
+    const closeModalGreatJob = () => {
+        setActiveGreatJobId(null);
+    };
+
     return (
         <>
 
@@ -781,44 +846,170 @@ export default function UserProfileCard({ params }) {
                                             </label>
                                             <input
                                                 type="text"
-                                                className="form-control"
+                                                className="form-control form-control-sm"
                                                 placeholder="Where are you at?"
                                                 value={locationText}
                                                 onChange={handleLocationTextChange}
                                             />
                                         </div>
                                     )}
+
                                     {showimg && (
-                                        <input
-                                            className="form-control w-75 mt-3"
-                                            type="file"
-                                            id="imageFile"
-                                            onChange={handleFileChange}
-                                            accept="image/*"
-                                            multiple
-                                        />
+                                        <div>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    gap: "10px",
+                                                    marginTop: "5px",
+                                                    flexWrap: "wrap",
+                                                }}
+                                            >
+                                                {images.map((img, index) => (
+                                                    <div key={index} style={{ position: "relative", display: "inline-block" }}>
+                                                        <button
+                                                            onClick={() => removeImage(index)}
+                                                            style={{
+                                                                position: "absolute",
+                                                                top: "-5px",
+                                                                right: "-5px",
+                                                                color: "white",
+                                                                border: "none",
+                                                                borderRadius: "50%",
+                                                                backgroundColor: "red",
+                                                                width: "20px",
+                                                                height: "20px",
+                                                                display: "flex",
+                                                                justifyContent: "center",
+                                                                alignItems: "center",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-trash text-light"></i>
+                                                        </button>
+
+                                                        <Image
+                                                            className="mb-3"
+                                                            src={img.url}
+                                                            alt={`Preview ${index}`}
+                                                            width={100}
+                                                            height={100}
+                                                            style={{ objectFit: "cover", borderRadius: "5px" }}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="col-lg-12 mb-3">
+                                                <label className="form-label text-muted">
+                                                    <i className="bi bi-image-fill"></i> Photos
+                                                </label>
+                                                <input
+                                                    className="form-control form-control-sm"
+                                                    type="file"
+                                                    id="formFile"
+                                                    onChange={handleImageChange}
+                                                    ref={fileImageRef}
+                                                    multiple
+                                                    accept="image/*"
+                                                />
+                                            </div>
+                                        </div>
                                     )}
 
-                                    {showaudio && (
-                                        <input
-                                            className="form-control w-75 mt-3"
-                                            type="file"
-                                            id="audiofile"
-                                            onChange={handleaudioChange}
-                                            accept="audio/*"
-                                        />
-                                    )}
 
                                     {showvideo && (
-                                        <input
-                                            className="form-control w-75 mt-3 mb-3"
-                                            type="file"
-                                            id="videofile"
-                                            onChange={handlevideoChange}
-                                            accept="video/*"
-                                            multiple
-                                        />
+                                        <div>
+                                            <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                {video.map((video, index) => (
+                                                    <div key={index} style={{ position: "relative", display: "inline-block" }}>
+
+                                                        <button
+
+                                                            onClick={() => removeVideo(index)}
+                                                            style={{
+                                                                position: "absolute",
+                                                                top: "20px",
+                                                                right: "-15px",
+                                                                color: "white",
+                                                                border: "none",
+                                                                borderRadius: "50%",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-trash text-danger" />
+                                                        </button>
+
+                                                        <video width="150" height="150" controls>
+                                                            <source src={video.url} type={video.file.type} />
+                                                            Your browser does not support the video tag.
+                                                        </video>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="col-lg-12 mb-3">
+                                                <label className="form-label text-muted">
+                                                    <i className="bi bi-camera-reels-fill"></i> Videos
+                                                </label>
+                                                <input
+                                                    className="form-control form-control-sm"
+                                                    type="file"
+                                                    id="videofile"
+                                                    onChange={handlevideoChange}
+                                                    ref={fileVideoRef}
+                                                    accept="video/*"
+                                                    multiple
+                                                />
+                                            </div>
+                                        </div>
                                     )}
+
+
+                                    {showaudio && (
+                                        <div>
+                                            <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                {audio.map((audio, index) => (
+                                                    <div key={index} style={{ position: "relative" }}>
+
+                                                        <button
+                                                            onClick={() => removeAudio(index)}
+                                                            style={{
+                                                                position: "absolute",
+                                                                top: "-12px",
+                                                                right: "-10px",
+                                                                color: "white",
+                                                                border: "none",
+                                                                borderRadius: "50%",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-trash text-danger" />
+                                                        </button>
+
+                                                        <audio width="150" height="120" controls>
+                                                            <source src={audio.url} type={audio.file.type} />
+                                                            Your browser does not support the video tag.
+                                                        </audio>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="col-lg-12 mb-3">
+                                                <label className="form-label text-muted">
+                                                    <i className="bi bi-music-note-beamed"></i> Audio
+                                                </label>
+                                                <input
+                                                    className="form-control form-control-sm"
+                                                    type="file"
+                                                    id="audiofile"
+                                                    onChange={handleaudioChange}
+                                                    ref={fileAudioRef}
+                                                    accept="audio/*"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
 
                                     <div className="d-flex flex-wrap justify-content-evenly">
                                         <div>
@@ -1070,7 +1261,7 @@ export default function UserProfileCard({ params }) {
                                                 Raise Funding
                                             </button>
                                         </div>
-                                        
+
                                     </div>
 
                                     <div className="d-flex justify-content-center">
@@ -1168,7 +1359,7 @@ export default function UserProfileCard({ params }) {
                                                     )}
                                                 </small>
                                             </div>
-                                            
+
                                         </div>
 
                                         <div>
@@ -1242,60 +1433,59 @@ export default function UserProfileCard({ params }) {
 
                                     <div className="d-flex justify-content-center flex-wrap mb-3">
                                         {post.poll && post.poll.poll_options && (
-                                            <div className="w-100">
+                                            <div className="w-100 shadow-sm border-0 p-3 rounded">
+                                                <h5 className="text-center fw-bold text-primary mb-3">{post.poll.title}</h5>
                                                 <ul className="list-unstyled">
                                                     {post.poll.poll_options.map((option) => {
-                                                        const totalVotes =
-                                                            post.poll.poll_total_votes || 0;
+                                                        const totalVotes = post.poll.poll_total_votes || 0;
                                                         const percentage =
-                                                            totalVotes > 0
-                                                                ? Math.round(
-                                                                    (option.no_of_votes / totalVotes) * 100
-                                                                )
-                                                                : 0;
+                                                            totalVotes > 0 ? Math.round((option.no_of_votes / totalVotes) * 100) : 0;
 
                                                         return (
-                                                            <li key={option.id} className="mb-3 w-100">
+                                                            <li key={option.id} className="mb-3">
                                                                 <div className="d-flex align-items-center justify-content-between">
+                                                                    {/* Poll Option Progress Bar */}
                                                                     <div
-                                                                        className="progress flex-grow-1"
+                                                                        className="progress flex-grow-1 position-relative"
                                                                         style={{
-                                                                            height: "30px",
+                                                                            height: "35px",
+                                                                            borderRadius: "8px",
+                                                                            overflow: "hidden",
                                                                             cursor: "pointer",
+                                                                            backgroundColor: "#f1f1f1",
                                                                         }}
-                                                                        onClick={() =>
-                                                                            handleVote(
-                                                                                option.id,
-                                                                                post.poll.id,
-                                                                                post.id
-                                                                            )
-                                                                        }
+                                                                        onClick={() => handleVote(option.id, post.poll.id, post.id)}
                                                                     >
                                                                         <div
                                                                             className="progress-bar"
                                                                             role="progressbar"
                                                                             style={{
                                                                                 width: `${percentage}%`,
-                                                                                backgroundColor: "#66b3ff",
+                                                                                backgroundColor: "#007bff",
+                                                                                transition: "width 0.5s ease-in-out",
                                                                             }}
                                                                             aria-valuenow={percentage}
                                                                             aria-valuemin="0"
                                                                             aria-valuemax="100"
                                                                         >
-                                                                            <div
-                                                                                className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                                            {/* Poll Option Text Inside Progress Bar */}
+                                                                            <span
+                                                                                className="position-absolute w-100 text-dark fw-bold"
                                                                                 style={{
-                                                                                    position: "absolute",
+                                                                                    left: "10px",
+                                                                                    fontSize: "14px",
+                                                                                    lineHeight: "35px",
+                                                                                    whiteSpace: "nowrap",
                                                                                     overflow: "hidden",
                                                                                     textOverflow: "ellipsis",
-                                                                                    whiteSpace: "nowrap",
                                                                                 }}
                                                                             >
                                                                                 {option.option_text}
-                                                                            </div>
+                                                                            </span>
                                                                         </div>
                                                                     </div>
-                                                                    <span className="px-3">{percentage}%</span>
+                                                                    {/* Vote Percentage */}
+                                                                    <span className="px-3 fw-bold text-dark">{percentage}%</span>
                                                                 </div>
                                                             </li>
                                                         );
@@ -1307,51 +1497,57 @@ export default function UserProfileCard({ params }) {
 
                                     <div className="container mt-5">
                                         {post.donation && (
-                                            <div>
-                                                <Image
-                                                    src={post.donation.image}
-                                                    alt={post.donation.title}
-                                                    className="img-fluid"
-                                                    width={500}
-                                                    height={300}
-                                                    style={{
-                                                        objectFit: "cover",
-                                                    }}
-                                                />
+                                            <div className="card border-0 rounded p-3">
+                                                {/* Donation Image */}
+                                                <div className="text-center">
+                                                    <Image
+                                                        src={post.donation.image}
+                                                        alt={post.donation.title}
+                                                        className="img-fluid rounded"
+                                                        width={500}
+                                                        height={300}
+                                                        style={{ objectFit: "cover", maxHeight: "300px" }}
+                                                    />
+                                                </div>
 
+                                                {/* Donation Content */}
                                                 <div className="card-body text-center">
-                                                    <h5 className="card-title">
-                                                        {post.donation.title}
-                                                    </h5>
-                                                    <p className="card-text">
-                                                        {post.donation.description}
-                                                    </p>
-                                                    <div className="progress mb-3">
+                                                    <h5 className="card-title fw-bold text-primary">{post.donation.title}</h5>
+                                                    <p className="card-text text-muted">{post.donation.description}</p>
+
+                                                    {/* Progress Bar */}
+                                                    <div className="progress mb-3" style={{ height: "10px", borderRadius: "5px" }}>
                                                         <div
-                                                            className="progress-bar"
+                                                            className="progress-bar bg-success"
                                                             role="progressbar"
                                                             style={{
-                                                                width: `${(post.donation.collected_amount /
-                                                                    post.donation.amount) *
-                                                                    100
-                                                                    }%`,
+                                                                width: `${(post.donation.collected_amount / post.donation.amount) * 100}%`,
+                                                                borderRadius: "5px",
                                                             }}
                                                             aria-valuenow={post.donation.collected_amount}
                                                             aria-valuemin="0"
                                                             aria-valuemax={post.donation.amount}
                                                         ></div>
                                                     </div>
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <p className="text-muted">
-                                                            {post.donation.collected_amount} Collected
+
+                                                    {/* Donation Stats & Button */}
+                                                    <div className="d-flex align-items-center justify-content-between px-3">
+                                                        <p className="text-muted m-0">
+                                                            <strong>{post.donation.collected_amount}</strong> Collected
                                                         </p>
-                                                        <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+                                                        <p className="text-dark m-0">
+                                                            Required: <span className="fw-bold">{post.donation.amount}</span>
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Donate Button */}
+                                                    <div className="text-center mt-3">
                                                         <button
-                                                            className="btn btn-primary btn-sm"
+                                                            className="btn btn-primary rounded-pill px-4 py-2"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#DonateModal"
                                                         >
-                                                            Donate
+                                                            Donate Now
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1415,107 +1611,144 @@ export default function UserProfileCard({ params }) {
                                         </div>
                                     </div>
 
-                                    <div className="d-flex justify-content-center flex-wrap mb-3">
-                                        {post.images &&
-                                            post.images.length > 0 &&
-                                            post.images.map((image, index) => (
-                                                <Image
-                                                    key={index}
-                                                    src={image.media_path}
-                                                    alt={`Post image ${index + 1}`}
-                                                    className="img-fluid mt-1"
-                                                    width={600}
-                                                    height={300}
-                                                    style={{
-                                                        objectFit: "cover",
-                                                    }}
-                                                />
+                                    <div className="d-flex flex-column align-items-center mb-4">
 
-                                            ))}
+                                        {/* {post.images && post.images.length > 0 && (
+                                            <div className="w-100">
+                                                <div className="d-flex flex-wrap gap-2 justify-content-center">
+                                             
+                                                    {post.images.slice(0, 2).map((image, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="rounded overflow-hidden"
+                                                            style={{ width: "48%", height: "250px", position: "relative" }}
+                                                        >
+                                                            <Image
+                                                                src={image.media_path}
+                                                                alt={`Post image ${index + 1}`}
+                                                                width={600}
+                                                                height={300}
+                                                                className="img-fluid"
+                                                                style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
 
+                                              
+                                                {post.images.length > 2 && (
+                                                    <div className="d-flex mt-2 gap-2 justify-content-center">
+                                                        {post.images.slice(2, 5).map((image, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="rounded overflow-hidden position-relative"
+                                                                style={{ width: "30%", height: "120px" }}
+                                                            >
+                                                                <Image
+                                                                    src={image.media_path}
+                                                                    alt={`Post image ${index + 3}`}
+                                                                    width={200}
+                                                                    height={150}
+                                                                    className="img-fluid"
+                                                                    style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                                                                />
+
+                                                         
+                                                                {index === 2 && post.images.length > 5 && (
+                                                                    <div
+                                                                        className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white fw-bold fs-4"
+                                                                        style={{ backgroundColor: "rgba(0, 0, 0, 0.6)", borderRadius: "10px" }}
+                                                                    >
+                                                                        +{post.images.length - 5}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )} */}
+
+                                        <UserImagesLayout key={`${post.id}-${index}`} post={post} />
+
+                                        {/* Event Section */}
                                         {post.event && post.event.cover && (
-                                            <div>
+                                            <div className="w-100 text-center mt-3">
                                                 <Image
                                                     src={post.event.cover}
                                                     alt="Event Cover"
-                                                    className="img-fluid mt-1"
                                                     width={500}
                                                     height={300}
-                                                    style={{
-                                                        objectFit: "cover",
-                                                    }}
+                                                    className="img-fluid rounded"
+                                                    style={{ objectFit: "cover" }}
                                                 />
-
                                                 <h5 className="fw-bold mt-2">{post.event.name}</h5>
-                                                <button className="badge btn-primary rounded-pill mt-3">
-                                                    {post.event.start_date}
-                                                </button>
+                                                <span className="badge bg-primary rounded-pill mt-2 px-3 py-2">{post.event.start_date}</span>
                                             </div>
                                         )}
 
-                                        {post.product && (
-                                            <div>
-                                                <Image
-                                                    src={post.product.images[0].image}
-                                                    alt="Product"
-                                                    className="img-fluid"
-                                                    width={600}
-                                                    height={400}
-                                                    style={{
-                                                        objectFit: "cover",
-                                                    }}
-                                                />
-                                                <div className="row mt-3">
-                                                    <div className="col-md-9">
-                                                        <p></p>
-                                                        <h6><b>{post.product.product_name}</b></h6>
-                                                        <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
-                                                        <br />
-                                                        <span><b>Category: </b>{post.product.category}</span>
-                                                        <br />
-                                                        <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
-                                                    </div>
-                                                    <div className="col-md-3 mt-4">
-                                                        <Link href="#" >
-                                                            <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
-                                                        </Link>
+                                        {post.product && post.product.images.length > 0 && (
+                                            <div className="w-100 mt-4 card shadow-sm border-0 rounded p-3">
+                                                {/* Product Image */}
+                                                <div className="text-center">
+                                                    <Image
+                                                        src={post.product.images[0].image}
+                                                        alt={post.product.product_name}
+                                                        width={600}
+                                                        height={400}
+                                                        className="img-fluid rounded"
+                                                        style={{ objectFit: "cover", maxHeight: "300px" }}
+                                                    />
+                                                </div>
+
+                                                {/* Product Details */}
+                                                <div className="card-body">
+                                                    <h5 className="fw-bold text-dark">{post.product.product_name}</h5>
+                                                    <hr className="mb-2" />
+
+                                                    <div className="row align-items-center">
+                                                        <div className="col-md-9">
+                                                            <p className="mb-1"><b>Price:</b> <span className="text-success fw-bold">{post.product.price} {post.product.currency}</span></p>
+                                                            <p className="mb-1"><b>Category:</b> {post.product.category}</p>
+                                                            <p className="mb-0 text-primary">
+                                                                <i className="bi bi-geo-alt-fill"></i> {post.product.location}
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Edit Product Button */}
+                                                        <div className="col-md-3 text-end">
+                                                            <Link href="#">
+                                                                <button className="btn btn-primary rounded-pill px-3 py-2">
+                                                                    Edit Product
+                                                                </button>
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
 
+                                        {/* Video Section */}
                                         {post.video && (
-                                            <div
-                                                className="media-container mt-1"
-                                                style={{ width: "100%", height: "auto" }}
-                                            >
-                                                <video
-                                                    controls
-                                                    style={{
-                                                        objectFit: "cover",
-                                                        width: "100%",
-                                                        height: "auto",
-                                                    }}
-                                                >
-                                                    <source
-                                                        src={post.video.media_path}
-                                                        type="video/mp4"
-                                                    />
+                                            <div className="w-100 mt-3">
+                                                <video controls className="w-100 rounded">
+                                                    <source src={post.video.media_path} type="video/mp4" />
                                                     Your browser does not support the video tag.
                                                 </video>
                                             </div>
                                         )}
 
+                                        {/* Audio Section */}
                                         {post.audio && (
-                                            <div className="media-container w-100">
+                                            <div className="w-100 mt-3">
                                                 <audio controls className="w-100">
                                                     <source src={post.audio.media_path} />
                                                     Your browser does not support the audio tag.
                                                 </audio>
                                             </div>
                                         )}
-                                    </div>
 
+                                    </div>
                                     <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
                                         <div className="d-flex align-items-center mb-2 mb-md-0">
                                             <span className="me-2">
@@ -1632,19 +1865,43 @@ export default function UserProfileCard({ params }) {
                                     <hr className="my-1" />
 
                                     <div className="d-flex mb-3 mt-2">
-                                        <button
-                                            className="btn me-2 d-flex align-items-center rounded-1"
-                                            style={{
-                                                backgroundColor: "#C19A6B",
-                                                borderRadius: "10px",
-                                                color: "#fff",
-                                            }}
-                                        >
-                                            <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                        </button>
-                                        <button className="btn btn-danger d-flex align-items-center rounded-1">
-                                            <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                        </button>
+
+                                     
+                                        {userId && post.user_id !== userId && (
+                                            <button
+                                                className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                onClick={() => openModalCupCoffee(post.id)}
+                                                style={{
+                                                    backgroundColor: "#A87F50",
+                                                    borderRadius: "10px",
+                                                    color: "#fff",
+                                                }}
+                                            >
+                                                <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                            </button>
+                                        )}
+
+                                   
+                                        {activeCupCoffeeId === post.id && (
+                                            <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                        )}
+
+                                    
+                                        {userId && post.user_id !== userId && (
+                                            <button
+                                                className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                                                onClick={() => openModalGreatJob(post.id)}
+                                            >
+                                                <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                            </button>
+                                        )}
+
+                                       
+                                        {activeGreatJobId === post.id && (
+                                            <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                        )}
+
+
                                     </div>
 
                                     {showComments[post.id] && (
