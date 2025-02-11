@@ -94,18 +94,18 @@ export default function MyPageTimeline({ params }) {
 
     const getGridClass = (count) => {
         switch (count) {
-          case 1:
-            return styles.gridOne;
-          case 2:
-            return styles.gridTwo;
-          case 3:
-            return styles.gridThree;
-          case 4:
-            return styles.gridFour;
-          default:
-            return styles.gridMore;
+            case 1:
+                return styles.gridOne;
+            case 2:
+                return styles.gridTwo;
+            case 3:
+                return styles.gridThree;
+            case 4:
+                return styles.gridFour;
+            default:
+                return styles.gridMore;
         }
-      };
+    };
 
     // if (!posts?.images || posts?.images.length === 0) return null;
 
@@ -146,8 +146,6 @@ export default function MyPageTimeline({ params }) {
         if (updatedImages.length === 0 && fileImageRef.current) {
             fileImageRef.current.value = "";
         }
-
-
     };
 
 
@@ -189,8 +187,6 @@ export default function MyPageTimeline({ params }) {
         if (updatedAudios.length === 0 && fileVideoRef.current) {
             fileAudioRef.current.value = "";
         }
-
-
     };
 
 
@@ -896,7 +892,6 @@ export default function MyPageTimeline({ params }) {
                                                         ))}
                                                     </div>
 
-
                                                     <div className="col-lg-12 mb-3">
                                                         <label className="form-label text-muted"> <i className="bi bi-image-fill"></i> Photos</label>
                                                         <input className="form-control form-control-sm"
@@ -1419,19 +1414,19 @@ export default function MyPageTimeline({ params }) {
 
                                             <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
                                                 {
-                                                post.images && post.images.length > 0 &&
-                                                post.images.map((image, index) => (
-                                                    <div key={index} className={styles.imageContainer}>
-                                                        <Image
-                                                            src={image.media_path}
-                                                            alt={`Post image ${index + 1}`}
-                                                            width={400}
-                                                            height={300}
-                                                            className={styles.postImage}
-                                                            style={{ objectFit: "cover" }}
-                                                        />
-                                                    </div>
-                                                ))}
+                                                    post.images && post.images.length > 0 &&
+                                                    post.images.map((image, index) => (
+                                                        <div key={index} className={styles.imageContainer}>
+                                                            <Image
+                                                                src={image.media_path}
+                                                                alt={`Post image ${index + 1}`}
+                                                                width={400}
+                                                                height={300}
+                                                                className={styles.postImage}
+                                                                style={{ objectFit: "cover" }}
+                                                            />
+                                                        </div>
+                                                    ))}
                                             </div>
 
                                             {/* <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>

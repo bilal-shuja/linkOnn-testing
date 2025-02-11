@@ -7,7 +7,8 @@ import Link from "next/link";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-
+import Greatjob from "./GreatJob";
+import CupofCoffee from "./CupofCoffee";
 import { toast } from "react-toastify";
 
 export default function Savedposts() {
@@ -16,6 +17,7 @@ export default function Savedposts() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [lastPostId, setLastPostId] = useState(0);
+    const [userId, setUserId] = useState(null);
     const [limit] = useState(5);
     const [page, setPage] = useState(1);
     const [noMorePosts, setNoMorePosts] = useState(false);
@@ -30,6 +32,8 @@ export default function Savedposts() {
     const [message, setMessage] = useState("");
     const [showList, setShowList] = useState(false);
     const [donate, setDonate] = useState("");
+    const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+    const [activeGreatJobId, setActiveGreatJobId] = useState(null);
 
     const api = createAPI();
 
@@ -92,6 +96,13 @@ export default function Savedposts() {
             window.removeEventListener("scroll", handleScroll);
         };
     }, [page]);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUserId = localStorage.getItem("userid");
+            setUserId(storedUserId);
+        }
+    }, []);
 
 
     const handleCommentSubmit = async (postId) => {
@@ -391,6 +402,23 @@ export default function Savedposts() {
         toast.success("Link copied successfully!");
     };
 
+    // Function to open/close Cup of Coffee modal
+    const openModalCupCoffee = (id) => {
+        setActiveCupCoffeeId(id);
+        setActiveGreatJobId(null); // Ensure other modal closes
+    };
+    const closeModalCupCoffee = () => {
+        setActiveCupCoffeeId(null);
+    };
+
+    // Function to open/close Great Job modal
+    const openModalGreatJob = (id) => {
+        setActiveGreatJobId(id);
+        setActiveCupCoffeeId(null); // Ensure other modal closes
+    };
+    const closeModalGreatJob = () => {
+        setActiveGreatJobId(null);
+    };
     return (
         <div>
 
@@ -902,19 +930,41 @@ export default function Savedposts() {
                                         <hr className="my-1" />
 
                                         <div className="d-flex mb-3 mt-2">
-                                            <button
-                                                className="btn me-2 d-flex align-items-center rounded-1"
-                                                style={{
-                                                    backgroundColor: "#C19A6B",
-                                                    borderRadius: "10px",
-                                                    color: "#fff",
-                                                }}
-                                            >
-                                                <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                            </button>
-                                            <button className="btn btn-danger d-flex align-items-center rounded-1">
-                                                <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                            </button>
+
+                                            {userId && post.user_id !== userId && (
+                                                <button
+                                                    className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                    onClick={() => openModalCupCoffee(post.id)}
+                                                    style={{
+                                                        backgroundColor: "#A87F50",
+                                                        borderRadius: "10px",
+                                                        color: "#fff",
+                                                    }}
+                                                >
+                                                    <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                </button>
+                                            )}
+
+
+                                            {activeCupCoffeeId === post.id && (
+                                                <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                            )}
+
+
+                                            {userId && post.user_id !== userId && (
+                                                <button
+                                                    className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                                                    onClick={() => openModalGreatJob(post.id)}
+                                                >
+                                                    <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                </button>
+                                            )}
+
+
+                                            {activeGreatJobId === post.id && (
+                                                <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                            )}
+
                                         </div>
 
                                         {showComments[post.id] && (
