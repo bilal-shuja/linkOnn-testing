@@ -72,6 +72,7 @@ export default function VideoFeed() {
     const fetchPosts = async (isInitialLoad = true) => {
         try {
             setLoading(true);
+
             const response = await api.post("/api/post/newsfeed", {
                 limit,
                 last_post_id: lastPostId,
@@ -81,13 +82,22 @@ export default function VideoFeed() {
             if (response.data && Array.isArray(response.data.data)) {
                 const newPosts = response.data.data;
 
+                // If no new posts are returned, mark noMorePosts as true
+                if (newPosts.length === 0) {
+                    setNoMorePosts(true);
+                    return; // Exit early since there are no new posts
+                }
+
                 if (newPosts.length > 0) {
                     const lastPost = newPosts[newPosts.length - 1];
                     setLastPostId(lastPost.id);
                 }
 
+                // If fewer posts are returned than the limit, there might be no more posts
                 if (newPosts.length < limit) {
                     setNoMorePosts(true);
+                } else {
+                    setNoMorePosts(false); // Reset when new posts are still available
                 }
 
                 setPosts((prevPosts) => {
@@ -105,11 +115,12 @@ export default function VideoFeed() {
                 toast.error("Invalid data format received from API.");
             }
         } catch (error) {
-            toast.error("An error occurred while fetching data.")
+            toast.error("An error occurred while fetching data.");
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleScroll = () => {
         if (loading || noMorePosts) return;
@@ -408,14 +419,10 @@ export default function VideoFeed() {
 
                         <div className="col-md-6 p-3">
 
-                            {posts.length === 0 && !loading && (
-                                <p className="text-center">No posts found.</p>
-                            )}
-
                             {posts.map((post, index) => (
                                 <div
                                     key={`${post.id}-${index}`}
-                                    className="card mb-4 shadow-lg border-0 rounded-1"
+                                    className="card mb-2 shadow-lg border-0 rounded-1"
                                 >
                                     <div className="card-body">
                                         <div className="d-flex align-items-center justify-content-between">
@@ -526,7 +533,7 @@ export default function VideoFeed() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <hr className="my-2 text-muted" />
+                                        <hr className="my-2 text-muted post-divider" />
 
                                         <p> {post.post_text} </p>
 
@@ -554,118 +561,112 @@ export default function VideoFeed() {
                                             )}
                                         </div>
 
-                                        <div className="d-flex justify-content-between align-items-center mb-2 mt-5 px-3">
-                                            <div className="d-flex align-items-center">
-                                                <span className="me-2">
+                                        <div className="post-card-info">
+                                            {/* Reaction Section */}
+                                            <div className="post-card-reactions">
+                                                <span className="post-card-reaction-count">
                                                     {post.reaction ? post.reaction.count || 0 : 0}
                                                 </span>
-                                                <i className="bi bi-hand-thumbs-up"></i>
+                                                <i className="bi bi-hand-thumbs-up post-card-icon reaction-icon"></i>
                                             </div>
-                                            <div className="d-flex align-items-center text-muted">
-                                                <span className="me-3">
-                                                    <i className="bi bi-eye me-1"></i>
+
+                                            {/* Post Engagement Stats */}
+                                            <div className="post-card-stats">
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-eye post-card-icon"></i>
                                                     {post.view_count || 0}
                                                 </span>
-                                                <span className="me-3">
-                                                    <i className="bi bi-chat-dots me-1"></i>
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-chat-dots post-card-icon"></i>
                                                     {post.comment_count || 0} comments
                                                 </span>
-                                                <span>
-                                                    <i className="bi bi-share me-1"></i>
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-share post-card-icon"></i>
                                                     {post.share_count || 0} Shares
                                                 </span>
                                             </div>
                                         </div>
-                                        <hr className="my-1" />
 
-                                        <div className="d-flex justify-content-between">
+
+                                        <hr className="post-divider" />
+
+                                        <div className="post-actions">
                                             <button
-                                                className="btn border-0 d-flex align-items-center"
+                                                className="post-action-btn"
                                                 onClick={() => LikePost(post.id)}
                                             >
-                                                <i className="bi bi-emoji-smile me-2"></i> Reaction
+                                                <i className="bi bi-emoji-smile"></i> Reaction
                                             </button>
 
                                             <button
-                                                className="btn border-0 d-flex align-items-center"
+                                                className="post-action-btn"
                                                 onClick={() => handleCommentToggle(post.id)}
                                             >
-                                                <i className="bi bi-chat me-2"></i> Comments
+                                                <i className="bi bi-chat"></i> Comments
                                             </button>
 
-                                            <div className="dropdown">
+                                            <div className="post-dropdown">
                                                 <button
-                                                    className="btn border-0"
+                                                    className="post-action-btn dropdown-toggle"
                                                     type="button"
-                                                    id="dropdownMenuButton3"
+                                                    id={`dropdownMenuButton-${post.id}`} // UNIQUE ID
                                                     data-bs-toggle="dropdown"
                                                     aria-expanded="false"
                                                 >
-                                                    <i className="bi bi-share me-2"></i> Share
+                                                    <i className="bi bi-share"></i> Share
                                                 </button>
 
-                                                <ul
-                                                    className="dropdown-menu"
-                                                    aria-labelledby="dropdownMenuButton3"
-                                                >
-                                                    <li className=" align-items-center d-flex">
+                                                <ul className="dropdown-menu post-dropdown-menu" aria-labelledby={`dropdownMenuButton-${post.id}`}>
+                                                    <li>
                                                         <Link
-                                                            className="text-decoration-none dropdown-item text-muted"
+                                                            className="post-dropdown-item"
                                                             href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <i className="bi bi-facebook pe-2"></i> Share on Facebook
+                                                            <i className="bi bi-facebook"></i> Share on Facebook
                                                         </Link>
                                                     </li>
-
-                                                    <li className=" align-items-center d-flex">
+                                                    <li>
                                                         <Link
-                                                            className="text-decoration-none dropdown-item text-muted"
+                                                            className="post-dropdown-item"
                                                             href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <i className="bi bi-twitter-x pe-2"></i> Share on
-                                                            X
+                                                            <i className="bi bi-twitter-x"></i> Share on X
                                                         </Link>
                                                     </li>
-                                                    <li className=" align-items-center d-flex">
+                                                    <li>
                                                         <Link
-                                                            className="text-decoration-none dropdown-item text-muted"
+                                                            className="post-dropdown-item"
                                                             href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <i className="bi bi-linkedin pe-2"></i> Share on
-                                                            Linkedln
+                                                            <i className="bi bi-linkedin"></i> Share on LinkedIn
+                                                        </Link>
+                                                    </li>
+                                                    <li><hr className="post-dropdown-divider" /></li>
+                                                    <li>
+                                                        <Link className="post-dropdown-item" href="#">
+                                                            <i className="bi bi-bookmark-check"></i> Post on Timeline
                                                         </Link>
                                                     </li>
                                                     <li>
-                                                        <hr className="dropdown-divider" />
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-bookmark-check pe-2"></i> Post
-                                                            on Timeline
-                                                        </Link>
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
                                                         <span
-                                                            className="text-decoration-none dropdown-item text-muted"
+                                                            className="post-dropdown-item"
                                                             onClick={() => handleCopy(post.post_link)}
                                                         >
-                                                            <i className="bi bi-link pe-2"></i> Copy Post Link
+                                                            <i className="bi bi-link"></i> Copy Post Link
                                                         </span>
                                                     </li>
                                                 </ul>
                                             </div>
+
                                         </div>
 
-                                        <hr className="my-1" />
+                                        <hr className="post-divider" />
 
                                         <div className="d-flex mb-3 mt-2">
                                             {userId && post.user_id !== userId && (
@@ -915,17 +916,25 @@ export default function VideoFeed() {
                                     </div>
                                 </div>
                             ))}
-                            <div className="d-grid gap-2 col-3 mx-auto mt-4">
-                                {noMorePosts ? (
-                                    <button className="btn btn-primary" disabled>
-                                        No more posts
-                                    </button>
-                                ) : (
-                                    <button className="btn btn-primary" disabled={loading}>
-                                        {loading ? "Loading..." : ""}
-                                    </button>
-                                )}
+
+                            <div className="d-flex justify-content-center align-items-center">
+                                {loading ? (
+                                    <div className="d-flex justify-content-center align-items-center" style={{ height: "100px" }}>
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                ) : noMorePosts ? ( // Now it will check for noMorePosts separately
+                                    <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
+                                        <div className="my-sm-5 py-sm-5 text-center">
+                                            <i className="display-1 text-secondary bi bi-card-list" />
+                                            <h5 className="mt-2 mb-3 text-body text-muted fw-bold">No More Posts to Show</h5>
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
+
+
                         </div>
                         <div className="col-md-3 p-3 rounded">
                             <Leftnav />

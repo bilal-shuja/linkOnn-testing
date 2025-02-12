@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 import Greatjob from "./GreatJob";
 import CupofCoffee from "./CupofCoffee";
+import UserImagesLayout from "./userImagesLayout";
 
 export default function Newsfeed() {
 
@@ -23,9 +24,9 @@ export default function Newsfeed() {
   const [error, setError] = useState(null);
   const [lastPostId, setLastPostId] = useState(0);
   const [limit] = useState(5);
+  const [noMorePosts, setNoMorePosts] = useState(false);
   const [page, setPage] = useState(1);
   const [userId, setUserId] = useState(null);
-  const [noMorePosts, setNoMorePosts] = useState(false);
   const [commentText, setCommentText] = useState({});
   const [showComments, setShowComments] = useState({});
   const [comments, setComments] = useState({});
@@ -118,13 +119,22 @@ export default function Newsfeed() {
       if (response.data && Array.isArray(response.data.data)) {
         const newPosts = response.data.data;
 
+        // If no new posts are returned, mark noMorePosts as true
+        if (newPosts.length === 0) {
+          setNoMorePosts(true);
+          return; // Exit early since there are no new posts
+        }
+
         if (newPosts.length > 0) {
           const lastPost = newPosts[newPosts.length - 1];
           setLastPostId(lastPost.id);
         }
 
+        // If fewer posts are returned than the limit, there might be no more posts
         if (newPosts.length < limit) {
           setNoMorePosts(true);
+        } else {
+          setNoMorePosts(false); // Reset when new posts are still available
         }
 
         setPosts((prevPosts) => {
@@ -139,14 +149,15 @@ export default function Newsfeed() {
 
         if (isInitialLoad) setPage(1);
       } else {
-        toast.error("Invalid data format received from API.")
+        toast.error("Invalid data format received from API.");
       }
     } catch (error) {
-      toast.error("An error occurred while fetching data.")
+      toast.error("An error occurred while fetching data.");
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleScroll = () => {
     if (loading || noMorePosts) return;
@@ -210,18 +221,18 @@ export default function Newsfeed() {
       setUserdata(JSON.parse(data));
     }
   }, []);
-  
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("userid");
       setUserId(storedUserId);
     }
   }, []);
-  
+
   if (!userdata) {
     return;
   }
-  
+
   const openStoryCarousel = (userStories, startIndex = 0) => {
     setCurrentUserStories(userStories);
     setCurrentIndex(startIndex);
@@ -1009,7 +1020,7 @@ export default function Newsfeed() {
                 )}
 
                 <div className="card-body">
-                  <div className="d-flex align-items-center mb-3">
+                  <div className="d-flex align-items-center mb-4">
                     <Image
                       src={userdata.data.avatar}
                       alt="User Avatar"
@@ -1085,7 +1096,7 @@ export default function Newsfeed() {
 
                   <div className="d-flex" style={{ position: 'relative' }}>
                     <input
-                      className="form-control mb-5 border-0 no-border"
+                      className="form-control mb-4 border-0 no-border"
                       placeholder="Share your thoughts..."
                       value={postText}
                       onChange={handlePostTextChange}
@@ -1550,16 +1561,16 @@ export default function Newsfeed() {
 
               </div>
 
-              {posts.length === 0 && !loading && (
+              {/* {posts.length === 0 && !loading && (
                 <p className="text-center">No posts found.</p>
-              )}
+              )} */}
 
               {error && <p className="text-center text-danger">{error}</p>}
 
               {posts.map((post, index) => (
                 <div
                   key={`${post.id}-${index}`}
-                  className="card mb-4 shadow-lg border-0 rounded-1"
+                  className="card mb-2 shadow-lg border-0 rounded-1"
                 >
                   <div className="card-body">
                     <div className="d-flex align-items-center justify-content-between">
@@ -1701,16 +1712,16 @@ export default function Newsfeed() {
                       </div>
                     </div>
 
-                    <hr className="my-2 text-muted" />
+                    <hr className="my-2 post-divider" />
 
                     {post.post_type !== "donation" && (
                       <p
-                        className="mt-4"
+                        className="mt-2 mx-2"
                         dangerouslySetInnerHTML={{ __html: post.post_text }}
                       />
                     )}
 
-                    <div className="d-flex justify-content-center flex-wrap mb-3">
+                    <div className="d-flex justify-content-center flex-wrap">
                       {post.poll && post.poll.poll_options && (
                         <div className="w-100">
                           <ul className="list-unstyled">
@@ -1725,7 +1736,7 @@ export default function Newsfeed() {
                                   : 0;
 
                               return (
-                                <li key={option.id} className="mb-3 w-100">
+                                <li key={option.id} className="mb-4 w-100">
                                   <div className="d-flex align-items-center justify-content-between">
                                     <div
                                       className="progress flex-grow-1"
@@ -1775,7 +1786,7 @@ export default function Newsfeed() {
                       )}
                     </div>
 
-                    <div className="container mt-5">
+                    <div className="container mt-1">
                       {post.donation && (
                         <div>
                           <Image
@@ -1885,226 +1896,198 @@ export default function Newsfeed() {
                       </div>
                     </div>
 
-                    <div className="d-flex justify-content-center flex-wrap mb-3">
-                      {post.images &&
-                        post.images.length > 0 &&
-                        post.images.map((image, index) => (
-                          <Image
-                            key={index}
-                            src={image.media_path}
-                            alt={`Post image ${index + 1}`}
-                            className="img-fluid mt-1"
-                            width={600}
-                            height={300}
-                            style={{
-                              objectFit: "cover",
-                            }}
-                          />
+                    <div className="d-flex flex-column align-items-center mb-4">
 
-                        ))}
+                      <UserImagesLayout key={`${post.id}-${index}`} post={post} />
 
+                      {/* Event Section */}
                       {post.event && post.event.cover && (
-                        <div>
+                        <div className="w-100 text-center mt-2">
                           <Image
                             src={post.event.cover}
                             alt="Event Cover"
-                            className="img-fluid mt-1"
                             width={500}
                             height={300}
-                            style={{
-                              objectFit: "cover",
-                            }}
+                            className="img-fluid rounded"
+                            style={{ objectFit: "cover" }}
                           />
-
                           <h5 className="fw-bold mt-2">{post.event.name}</h5>
-                          <button className="badge btn-primary rounded-pill mt-3">
-                            {post.event.start_date}
-                          </button>
+                          <span className="badge bg-primary rounded-pill mt-2 px-3 py-2">{post.event.start_date}</span>
                         </div>
                       )}
 
-                      {post.product && (
-                        <div>
-                          <Image
-                            src={post.product.images[0].image}
-                            alt="Product"
-                            className="img-fluid"
-                            width={600}
-                            height={400}
-                            style={{
-                              objectFit: "cover",
-                            }}
-                          />
-                          <div className="row mt-3">
-                            <div className="col-md-9">
-                              <p></p>
-                              <h6><b>{post.product.product_name}</b></h6>
-                              <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
-                              <br />
-                              <span><b>Category: </b>{post.product.category}</span>
-                              <br />
-                              <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
-                            </div>
-                            <div className="col-md-3 mt-4">
-                              <Link href="#" >
-                                <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
-                              </Link>
+                      {post.product && post.product.images.length > 0 && (
+                        <div className="w-100 mt-4 card shadow-sm border-0 rounded p-3">
+                          {/* Product Image */}
+                          <div className="text-center">
+                            <Image
+                              src={post.product.images[0].image}
+                              alt={post.product.product_name}
+                              width={600}
+                              height={400}
+                              className="img-fluid rounded"
+                              style={{ objectFit: "cover", maxHeight: "300px" }}
+                            />
+                          </div>
+
+                          {/* Product Details */}
+                          <div className="card-body">
+                            <h5 className="fw-bold text-dark">{post.product.product_name}</h5>
+                            <hr className="mb-2" />
+
+                            <div className="row align-items-center">
+                              <div className="col-md-9">
+                                <p className="mb-1"><b>Price:</b> <span className="text-success fw-bold">{post.product.price} {post.product.currency}</span></p>
+                                <p className="mb-1"><b>Category:</b> {post.product.category}</p>
+                                <p className="mb-0 text-primary">
+                                  <i className="bi bi-geo-alt-fill"></i> {post.product.location}
+                                </p>
+                              </div>
+
+                              {/* Edit Product Button */}
+                              <div className="col-md-3 text-end">
+                                <Link href="#">
+                                  <button className="btn btn-primary rounded-pill px-3 py-2">
+                                    Edit Product
+                                  </button>
+                                </Link>
+                              </div>
                             </div>
                           </div>
                         </div>
                       )}
 
+                      {/* Video Section */}
                       {post.video && (
-                        <div
-                          className="media-container mt-1"
-                          style={{ width: "100%", height: "auto" }}
-                        >
-                          <video
-                            controls
-                            style={{
-                              objectFit: "cover",
-                              width: "100%",
-                              height: "auto",
-                            }}
-                          >
-                            <source
-                              src={post.video.media_path}
-                              type="video/mp4"
-                            />
+                        <div className="w-100 mt-3">
+                          <video controls className="w-100 rounded">
+                            <source src={post.video.media_path} type="video/mp4" />
                             Your browser does not support the video tag.
                           </video>
                         </div>
                       )}
 
+                      {/* Audio Section */}
                       {post.audio && (
-                        <div className="media-container w-100">
+                        <div className="w-100 mt-3">
                           <audio controls className="w-100">
                             <source src={post.audio.media_path} />
                             Your browser does not support the audio tag.
                           </audio>
                         </div>
                       )}
+
                     </div>
 
-                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
-                      <div className="d-flex align-items-center mb-2 mb-md-0">
-                        <span className="me-2">
+                    <div className="post-card-info">
+                      {/* Reaction Section */}
+                      <div className="post-card-reactions">
+                        <span className="post-card-reaction-count">
                           {post.reaction ? post.reaction.count || 0 : 0}
                         </span>
-                        <i className="bi bi-hand-thumbs-up"></i>
+                        <i className="bi bi-hand-thumbs-up post-card-icon reaction-icon"></i>
                       </div>
-                      <div className="d-flex flex-wrap align-items-center text-muted">
-                        <span className="me-3 d-flex align-items-center">
-                          <i className="bi bi-eye me-1"></i>
+
+                      {/* Post Engagement Stats */}
+                      <div className="post-card-stats">
+                        <span className="post-card-stat">
+                          <i className="bi bi-eye post-card-icon"></i>
                           {post.view_count || 0}
                         </span>
-                        <span className="me-3 d-flex align-items-center">
-                          <i className="bi bi-chat-dots me-1"></i>
+                        <span className="post-card-stat">
+                          <i className="bi bi-chat-dots post-card-icon"></i>
                           {post.comment_count || 0} comments
                         </span>
-                        <span className="d-flex align-items-center">
-                          <i className="bi bi-share me-1"></i>
+                        <span className="post-card-stat">
+                          <i className="bi bi-share post-card-icon"></i>
                           {post.share_count || 0} Shares
                         </span>
                       </div>
                     </div>
 
-                    <hr className="my-1" />
 
-                    <div className="d-flex justify-content-between">
+                    <hr className="post-divider" />
+
+                    <div className="post-actions">
                       <button
-                        className="btn border-0 d-flex align-items-center"
+                        className="post-action-btn"
                         onClick={() => LikePost(post.id)}
                       >
-                        <i className="bi bi-emoji-smile me-2"></i> Reaction
+                        <i className="bi bi-emoji-smile"></i> Reaction
                       </button>
 
                       <button
-                        className="btn border-0 d-flex align-items-center"
+                        className="post-action-btn"
                         onClick={() => handleCommentToggle(post.id)}
                       >
-                        <i className="bi bi-chat me-2"></i> Comments
+                        <i className="bi bi-chat"></i> Comments
                       </button>
 
-                      <div className="dropdown">
+                      <div className="post-dropdown">
                         <button
-                          className="btn border-0"
+                          className="post-action-btn dropdown-toggle"
                           type="button"
-                          id="dropdownMenuButton3"
+                          id={`dropdownMenuButton-${post.id}`} // UNIQUE ID
                           data-bs-toggle="dropdown"
                           aria-expanded="false"
                         >
-                          <i className="bi bi-share me-2"></i> Share
+                          <i className="bi bi-share"></i> Share
                         </button>
 
-                        <ul
-                          className="dropdown-menu"
-                          aria-labelledby="dropdownMenuButton3"
-                        >
-
-                          <li className=" align-items-center d-flex">
+                        <ul className="dropdown-menu post-dropdown-menu" aria-labelledby={`dropdownMenuButton-${post.id}`}>
+                          <li>
                             <Link
-                              className="text-decoration-none dropdown-item text-muted"
+                              className="post-dropdown-item"
                               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <i className="bi bi-facebook pe-2"></i> Share on Facebook
+                              <i className="bi bi-facebook"></i> Share on Facebook
                             </Link>
                           </li>
-
-                          <li className=" align-items-center d-flex">
+                          <li>
                             <Link
-                              className="text-decoration-none dropdown-item text-muted"
+                              className="post-dropdown-item"
                               href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <i className="bi bi-twitter-x pe-2"></i> Share on
-                              X
+                              <i className="bi bi-twitter-x"></i> Share on X
                             </Link>
                           </li>
-                          <li className=" align-items-center d-flex">
+                          <li>
                             <Link
-                              className="text-decoration-none dropdown-item text-muted"
+                              className="post-dropdown-item"
                               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <i className="bi bi-linkedin pe-2"></i> Share on
-                              Linkedln
+                              <i className="bi bi-linkedin"></i> Share on LinkedIn
                             </Link>
                           </li>
-
+                          <li><hr className="post-dropdown-divider" /></li>
                           <li>
-                            <hr className="dropdown-divider" />
-                          </li>
-                          <li className=" align-items-center d-flex">
-                            <Link
-                              className="text-decoration-none dropdown-item text-muted custom-hover"
-                              href="#"
-                            >
-                              <i className="bi bi-bookmark-check pe-2"></i> Post
-                              on Timeline
+                            <Link className="post-dropdown-item" href="#">
+                              <i className="bi bi-bookmark-check"></i> Post on Timeline
                             </Link>
                           </li>
-                          <li className=" align-items-center d-flex">
+                          <li>
                             <span
-                              className="text-decoration-none dropdown-item text-muted"
+                              className="post-dropdown-item"
                               onClick={() => handleCopy(post.post_link)}
                             >
-                              <i className="bi bi-link pe-2"></i> Copy Post Link
+                              <i className="bi bi-link"></i> Copy Post Link
                             </span>
                           </li>
                         </ul>
                       </div>
+
                     </div>
 
-                    <hr className="my-1" />
+                    <hr className="post-divider" />
+
 
                     <div className="d-flex mb-3 mt-2">
-
-
 
                       {userId && post.user_id !== userId && (
                         <button
@@ -2353,23 +2336,25 @@ export default function Newsfeed() {
                 </div>
               ))}
 
-              <div className="d-grid gap-2 col-3 mx-auto mt-4">
-                {noMorePosts ? (
-                  <button className="btn btn-light" disabled>
-                    No more posts
-                  </button>
-                ) : (
-                  <button className="btn btn-light" disabled={loading}>
-                    {loading ? (
+              <div className="d-flex justify-content-center align-items-center mt-4">
+                {!noMorePosts ? (
+                  loading ? (
+                    <div className="d-flex justify-content-center align-items-center" style={{ height: "100px" }}>
                       <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
                       </div>
-                    ) : (
-                      "Load More"
-                    )}
-                  </button>
-                )}
+                    </div>
+                  ) : (
+                    <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
+                      <div className="my-sm-5 py-sm-5 text-center">
+                        <i className="display-1 text-secondary bi bi-card-list" />
+                        <h5 className="mt-2 mb-3 text-body text-muted fw-bold">No More Posts to Show</h5>
+                      </div>
+                    </div>
+                  )
+                ) : null}
               </div>
+
 
             </div>
             <div className="col-md-3 p-3 rounded">

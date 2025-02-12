@@ -1422,7 +1422,7 @@ export default function UserProfileCard({ params }) {
                                         </div>
                                     </div>
 
-                                    <hr className="my-2 text-muted" />
+                                    <hr className="my-2 post-divider" />
 
                                     {post.post_type !== "donation" && (
                                         <p
@@ -1749,124 +1749,120 @@ export default function UserProfileCard({ params }) {
                                         )}
 
                                     </div>
-                                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
-                                        <div className="d-flex align-items-center mb-2 mb-md-0">
-                                            <span className="me-2">
+
+
+                            
+
+                                    <div className="post-card-info">
+                                        {/* Reaction Section */}
+                                        <div className="post-card-reactions">
+                                            <span className="post-card-reaction-count">
                                                 {post.reaction ? post.reaction.count || 0 : 0}
                                             </span>
-                                            <i className="bi bi-hand-thumbs-up"></i>
+                                            <i className="bi bi-hand-thumbs-up post-card-icon reaction-icon"></i>
                                         </div>
-                                        <div className="d-flex flex-wrap align-items-center text-muted">
-                                            <span className="me-3 d-flex align-items-center">
-                                                <i className="bi bi-eye me-1"></i>
+
+                                        {/* Post Engagement Stats */}
+                                        <div className="post-card-stats">
+                                            <span className="post-card-stat">
+                                                <i className="bi bi-eye post-card-icon"></i>
                                                 {post.view_count || 0}
                                             </span>
-                                            <span className="me-3 d-flex align-items-center">
-                                                <i className="bi bi-chat-dots me-1"></i>
+                                            <span className="post-card-stat">
+                                                <i className="bi bi-chat-dots post-card-icon"></i>
                                                 {post.comment_count || 0} comments
                                             </span>
-                                            <span className="d-flex align-items-center">
-                                                <i className="bi bi-share me-1"></i>
+                                            <span className="post-card-stat">
+                                                <i className="bi bi-share post-card-icon"></i>
                                                 {post.share_count || 0} Shares
                                             </span>
                                         </div>
                                     </div>
 
-                                    <hr className="my-1" />
 
-                                    <div className="d-flex justify-content-between">
+                                    <hr className="post-divider" />
+
+                                    <div className="post-actions">
                                         <button
-                                            className="btn border-0 d-flex align-items-center"
+                                            className="post-action-btn"
                                             onClick={() => LikePost(post.id)}
                                         >
-                                            <i className="bi bi-emoji-smile me-2"></i> Reaction
+                                            <i className="bi bi-emoji-smile"></i> Reaction
                                         </button>
 
                                         <button
-                                            className="btn border-0 d-flex align-items-center"
+                                            className="post-action-btn"
                                             onClick={() => handleCommentToggle(post.id)}
                                         >
-                                            <i className="bi bi-chat me-2"></i> Comments
+                                            <i className="bi bi-chat"></i> Comments
                                         </button>
 
-                                        <div className="dropdown">
+                                        <div className="post-dropdown">
                                             <button
-                                                className="btn border-0"
+                                                className="post-action-btn dropdown-toggle"
                                                 type="button"
-                                                id="dropdownMenuButton3"
+                                                id={`dropdownMenuButton-${post.id}`} // UNIQUE ID
                                                 data-bs-toggle="dropdown"
                                                 aria-expanded="false"
                                             >
-                                                <i className="bi bi-share me-2"></i> Share
+                                                <i className="bi bi-share"></i> Share
                                             </button>
 
-                                            <ul
-                                                className="dropdown-menu"
-                                                aria-labelledby="dropdownMenuButton3"
-                                            >
-                                                <li className=" align-items-center d-flex">
+                                            <ul className="dropdown-menu post-dropdown-menu" aria-labelledby={`dropdownMenuButton-${post.id}`}>
+                                                <li>
                                                     <Link
-                                                        className="text-decoration-none dropdown-item text-muted"
+                                                        className="post-dropdown-item"
                                                         href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        <i className="bi bi-facebook pe-2"></i> Share on Facebook
+                                                        <i className="bi bi-facebook"></i> Share on Facebook
                                                     </Link>
                                                 </li>
-
-                                                <li className=" align-items-center d-flex">
+                                                <li>
                                                     <Link
-                                                        className="text-decoration-none dropdown-item text-muted"
+                                                        className="post-dropdown-item"
                                                         href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        <i className="bi bi-twitter-x pe-2"></i> Share on
-                                                        X
+                                                        <i className="bi bi-twitter-x"></i> Share on X
                                                     </Link>
                                                 </li>
-                                                <li className=" align-items-center d-flex">
+                                                <li>
                                                     <Link
-                                                        className="text-decoration-none dropdown-item text-muted"
+                                                        className="post-dropdown-item"
                                                         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        <i className="bi bi-linkedin pe-2"></i> Share on
-                                                        Linkedln
+                                                        <i className="bi bi-linkedin"></i> Share on LinkedIn
                                                     </Link>
                                                 </li>
-
+                                                <li><hr className="post-dropdown-divider" /></li>
                                                 <li>
-                                                    <hr className="dropdown-divider" />
-                                                </li>
-                                                <li className=" align-items-center d-flex">
-                                                    <Link
-                                                        className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                        href="#"
-                                                    >
-                                                        <i className="bi bi-bookmark-check pe-2"></i> Post
-                                                        on Timeline
+                                                    <Link className="post-dropdown-item" href="#">
+                                                        <i className="bi bi-bookmark-check"></i> Post on Timeline
                                                     </Link>
                                                 </li>
-                                                <li className=" align-items-center d-flex">
+                                                <li>
                                                     <span
-                                                        className="text-decoration-none dropdown-item text-muted"
+                                                        className="post-dropdown-item"
                                                         onClick={() => handleCopy(post.post_link)}
                                                     >
-                                                        <i className="bi bi-link pe-2"></i> Copy Post Link
+                                                        <i className="bi bi-link"></i> Copy Post Link
                                                     </span>
                                                 </li>
                                             </ul>
                                         </div>
+
                                     </div>
 
-                                    <hr className="my-1" />
+                                    <hr className="post-divider" />
 
                                     <div className="d-flex mb-3 mt-2">
 
-                                     
+
                                         {userId && post.user_id !== userId && (
                                             <button
                                                 className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
@@ -1881,12 +1877,12 @@ export default function UserProfileCard({ params }) {
                                             </button>
                                         )}
 
-                                   
+
                                         {activeCupCoffeeId === post.id && (
                                             <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
                                         )}
 
-                                    
+
                                         {userId && post.user_id !== userId && (
                                             <button
                                                 className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
@@ -1896,7 +1892,7 @@ export default function UserProfileCard({ params }) {
                                             </button>
                                         )}
 
-                                       
+
                                         {activeGreatJobId === post.id && (
                                             <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
                                         )}
@@ -2116,6 +2112,12 @@ export default function UserProfileCard({ params }) {
                             </div>
                         ))}
 
+                        <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
+                            <div className="my-sm-5 py-sm-5 text-center">
+                                <i className="display-1 text-secondary bi bi-card-list" />
+                                <h5 className="mt-2 mb-3 text-body text-muted fw-bold">No More Posts to Show</h5>
+                            </div>
+                        </div>
 
                     </div>
 
