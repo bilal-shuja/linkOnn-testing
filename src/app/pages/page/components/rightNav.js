@@ -5,7 +5,7 @@ import Link from "next/link";
 import ConfirmModal from '../Modal/ConfirmModal';
 
 
-export default function RightNav({ pageTimelineData }) {
+export default function RightNav({ pageTimelineData , pageTimelineID }) {
 
   const api = createAPI();
   const [suggestedPages, setSuggestedPages] = useState([])
@@ -133,6 +133,28 @@ export default function RightNav({ pageTimelineData }) {
 
 
         </div>
+
+
+        
+
+        <div className="card shadow-lg border-0 mt-4">
+          <div className="card-body p-4">
+            <div className='d-flex justify-content-between mb-4'>
+              <h5>Followers</h5>
+
+              {/* href={`/pages/page/Followers/${}`} */}
+              <a  className='btn btn-outline-primary btn-sm'>See All Followers</a>
+
+            </div>
+
+
+            <span className="text-muted">No Followers Found!</span>
+
+
+            </div>
+
+
+</div>
 
       </div>
 

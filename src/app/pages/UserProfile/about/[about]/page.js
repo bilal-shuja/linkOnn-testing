@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import RightNavbar from "../../components/right-navbar";
 import Profilecard from "../../components/profile-card";
-import { toast } from "react-toastify";
+import React, { useState, useEffect, use } from "react";
 
 
 export default function UserAbout({ params }) {
