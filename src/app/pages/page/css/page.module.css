@@ -116,3 +116,19 @@
   object-fit: cover;
 } */
 
+.activeLink {
+  color: #0f6fec !important; 
+  font-weight: bold;
+  position: relative;
+}
+
+.activeLink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -17px;
+  width: 100%;
+  height: 2px;
+  background-color: #0f6fec; 
+  border-radius: 2px;
+}

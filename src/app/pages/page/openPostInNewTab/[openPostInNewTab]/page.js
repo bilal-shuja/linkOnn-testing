@@ -1,71 +1,35 @@
-"use client";
+"use client"
 import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
-import EmojiPicker from 'emoji-picker-react';
-import styles from '../../css/page.module.css';
-import RightNav from "../../components/rightNav";
-import PageImagesLayout from "./pageImagesLayout";
-import FundingModal from "../../Modal/FundingModal";
-import PostPollModal from "../../Modal/PostPollModal";
+import { useState, useEffect, useCallback } from "react";
 import MakeDonationModal from "../../Modal/MakeDonationModal";
+import Rightnav from "@/app/assets/components/rightnav/page";
 import { ReactionBarSelector } from '@charkour/react-reactions';
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
-import TimelineProfileCard from "../../components/timelineProfileCard";
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { set } from "lodash";
-// import { Dropzone, FileMosaic } from "@files-ui/react";
-// import useConfirmationToast from "@/app/hooks/useConfirmationToast";
-// import { FacebookSelector } from 'react-reactions';
-
-export default function MyPageTimeline({ params }) {
+import PageImagesLayout from "../../myPageTimeline/[myPageTimeline]/pageImagesLayout";
 
 
+export default function OpenPostInNewTab({ params }) {
     const api = createAPI();
+    const { openPostInNewTab } = use(params)
     const userID = localStorage.getItem('userid');
     const [userdata, setUserData] = useState(null);
 
-    const { myPageTimeline } = use(params);
-    const [pageTimelineData, setPageTimelineData] = useState('');
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const [postText, setPostText] = useState("");
 
-    const [color, setColor] = useState("");
-
-
-    const [images, setImages] = useState([]);
-    const fileImageRef = useRef(null);
-
-    const [videoFiles, setVideoFiles] = useState([]);
-    const fileVideoRef = useRef(null);
-
-    const [audioFiles, setAudioFiles] = useState([]);
-    const fileAudioRef = useRef(null);
-
-
-    const [location, setLocation] = useState('');
-
-
-    const [photoSection, setPhotoSection] = useState(false);
-    const [videoSection, setVideoSection] = useState(false);
-    const [audioSection, setAudioSection] = useState(false);
-
-    const [showLocationField, setShowLocationField] = useState(false);
-
-    const [pollModal, setPollModal] = useState(false);
-    const [fundingModal, setFundingModal] = useState(false);
+    const [pageTimelineData, setPageTimelineData] = useState(null);
     const [donationModal, setDonationModal] = useState(false);
     const [donationID, setDonationID] = useState("");
 
-    const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [noMorePosts, setNoMorePosts] = useState(false);
-
+    const [page, setPage] = useState(1);
 
     const [lastPostId, setLastPostId] = useState(0);
     const [posts, setPosts] = useState([]);
+
     const [comments, setComments] = useState({});
     const [showComments, setShowComments] = useState({});
 
@@ -76,11 +40,15 @@ export default function MyPageTimeline({ params }) {
     const [showReplyInput, setShowReplyInput] = useState({});
     const [repliesData, setRepliesData] = useState({});
 
+
+    const reverseGradientMap = {
+        '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
+        '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
+        '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
+    };
+
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
-    const [isOpenColorPalette, setIsOpenColorPalette] = useState(false);
-
-    const endpoint = "/api/post/create";
 
 
     const reactionEmojis = {
@@ -92,15 +60,6 @@ export default function MyPageTimeline({ params }) {
         angry: "😡"
     };
 
-    const reactionValues = {
-        satisfaction: 1,
-        love: 2,
-        happy: 3,
-        surprise: 4,
-        sad: 5,
-        angry: 6
-    };
-
 
     const handleReactionSelect = (reaction, postId) => {
         const updatedReactions = {
@@ -108,170 +67,10 @@ export default function MyPageTimeline({ params }) {
             [postId]: reactionEmojis[reaction] || "😊"
         };
 
-        LikePost(postId, reactionValues[reaction] || 0);
-
         setPostReactions(updatedReactions);
         setActiveReactionPost(null);
         localStorage.setItem("postReactions", JSON.stringify(updatedReactions));
     };
-
-
-
-    useEffect(() => {
-        const storedReactions = JSON.parse(localStorage.getItem("postReactions")) || {};
-        setPostReactions(storedReactions);
-    }, []);
-
-    const toggleOptionsColorPalette = () => {
-        setIsOpenColorPalette(!isOpenColorPalette);
-
-    };
-
-
-    const gradientMap = {
-        'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)': '_2j79',
-        'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)': '_2j80',
-        'linear-gradient(45deg, #5d6374 0%, #16181d 100%)': '_2j81'
-    };
-
-    const reverseGradientMap = {
-        '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
-        '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
-        '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
-    };
-
-
-    const handleColorSelect = (colorValue) => {
-        if (colorValue.includes('gradient')) {
-            const shortCode = gradientMap[colorValue] || encodeURIComponent(colorValue);
-            setColor(shortCode);
-        } else {
-            setColor(colorValue);
-        }
-    };
-
-    const getDisplayColor = (color) => {
-        if (color?.startsWith('_')) {
-            return reverseGradientMap[color] || color;
-        }
-        return color;
-    };
-
-
-
-
-    const handleImageChange = (event) => {
-        const files = Array.from(event.target.files);
-        if (images.length + files.length > 10) {
-            alert("You can only upload a maximum of 10 images at a time.");
-            fileImageRef.current.value = "";
-            return;
-
-        }
-        else {
-            const newImages = files.map((file) => ({
-                file,
-                url: URL.createObjectURL(file),
-            }));
-            setImages([...images, ...newImages]);
-        }
-
-    }
-
-
-
-    const removeImage = (index) => {
-        const updatedImages = images.filter((_, i) => i !== index);
-        setImages(updatedImages);
-
-        if (updatedImages.length === 0 && fileImageRef.current) {
-            fileImageRef.current.value = "";
-        }
-    };
-
-
-
-    const handleFileChange = (event) => {
-        const files = Array.from(event.target.files);
-        const newVideos = files.map((file) => ({
-            file,
-            url: URL.createObjectURL(file),
-        }));
-        setVideoFiles((prevFiles) => [...prevFiles, ...newVideos]);
-    };
-
-    const removeVideo = (index) => {
-        const updatedVideos = videoFiles.filter((_, i) => i !== index);
-        setVideoFiles(updatedVideos);
-
-        if (updatedVideos.length === 0 && fileVideoRef.current) {
-            fileVideoRef.current.value = "";
-        }
-    };
-
-
-
-
-    const handleAudioChange = (event) => {
-        const files = Array.from(event.target.files);
-        const newAudio = files.map((file) => ({
-            file,
-            url: URL.createObjectURL(file),
-        }));
-        setAudioFiles((prevFiles) => [...prevFiles, ...newAudio]);
-    };
-
-    const removeAudio = (index) => {
-        const updatedAudios = audioFiles.filter((_, i) => i !== index);
-        setAudioFiles(updatedAudios);
-
-        if (updatedAudios.length === 0 && fileVideoRef.current) {
-            fileAudioRef.current.value = "";
-        }
-    };
-
-
-
-
-
-    const handlePostTextChange = (e) => { setPostText(e.target.value) };
-
-    const handleEmojiButtonClick = () => {
-        setShowEmojiPicker((prev) => !prev);
-    };
-
-    const handleEmojiSelect = (emoji) => {
-        setPostText((prevText) => prevText + emoji.emoji);
-        setShowEmojiPicker(false);
-    };
-
-    function fetchSpecificMyPageTimline() {
-
-        api.post(`/api/get-page-data?page_id=${myPageTimeline}`)
-            .then((res) => {
-                if (res.data.code == "200") {
-                    setPageTimelineData(res.data.data);
-                }
-
-            })
-            .catch((error) => {
-                if (error)
-                    toast.error("Error fetching page timeline.");
-            })
-
-    }
-
-    useEffect(() => {
-        fetchSpecificMyPageTimline();
-    }, []);
-
-    const handlePageTimeline = () => {
-        // Store the data in localStorage
-        localStorage.setItem('_pageData', JSON.stringify(pageTimelineData));
-    }
-
-
-
 
     const fetchPosts = async (isInitialLoad = true, limit = 10) => {
         if (loading || noMorePosts) return;
@@ -281,98 +80,56 @@ export default function MyPageTimeline({ params }) {
 
             const response = await api.post("/api/post/newsfeed", {
                 limit,
-                last_post_id: lastPostId,
-                page_id: myPageTimeline,
+                post_id: openPostInNewTab,
             });
 
             if (response.data && Array.isArray(response.data.data)) {
                 const newPosts = response.data.data;
 
-                if (newPosts.length > 0) {
-                    const lastPost = newPosts[newPosts.length - 1];
-                    setLastPostId(lastPost.id);
-                }
+                // if (newPosts.length > 0) {
+                //     const lastPost = newPosts[newPosts.length - 1];
+                //     setLastPostId(lastPost.id);
+                // }
 
-                if (newPosts.length < limit) {
-                    setNoMorePosts(true);
-                }
+                // if (newPosts.length < limit) {
+                //     setNoMorePosts(true);
+                // }
 
                 setPosts((prevPosts) => [...prevPosts, ...newPosts.filter((post) => !prevPosts.some((p) => p.id === post.id))]);
+                setPosts(newPosts)
 
-                if (isInitialLoad) setPage(1);
-            } else {
-                toast.error("Invalid data format received from API.");
+                // if (isInitialLoad) setPage(1);
             }
+            //  else {
+            //     toast.error("Invalid data format received from API.");
+            // }
         } catch (error) {
             toast.error("An error occurred while fetching newsfeed data.");
         } finally {
             setLoading(false);
         }
-    };
-
-
-    const handleVote = async (optionId, pollId, postId) => {
-        try {
-            const response = await api.post("/api/post/poll-vote", {
-                poll_option_id: optionId,
-                poll_id: pollId,
-                post_id: postId,
-            });
-
-            if (response.data.status == "200") {
-                setPosts(prevPosts =>
-                    prevPosts.map(post => {
-                        if (post.id === postId) {
-                            const updatedPoll = {
-                                ...post.poll,
-                                poll_total_votes: (post.poll.poll_total_votes || 0) + 1,
-                                poll_options: post.poll.poll_options.map(option =>
-                                    option.id === optionId
-                                        ? { ...option, no_of_votes: (option.no_of_votes || 0) + 1 }
-                                        : option
-                                )
-                            };
-
-                            return {
-                                ...post,
-                                poll: updatedPoll
-                            };
-                        }
-                        return post;
-                    })
-                );
-
-                toast.success(response.data.message);
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("An error occurred while voting. Please try again.");
-        }
-    };
+    }
 
 
 
 
     useEffect(() => {
         fetchPosts();
+        const _pageData = localStorage.getItem('_pageData');
+        setPageTimelineData(JSON.parse(_pageData));
+
+        const storedReactions = JSON.parse(localStorage.getItem("postReactions")) || {};
+        setPostReactions(storedReactions);
+
+
+        const _userData = localStorage.getItem("userdata");
+        if (_userData) {
+            setUserData(JSON.parse(_userData));
+        }
+
+
+
     }, []);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const scrollPosition = window.innerHeight + window.scrollY;
-            const bottomPosition = document.documentElement.scrollHeight;
-
-            if (scrollPosition >= bottomPosition - 100) {
-                fetchPosts(false);
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => {
-            window.removeEventListener("scroll", handleScroll);
-        };
-    }, [loading, noMorePosts]);
 
 
     const handlePostDelete = (postId) => {
@@ -407,8 +164,6 @@ export default function MyPageTimeline({ params }) {
         confirmText: "Confirm",
         cancelText: "Cancel",
     });
-
-
 
 
     const toggleReplies = async (commentId) => {
@@ -502,23 +257,21 @@ export default function MyPageTimeline({ params }) {
         }
     };
 
-    const LikePost = async (postId , reactionType) => {
-
-        console.log(postId , reactionType)
-        // try {
-        //     const response = await api.post("/api/post/action", {
-        //         post_id: postId,
-        //         action: "reaction",
-        //         reaction_type: 1,
-        //     });
-        //     if (response.data.code == "200") {
-        //         toast.success(response.data.message);
-        //     } else {
-        //         toast.error(response.data.message);
-        //     }
-        // } catch (error) {
-        //     toast.error("Error while reacting to the Post");
-        // }
+    const LikePost = async (postId) => {
+        try {
+            const response = await api.post("/api/post/action", {
+                post_id: postId,
+                action: "reaction",
+                reaction_type: 1,
+            });
+            if (response.data.code == "200") {
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            toast.error("Error while reacting to the Post");
+        }
     };
 
     const handleCommentToggle = async (postId) => {
@@ -647,549 +400,26 @@ export default function MyPageTimeline({ params }) {
     };
 
 
-    useEffect(() => {
-        const data = localStorage.getItem("userdata");
-        if (data) {
-            setUserData(JSON.parse(data));
-        }
-    }, []);
-
-
-
-
-
-
-    const uploadPost = async (donationData = {}) => {
-
-        try {
-
-            const formData = new FormData();
-            const combinedText = donationData.donationTitle
-                ? `${postText} ${donationData.donationTitle}`
-                : postText;
-
-            formData.append("page_id", myPageTimeline);
-            if (combinedText) formData.append("post_text", combinedText);
-            if (location) formData.append("post_location", location);
-
-            if (images) images.map((image) => formData.append("images[]", image.file))
-            if (videoFiles) videoFiles.map((videoFile) => formData.append("video", videoFile.file));
-            if (audioFiles) audioFiles.map((audioFile) => formData.append("audio", audioFile.file));
-
-
-
-            if (donationData.donationAmount) {
-                formData.append("amount", donationData.donationAmount);
-            }
-            if (donationData.donationDescription) {
-                formData.append("description", donationData.donationDescription);
-            }
-
-            if (donationData.donationImage) formData.append("donation_image", donationData.donationImage);
-
-            let postType = "post";
-            if (donationData.donationAmount) {
-                postType = "donation";
-            }
-
-            formData.append("post_type", postType);
-            formData.append("bg_color", color);
-
-
-
-            const response = await api.post(endpoint, formData, {
-
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-
-            });
-
-
-
-
-            if (response.data.code == "200") {
-                toast.success(response.data.message)
-                setPosts([response.data.data, ...posts]);
-                setPostText("");
-                setLocation("");
-                setColor("");
-
-                setIsOpenColorPalette(false);
-
-                setImages([]);
-                setVideoFiles([]);
-                setAudioFiles([]);
-                setPhotoSection(false);
-                setVideoSection(false);
-                setAudioSection(false);
-                setShowLocationField(false);
-
-                setFundingModal(false);
-            }
-            else {
-                toast.error("Error from server: " + response.data.message)
-            }
-        }
-
-        catch (error) {
-            toast.error(error.response.data.message)
-        }
-    };
-
-
-
-
     return (
         <>
             <div className="container-fluid bg-light">
-                <div className="container mt-3 pt-2">
+                <div className="container mt-3 pt-5">
                     <div className="row">
-
-                        <div className="col-12 col-md-8">
-
-                            <TimelineProfileCard pageTimelineID={myPageTimeline} />
-
-                            {/* <div className="card shadow-lg border-0 rounded-3 mt-5">
-                                <div className="position-relative">
-                                    <Image
-                                        src={!pageTimelineData?.cover || pageTimelineData.cover.trim() === ""
-                                            ? '/assets/images/placeholder-image.png'
-                                            : pageTimelineData.cover}
-                                        className="card-img-top rounded-top img-fluid"
-                                        alt="cover"
-                                        width={800}
-                                        height={400}
-                                        style={{ objectFit: 'cover', height: '200px' }}
-                                    />
-                                    <div
-                                        className="position-absolute start-0 translate-middle-y ms-4"
-                                        style={{ top: 'calc(125% - 31px)', zIndex: 2 }}
-                                    >
-                                        <Image
-                                            className="rounded-circle border border-white border-3 shadow-sm"
-                                            src={!pageTimelineData?.avatar || pageTimelineData.avatar.trim() === ""
-                                                ? '/assets/images/placeholder-image.png'
-                                                : pageTimelineData.avatar}
-                                            alt="avatar"
-                                            width={125}
-                                            height={125}
-                                            style={{ objectFit: 'cover' }}
-                                            onError={(e) => {
-                                                console.error('Image load error:', e);
-                                                e.target.src = '/assets/images/placeholder-image.png';
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="card-body">
-                                    <div className={`mt-1 ${styles.userTimelineInfoContainer}`}>
-                                        <div className="user-timeline-info">
-                                            <h5 className="text-dark">
-                                                {pageTimelineData?.page_title}
-                                            </h5>
-                                            <span className="small text-muted">@{pageTimelineData?.website}</span>
-                                        </div>
-                                        {
-                                            userID === pageTimelineData.user_id ?
-                                                <div className="edit-btn">
-                                                    <Link href={`/pages/page/editMyPage/${pageTimelineData.id}`} className="btn btn-danger"> <i className="fa fa-pencil"></i> Edit button</Link>
-                                                </div>
-                                                :
-                                                null
-                                        }
-
-                                    </div>
-                                    <p className="text-muted mt-4 mx-3">
-                                        <i className="bi bi-calendar2-plus me-1"></i>
-                                        Joined on {moment(user.created_at).format("MMM DD, YYYY")}
-
-                                    </p>
-
-                                    <hr className="text-muted" />
-
-
-                                    <div className="d-flex justify-content-start gap-4 ms-3">
-                                        <div
-                                            href={`/pages/UserProfile/timeline/${myPageTimeline}`} 
-                                            className="text-decoration-none text-muted">
-                                            Posts
-                                        </div>
-                                        <Link
-                                            href={`/pages/page/About/${myPageTimeline}`}
-                                            className="text-decoration-none text-muted">
-                                            About
-                                        </Link>
-                                        <div className="text-decoration-none text-muted">
-                                            href={`/pages/UserProfile/images/${myPageTimeline}`}
-                                            Followers
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                            </div> */}
-
-
-                            <div className="card shadow-lg border-0 rounded-3 mt-3">
-                                <div className="card-body">
-
-                                    <div className="form-floating mb-4">
-                                        <textarea className={`form-control border border-0 ${styles.pagePostInput} `}
-                                            placeholder="Leave a comment here"
-                                            id="floatingTextarea2"
-                                            style={{
-                                                height: "150px", background: getDisplayColor(color)
-                                            }}
-                                            value={postText}
-                                            onChange={handlePostTextChange}
-                                        />
-                                        <label htmlFor="floatingTextarea2" className="small text-muted ">Share your thoughts....</label>
-
-                                        <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "10px", top: "10px" }}>😊</button>
-
-                                        {showEmojiPicker && (
-                                            <div
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: '-100px',
-                                                    left: '600px',
-                                                    zIndex: '1000',
-                                                }}
-                                            >
-                                                <EmojiPicker
-                                                    onEmojiClick={handleEmojiSelect}
-                                                    width="100%"
-                                                    height="400px"
-                                                />
-                                            </div>
-                                        )}
-
-
-
-                                        {/* <input
-                                            type="color"
-                                            className="form-control-color mb-4"
-                                            id="exampleColorInput"
-                                            title="Choose your color"
-                                            value={color}
-                                            onChange={(e) => setColor(e.target.value)}
-                                        /> */}
-
-                                        <div className={`d-flex ${styles.optionsContainer} mb-2`}>
-                                            <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
-                                                <i className="bi bi-palette-fill"></i>
-                                            </button>
-                                            <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
-
-                                                {/* Solid Colors */}
-                                                {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
-                                                    <div
-                                                        key={solidColor}
-                                                        className={styles.colorOption}
-                                                        style={{ background: solidColor }}
-                                                        onClick={() => handleColorSelect(solidColor)}
-                                                    />
-                                                ))}
-
-                                                {/* Gradient Colors */}
-                                                {Object.keys(gradientMap).map((gradient) => (
-                                                    <div
-                                                        key={gradient}
-                                                        className={styles.colorOption}
-                                                        style={{ background: gradient }}
-                                                        onClick={() => handleColorSelect(gradient)}
-                                                    />
-                                                ))}
-
-                                                {/* <div className={styles.colorOption} style={{ background: '#FFFFFF' }}  onClick={()=> handleColorSelect('#FFFFFF')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#c600ff' }}  onClick={()=> handleColorSelect('#c600ff')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#000000' }}  onClick={()=> handleColorSelect('#000000')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#C70039' }}  onClick={()=> handleColorSelect('#C70039')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#900C3F' }}  onClick={()=> handleColorSelect('#900C3F')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#581845' }}  onClick={()=> handleColorSelect('#581845')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#FF5733' }}  onClick={()=> handleColorSelect('#FF5733')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#00a859' }}  onClick={()=> handleColorSelect('#00a859')}></div>
-
-                                                <div className={styles.colorOption} style={{ background: '#0098da' }}  onClick={()=> handleColorSelect('#0098da')}></div>
-
-
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)')}></div>
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)')}></div>
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #5d6374 0%, #16181d 100%)')}></div> */}
-
-
-                                            </div>
-                                        </div>
-                                        <hr />
-                                        {
-                                            photoSection ?
-                                                <>
-                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
-                                                        {images.map((img, index) => (
-                                                            <div key={index} style={{ position: "relative", display: "inline-block" }}>
-
-                                                                <button
-                                                                    onClick={() => removeImage(index)}
-                                                                    style={{
-                                                                        position: "absolute",
-                                                                        top: "-5px",
-                                                                        right: "-5px",
-                                                                        color: "white",
-                                                                        border: "none",
-                                                                        borderRadius: "50%",
-                                                                        cursor: "pointer",
-                                                                    }}
-                                                                >
-                                                                    <i className="bi bi-trash text-danger" />
-                                                                </button>
-
-                                                                <Image
-                                                                    className="mb-3"
-                                                                    src={img.url}
-                                                                    alt={`Preview ${index}`}
-                                                                    width={50}
-                                                                    height={50}
-                                                                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "5px" }}
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="col-lg-12 mb-3">
-                                                        <label className="form-label text-muted"> <i className="bi bi-image-fill"></i> Photos</label>
-                                                        <input className="form-control form-control-sm"
-                                                            type="file"
-                                                            id="formFile"
-                                                            onChange={handleImageChange}
-                                                            ref={fileImageRef}
-                                                            multiple
-                                                        />
-                                                    </div>
-                                                </>
-
-                                                :
-                                                ""
-
-                                        }
-
-                                        {
-                                            videoSection ?
-                                                <>
-
-                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
-                                                        {videoFiles.map((video, index) => (
-                                                            <div key={index} style={{ position: "relative", display: "inline-block" }}>
-
-                                                                <button
-
-                                                                    onClick={() => removeVideo(index)}
-                                                                    style={{
-                                                                        position: "absolute",
-                                                                        top: "20px",
-                                                                        right: "-15px",
-                                                                        color: "white",
-                                                                        border: "none",
-                                                                        borderRadius: "50%",
-                                                                        cursor: "pointer",
-                                                                    }}
-                                                                >
-                                                                    <i className="bi bi-trash text-danger" />
-                                                                </button>
-
-                                                                <video width="150" height="150" controls>
-                                                                    <source src={video.url} type={video.file.type} />
-                                                                    Your browser does not support the video tag.
-                                                                </video>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="col-lg-12 mb-3">
-                                                        <label className="form-label text-muted"> <i className="bi bi-camera-reels-fill"></i> Videos</label>
-                                                        <input
-                                                            className="form-control form-control-sm"
-                                                            type="file"
-                                                            id="formFile"
-                                                            accept="video/*"
-                                                            multiple
-                                                            onChange={handleFileChange}
-                                                            ref={fileVideoRef}
-                                                        />
-
-
-                                                    </div>
-                                                </>
-                                                :
-                                                ""
-                                        }
-
-
-                                        {
-                                            audioSection ?
-                                                <>
-
-                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
-                                                        {audioFiles.map((audio, index) => (
-                                                            <div key={index} style={{ position: "relative" }}>
-
-                                                                <button
-                                                                    onClick={() => removeAudio(index)}
-                                                                    style={{
-                                                                        position: "absolute",
-                                                                        top: "-12px",
-                                                                        right: "-10px",
-                                                                        color: "white",
-                                                                        border: "none",
-                                                                        borderRadius: "50%",
-                                                                        cursor: "pointer",
-                                                                    }}
-                                                                >
-                                                                    <i className="bi bi-trash text-danger" />
-                                                                </button>
-
-                                                                <audio width="150" height="120" controls>
-                                                                    <source src={audio.url} type={audio.file.type} />
-                                                                    Your browser does not support the video tag.
-                                                                </audio>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="col-lg-12 mb-3">
-                                                        <label className="form-label text-muted"> <i className="bi bi-music-note-beamed"></i> Audio</label>
-                                                        <input
-                                                            className="form-control form-control-sm"
-                                                            type="file"
-                                                            id="formFile"
-                                                            accept="audio/*"
-                                                            multiple
-                                                            onChange={handleAudioChange}
-                                                            ref={fileAudioRef}
-                                                        />
-
-
-                                                    </div>
-                                                </>
-                                                :
-                                                ""
-                                        }
-
-
-                                        {
-                                            showLocationField ?
-                                                <div className="col-lg-12 mb-2">
-                                                    <label className="form-label text-muted"> <i className="bi bi-geo-alt-fill"></i> location</label>
-                                                    <input className="form-control" placeholder="Where are you at?" onChange={(e) => setLocation(e.target.value)} />
-                                                </div>
-                                                :
-                                                ""
-
-                                        }
-
-
-
-
-
-
-
-                                        <ul className={`nav nav-pills nav-stack  fw-normal d-flex justify-content-evenly  `}>
-                                            <li className="nav-item">
-                                                <button className="nav-link photos_link bg-light py-1  px-2 mb-0 text-muted"
-                                                    onClick={() => {
-                                                        setPhotoSection(!photoSection)
-                                                        setVideoSection(false)
-                                                        setAudioSection(false)
-                                                        setShowLocationField(false)
-
-                                                    }}
-                                                >
-                                                    <i className="bi bi-image-fill text-success pe-2" />
-                                                    Photo
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link video_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => {
-                                                        setVideoSection(!videoSection)
-                                                        setPhotoSection(false)
-                                                        setAudioSection(false)
-                                                        setShowLocationField(false)
-
-                                                    }}
-                                                >
-                                                    <i className="bi bi-camera-reels-fill text-info pe-2" />
-                                                    Video
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link audio_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => {
-                                                        setAudioSection(!audioSection)
-                                                        setPhotoSection(false)
-                                                        setVideoSection(false)
-                                                        setShowLocationField(false)
-                                                    }}
-
-                                                >
-                                                    <i className="bi bi-music-note-beamed text-primary pe-2" />
-                                                    Audio
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link location_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => {
-                                                        setShowLocationField(!showLocationField)
-                                                        setPhotoSection(false)
-                                                        setVideoSection(false)
-                                                        setAudioSection(false)
-                                                    }}
-                                                >
-                                                    <i className="bi bi-geo-alt-fill text-danger pe-2" /> Location
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <Link href={'/pages/Events/create-event'} className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
-                                                    <i className="bi bi-calendar2-event-fill text-danger pe-2" /> Event
-                                                </Link>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={() => setPollModal(!pollModal)}>
-                                                    <i className="fas fa-poll text-info pe-1" /> Poll
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={() => setFundingModal(!fundingModal)}>
-                                                    <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding
-                                                </button>
-                                            </li>
-                                        </ul>
-
-
-
-                                    </div>
-
-                                    <div className="d-flex justify-content-between mt-3">
-
-                                        <button className={`btn w-100 ${styles.btnSuccessPost}`} onClick={uploadPost}>
-                                            <i className="bi bi-send"></i>&nbsp;
-                                            Post
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
-
+                        <div className="col-md-3 p-3">
+                            <Rightnav />
+                        </div>
+
+                        <div className="col-md-9 p-3 mt-2">
 
 
                             {posts?.map((post, index) => {
 
+
+
                                 return (
 
-                                    <div key={`${post.id}-${index}`} className="card shadow-lg border-0 rounded-1 mb-2 mt-2">
+                                    <div key={`${post.id}-${index}`} className="card shadow-lg border-0 rounded-1 mb-2">
                                         <div className="card-body" >
-
 
                                             <div className="d-flex align-items-center justify-content-between">
                                                 <div className="d-flex align-items-center">
@@ -1300,8 +530,8 @@ export default function MyPageTimeline({ params }) {
                                                                             className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
                                                                             href="#"
                                                                         >
-                                                                            <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>  
-                                                                          
+                                                                            <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>
+
                                                                         </Link>
                                                                     </li>
                                                                     <li>
@@ -1358,21 +588,20 @@ export default function MyPageTimeline({ params }) {
                                                             </li>
                                                         )}
 
-                                                            <hr className="dropdown-divider" />
+                                                        <hr className="dropdown-divider" />
 
 
                                                         <li className=" align-items-center d-flex">
                                                             <Link
                                                                 className="text-decoration-none dropdown-item text-secondary"
-                                                                href={`/pages/page/openPostInNewTab/${post.id}`} 
-                                                                onClick={handlePageTimeline}
+                                                                href={`/pages/page/openPostInNewTab/${post.id}`}
                                                                 target="_blank" rel="noopener noreferrer"
                                                             >
                                                                 <i className="bi bi-box-arrow-up-right pe-2"></i>
                                                                 Open post in new tab
                                                             </Link>
                                                         </li>
-                                                      
+
 
 
                                                     </ul>
@@ -1382,6 +611,19 @@ export default function MyPageTimeline({ params }) {
                                             </div>
 
                                             <hr className="my-2 text-muted" />
+                                            {post.post_type !== "donation" && !post.bg_color && (
+                                                <span
+                                                    dangerouslySetInnerHTML={{ __html: post.post_text }}
+                                                />
+                                            )}
+
+
+                                            {
+                                                post?.images && post?.images.length > 0 && (
+                                                    <PageImagesLayout key={`${post.id}-${index}`} post={post} />
+                                                )
+                                            }
+
                                             {
                                                 post.bg_color && (
                                                     <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
@@ -1396,14 +638,11 @@ export default function MyPageTimeline({ params }) {
                                             }
 
 
-                                            {post?.post_type !== "donation" && !post.bg_color && (
-                                                <span
-                                                    dangerouslySetInnerHTML={{ __html: post.post_text }}
-                                                />
-                                            )}
 
-                                            <div className="d-flex justify-content-center flex-wrap mb-1">
-                                                {post?.poll && post?.poll.poll_options && (
+
+                                            {post.poll && post.poll.poll_options && (
+                                                <div className="d-flex justify-content-center flex-wrap mb-1">
+
                                                     <div className="w-100">
                                                         <ul className="list-unstyled">
                                                             {post.poll.poll_options.map((option) => {
@@ -1464,10 +703,10 @@ export default function MyPageTimeline({ params }) {
                                                             })}
                                                         </ul>
                                                     </div>
-                                                )}
-                                            </div>
 
-                                            {/* <div className="container mt-5"> */}
+                                                </div>
+                                            )}
+
                                             {post?.donation && (
                                                 <div>
                                                     <Image
@@ -1530,72 +769,10 @@ export default function MyPageTimeline({ params }) {
                                                     </div>
                                                 </div>
                                             )}
-                                            {/* </div> */}
-
-                                            <div className="d-flex justify-content-center flex-wrap">
-                                                {/* 
-                                            <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
-                                                {
-                                                post.images && post.images.length > 0 &&
-                                                post.images.map((image, index) => (
-                                                    <div key={index} className={styles.imageContainer}>
-                                                        <Image
-                                                            src={image.media_path}
-                                                            alt={`Post image ${index + 1}`}
-                                                            width={400}
-                                                            height={300}
-                                                            className={styles.postImage}
-                                                            style={{ objectFit: "cover" }}
-                                                        />
-                                                    </div>
-                                                ))}
-                                                    post.images && post.images.length > 0 &&
-                                                    post.images.map((image, index) => (
-                                                        <div key={index} className={styles.imageContainer}>
-                                                            <Image
-                                                                src={image.media_path}
-                                                                alt={`Post image ${index + 1}`}
-                                                                width={400}
-                                                                height={300}
-                                                                className={styles.postImage}
-                                                                style={{ objectFit: "cover" }}
-                                                            />
-                                                        </div>
-                                                    ))}
-                                            </div>
-
-                                            </div> */}
-
-                                                {/* <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
-                                            {post.images && post.images.length > 0 &&
-                                                post.images?.map((image, index) => (
-                                                    <div key={index} className={styles.imageContainer}
-                                                 
-                                                    
-                                                    >
-                                                    <Image
-                                                     
-                                                        src={image.media_path}
-                                                        alt={`Post image ${index + 1}`}
-                                                        width={400}
-                                                        height={200}
-                                                        className={`img-fluid ${styles.postImage}`}
-                                                        loader={({ src }) => src}
-
-                                                    />
-                                                    </div>
-
-                                                ))}
-                                                 </div> */}
-
-
-                                                <PageImagesLayout key={`${post.id}-${index}`} post={post} />
 
 
 
-
-
-                                                {
+                                            {
                                                 post.event && post.event.cover && (
                                                     <div>
                                                         <Image
@@ -1616,91 +793,81 @@ export default function MyPageTimeline({ params }) {
                                                     </div>
                                                 )}
 
-                                                {post.product && (
-                                                    <div>
-                                                        <Image
-                                                            src={post.product.images[0].image}
-                                                            alt="Product"
-                                                            className="img-fluid"
-                                                            width={600}
-                                                            height={400}
-                                                            style={{
-                                                                objectFit: "cover",
-                                                            }}
-                                                        />
-                                                        <div className="row mt-3">
-                                                            <div className="col-md-9">
-                                                                <h6><b>{post.product.product_name}</b></h6>
-                                                                <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
-                                                                <br />
-                                                                <span><b>Category: </b>{post.product.category}</span>
-                                                                <br />
-                                                                <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
-                                                            </div>
-                                                            <div className="col-md-3 mt-4">
-                                                                <Link href="#" >
-                                                                    <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
-                                                                </Link>
-                                                            </div>
+                                            {post.product && (
+                                                <div>
+                                                    <Image
+                                                        src={post.product.images[0].image}
+                                                        alt="Product"
+                                                        className="img-fluid"
+                                                        width={600}
+                                                        height={400}
+                                                        style={{
+                                                            objectFit: "cover",
+                                                        }}
+                                                    />
+                                                    <div className="row mt-3">
+                                                        <div className="col-md-9">
+                                                            <h6><b>{post.product.product_name}</b></h6>
+                                                            <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
+                                                            <br />
+                                                            <span><b>Category: </b>{post.product.category}</span>
+                                                            <br />
+                                                            <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
+                                                        </div>
+                                                        <div className="col-md-3 mt-4">
+                                                            <Link href="#" >
+                                                                <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
+                                                            </Link>
                                                         </div>
                                                     </div>
-                                                )}
+                                                </div>
+                                            )}
 
-                                                {post?.video && (
-                                                    <div
-                                                        className="media-container mt-1"
-                                                        style={{ width: "100%", height: "auto" }}
+                                            {post?.video && (
+                                                <div
+                                                    className="media-container mt-1"
+                                                    style={{ width: "100%", height: "auto" }}
+                                                >
+                                                    <video
+                                                        controls
+                                                        style={{
+                                                            objectFit: "cover",
+                                                            width: "100%",
+                                                            height: "auto",
+                                                        }}
                                                     >
-                                                        <video
-                                                            controls
-                                                            style={{
-                                                                objectFit: "cover",
-                                                                width: "100%",
-                                                                height: "auto",
-                                                            }}
-                                                        >
-                                                            <source
-                                                                src={post.video.media_path}
-                                                                type="video/mp4"
-                                                            />
-                                                            Your browser does not support the video tag.
-                                                        </video>
+                                                        <source
+                                                            src={post.video.media_path}
+                                                            type="video/mp4"
+                                                        />
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                </div>
+                                            )}
+
+
+
+                                            {post?.audio && (
+                                                <div className="media-container w-100">
+                                                    <audio controls className="w-100">
+                                                        <source src={post.audio.media_path} />
+                                                        Your browser does not support the audio tag.
+                                                    </audio>
+                                                </div>
+                                            )}
+
+
+                                            {
+                                                post?.post_location && (
+                                                    <div className="media-container text-center w-100 mt-3">
+                                                        <span className="text-muted">
+                                                            <i className="bi bi-geo-alt-fill"></i> {post.post_location}
+                                                        </span>
                                                     </div>
-                                                )}
+                                                )
 
+                                            }
 
-
-                                                {post?.audio && (
-                                                    <div className="media-container w-100">
-                                                        <audio controls className="w-100">
-                                                            <source src={post.audio.media_path} />
-                                                            Your browser does not support the audio tag.
-                                                        </audio>
-                                                    </div>
-                                                )}
-
-
-                                                {
-                                                    post?.post_location && (
-                                                        <div className="media-container text-center w-100 mt-3">
-                                                            <span className="text-muted">
-                                                                <i className="bi bi-geo-alt-fill"></i> {post.post_location}
-                                                            </span>
-
-                                                            {/* <iframe
-                                                        width="100%"
-                                                        height="250"
-                                                        style={{ border: 0, borderRadius: "8px" }}
-                                                        loading="lazy"
-                                                        allowFullScreen
-                                                        referrerPolicy="no-referrer-when-downgrade"
-                                                        src={`https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(post.post_location)}`}
-                                                    ></iframe> */}
-                                                        </div>
-                                                    )
-
-                                                }
-                                            </div>
 
                                             <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
                                                 <div className="d-flex align-items-center mb-2 mb-md-0">
@@ -1728,14 +895,6 @@ export default function MyPageTimeline({ params }) {
                                             <hr className="my-1" />
 
                                             <div className="d-flex justify-content-between">
-
-                                                {/* <button
-                                                className="btn border-0 d-flex align-items-center"
-                                                onClick={() => LikePost(post.id)}
-                                            >
-                                                <i className="bi bi-emoji-smile me-2"></i> Reaction
-                                            </button> */}
-
 
 
                                                 <div style={{ position: "relative", display: "inline-block" }}>
@@ -1854,33 +1013,35 @@ export default function MyPageTimeline({ params }) {
                                                 </div>
                                             </div>
 
+
+
                                             <hr className="my-1" />
-                                        
-
-                                        {
-                                            post?.user?.id === userID  ? 
-                                            ""
-                                            :
-
-                                            <div className="d-flex mb-3 mt-2">
-                                            <button
-                                                className="btn me-2 d-flex align-items-center rounded-1"
-                                                style={{
-                                                    backgroundColor: "#C19A6B",
-                                                    borderRadius: "10px",
-                                                    color: "#fff",
-                                                }}
-                                            >
-                                                <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                            </button>
-                                            <button className="btn btn-danger d-flex align-items-center rounded-1">
-                                                <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                            </button>
-                                        </div>
 
 
-                                        }
-                                       
+                                            {
+                                                post?.user?.id === userID ?
+                                                    ""
+                                                    :
+
+                                                    <div className="d-flex mb-3 mt-2">
+                                                        <button
+                                                            className="btn me-2 d-flex align-items-center rounded-1"
+                                                            style={{
+                                                                backgroundColor: "#C19A6B",
+                                                                borderRadius: "10px",
+                                                                color: "#fff",
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                        </button>
+                                                        <button className="btn btn-danger d-flex align-items-center rounded-1">
+                                                            <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                        </button>
+                                                    </div>
+
+
+                                            }
+
 
                                             {showComments[post.id] && (
                                                 <div className="mt-2">
@@ -2094,6 +1255,7 @@ export default function MyPageTimeline({ params }) {
                                             </div>
 
 
+
                                         </div>
                                     </div>
 
@@ -2107,74 +1269,28 @@ export default function MyPageTimeline({ params }) {
 
 
 
-
-                            <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
-                                <div className="my-sm-5 py-sm-5 text-center">
-                                    <i className="display-1 text-secondary bi bi-card-list" />
-                                    <h5 className="mt-2 mb-3 text-body text-muted">No More Posts to Show</h5>
-                                </div>
-                            </div>
-
-
-
-
                         </div>
 
-                        <RightNav pageTimelineData={pageTimelineData} />
 
-
-                        {
-                            pollModal === true ?
-                                <PostPollModal
-                                    pollModal={pollModal}
-                                    setPollModal={setPollModal}
-                                    posts={posts}
-                                    setPosts={setPosts}
-                                    myPageTimeline={myPageTimeline}
-                                    endpoint={endpoint}
-                                />
-                                :
-                                ""
-                        }
-
-
-                        {
-                            fundingModal === true ?
-                                <FundingModal
-                                    fundingModal={fundingModal}
-                                    setFundingModal={setFundingModal}
-                                    // posts={posts}
-                                    // setPosts={setPosts}
-                                    // myPageTimeline={myPageTimeline}
-                                    // endpoint={endpoint}
-                                    uploadPost={uploadPost}
-                                />
-                                :
-                                ""
-                        }
-
-
-                        {
-                            donationModal === true ?
-                                <MakeDonationModal
-                                    donationID={donationID}
-                                    donationModal={donationModal}
-                                    setDonationModal={setDonationModal}
-                                    posts={posts}
-                                    setPosts={setPosts}
-                                // myPageTimeline={myPageTimeline}
-                                // endpoint={endpoint}
-                                />
-                                :
-                                ""
-                        }
-
-
+                               {
+                                                    donationModal === true ?
+                                                        <MakeDonationModal
+                                                            donationID={donationID}
+                                                            donationModal={donationModal}
+                                                            setDonationModal={setDonationModal}
+                                                            posts={posts}
+                                                            setPosts={setPosts}
+                                                        // myPageTimeline={myPageTimeline}
+                                                        // endpoint={endpoint}
+                                                        />
+                                                        :
+                                                        ""
+                                                }
+                        
 
                     </div>
                 </div>
             </div>
-
         </>
     )
 }
