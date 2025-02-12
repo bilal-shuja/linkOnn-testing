@@ -386,7 +386,7 @@
 /* 📌 Post Actions (Reaction, Comment, Share) */
 .post-actions {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
   padding: 8px 0;
 }

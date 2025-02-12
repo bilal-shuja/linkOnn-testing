@@ -862,49 +862,62 @@ export default function Savedposts() {
                                                     <i className="bi bi-share"></i> Share
                                                 </button>
 
-                                                <ul className="dropdown-menu post-dropdown-menu" aria-labelledby={`dropdownMenuButton-${post.id}`}>
-                                                    <li>
+                                                <ul
+                                                    className="dropdown-menu"
+                                                    aria-labelledby="dropdownMenuButton3"
+                                                >
+                                                    <li className=" align-items-center d-flex">
                                                         <Link
-                                                            className="post-dropdown-item"
+                                                            className="text-decoration-none dropdown-item text-muted"
                                                             href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <i className="bi bi-facebook"></i> Share on Facebook
+                                                            <i className="bi bi-facebook pe-2"></i> Share on Facebook
                                                         </Link>
                                                     </li>
-                                                    <li>
+
+                                                    <li className=" align-items-center d-flex">
                                                         <Link
-                                                            className="post-dropdown-item"
+                                                            className="text-decoration-none dropdown-item text-muted"
                                                             href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <i className="bi bi-twitter-x"></i> Share on X
+                                                            <i className="bi bi-twitter-x pe-2"></i> Share on
+                                                            X
                                                         </Link>
                                                     </li>
-                                                    <li>
+                                                    <li className=" align-items-center d-flex">
                                                         <Link
-                                                            className="post-dropdown-item"
+                                                            className="text-decoration-none dropdown-item text-muted"
                                                             href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >
-                                                            <i className="bi bi-linkedin"></i> Share on LinkedIn
+                                                            <i className="bi bi-linkedin pe-2"></i> Share on
+                                                            Linkedln
                                                         </Link>
                                                     </li>
-                                                    <li><hr className="post-dropdown-divider" /></li>
+
                                                     <li>
-                                                        <Link className="post-dropdown-item" href="#">
-                                                            <i className="bi bi-bookmark-check"></i> Post on Timeline
+                                                        <hr className="dropdown-divider" />
+                                                    </li>
+                                                    <li className=" align-items-center d-flex">
+                                                        <Link
+                                                            className="text-decoration-none dropdown-item text-muted custom-hover"
+                                                            href="#"
+                                                        >
+                                                            <i className="bi bi-bookmark-check pe-2"></i> Post
+                                                            on Timeline
                                                         </Link>
                                                     </li>
-                                                    <li>
+                                                    <li className=" align-items-center d-flex">
                                                         <span
-                                                            className="post-dropdown-item"
+                                                            className="text-decoration-none dropdown-item text-muted"
                                                             onClick={() => handleCopy(post.post_link)}
                                                         >
-                                                            <i className="bi bi-link"></i> Copy Post Link
+                                                            <i className="bi bi-link pe-2"></i> Copy Post Link
                                                         </span>
                                                     </li>
                                                 </ul>
