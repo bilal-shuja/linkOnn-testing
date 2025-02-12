@@ -311,3 +311,150 @@
 .hover-text:hover {
   color: #007bff !important;
 }
+
+
+
+
+
+/* 📌 Ensure Everything Stays in One Line */
+.post-card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0; /* Adjust padding */
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+/* 📌 Reactions Section */
+.post-card-reactions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.post-card-reaction-count {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0d6efd;
+}
+
+/* 📌 Stats Section (Views, Comments, Shares) */
+.post-card-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Consistent spacing */
+  color: #6c757d;
+  font-size: 14px;
+}
+
+/* 📌 Each Stat Item */
+.post-card-stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* 📌 Icons */
+.post-card-icon {
+  font-size: 18px;
+  color: #5a5a5a;
+}
+
+.reaction-icon {
+  font-size: 17px;
+  color: #0d6efd;
+}
+
+/* 📌 Hover Effect */
+.post-card-stat:hover {
+  color: #343a40;
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
+}
+
+
+
+/* 📌 Soft Divider */
+.post-divider {
+  margin: 6px 0;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* 📌 Post Actions (Reaction, Comment, Share) */
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0;
+}
+
+/* 📌 Individual Action Buttons */
+.post-action-btn {
+  border: none;
+  background: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: #5a5a5a;
+  padding: 8px 15px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+/* 📌 Button Hover Effect */
+.post-action-btn:hover {
+  color: #0d6efd;
+  transform: scale(1.05);
+}
+
+/* 📌 Icons inside Buttons */
+.post-action-btn i {
+  font-size: 18px;
+}
+
+/* 📌 Dropdown Styling */
+.post-dropdown {
+  position: relative;
+}
+
+.post-dropdown-menu {
+  background-color: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 8px 0;
+  list-style: none;
+  min-width: 220px;
+  border: 1px solid #e0e0e0;
+  transform: scale(0.95);
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+/* 📌 Dropdown Item */
+.post-dropdown-item {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  transition: background 0.2s ease-in-out;
+}
+
+/* 📌 Hover Effect for Dropdown */
+.post-dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.02);
+}
+
+/* 📌 Dropdown Divider */
+.post-dropdown-divider {
+  margin: 5px 0;
+  border-top: 1px solid #e0e0e0;
+}
