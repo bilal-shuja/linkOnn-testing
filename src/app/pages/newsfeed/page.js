@@ -15,6 +15,8 @@ import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 import Greatjob from "./GreatJob";
 import CupofCoffee from "./CupofCoffee";
 import UserImagesLayout from "./userImagesLayout";
+import styles from './css/page.module.css'
+import EditPostModal from "./EditPostModal";
 
 export default function Newsfeed() {
 
@@ -62,8 +64,12 @@ export default function Newsfeed() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
   const [activeGreatJobId, setActiveGreatJobId] = useState(null);
-
+  const [isOpenColorPalette, setIsOpenColorPalette] = useState(false);
+  const [color, setColor] = useState("");
+  const [updatePostText, setUpdatePostText] = useState("");
   const api = createAPI();
+  const [showEditPostModal, setShowEditPostModal] = useState(false);
+  const [postID, setPostID] = useState("")
 
   const fileImageRef = useRef(null);
 
@@ -443,6 +449,7 @@ export default function Newsfeed() {
       formData.append("post_text", combinedText);
       formData.append("description", donationDescription);
       formData.append("amount", donationAmount);
+      formData.append("bg_color", color);
       formData.append("poll_option", options);
       formData.append("post_location", locationText);
       images.forEach((image) => formData.append("images[]", image.file));
@@ -477,6 +484,7 @@ export default function Newsfeed() {
         setPostText("");
         setError("");
         setImages([]);
+        setColor("");
         setaudio([]);
         setvideo([]);
         setlocationText("");
@@ -710,6 +718,7 @@ export default function Newsfeed() {
       });
       if (response.data.code == "200") {
         toast.success(response.data.message);
+
       } else {
         toast.error(response.data.message);
       }
@@ -752,6 +761,57 @@ export default function Newsfeed() {
   };
   const closeModalGreatJob = () => {
     setActiveGreatJobId(null);
+  };
+
+  const toggleOptionsColorPalette = () => {
+    setIsOpenColorPalette(!isOpenColorPalette);
+
+  };
+
+
+  const gradientMap = {
+    'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)': '_2j79',
+    'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)': '_2j80',
+    'linear-gradient(45deg, #5d6374 0%, #16181d 100%)': '_2j81'
+  };
+
+  const reverseGradientMap = {
+    '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
+    '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
+    '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
+  };
+
+
+  const handleColorSelect = (colorValue) => {
+    if (colorValue.includes('gradient')) {
+      const shortCode = gradientMap[colorValue] || encodeURIComponent(colorValue);
+      setColor(shortCode);
+    } else {
+      setColor(colorValue);
+    }
+  };
+
+  const getDisplayColor = (color) => {
+    if (color?.startsWith('_')) {
+      return reverseGradientMap[color] || color;
+    }
+    return color;
+  };
+
+  const handleUpdatePost = async (postId) => {
+    try {
+      const response = await api.post("/api/post/update", {
+        post_id: postId,
+        post_text: updatePostText,
+      });
+      if (response.data.status == "200") {
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("Error");
+    }
   };
 
   return (
@@ -1094,26 +1154,25 @@ export default function Newsfeed() {
                     </div>
                   </div>
 
-                  <div className="d-flex" style={{ position: 'relative' }}>
-                    <input
-                      className="form-control mb-4 border-0 no-border"
+                  <div>
+                    <textarea
+                      className="form-control mb-2 border-0 no-border"
                       placeholder="Share your thoughts..."
                       value={postText}
                       onChange={handlePostTextChange}
+                      style={{
+                        height: "150px", background: getDisplayColor(color)
+                      }}
                     />
 
-                    <i
-                      className="bi bi-emoji-smile text-warning"
-                      onClick={handleEmojiButtonClick}
-                      style={{ fontSize: '20px', cursor: 'pointer' }}
-                    ></i>
+                    <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "25px", top: "100px" }}>😊</button>
 
                     {showEmojiPicker && (
                       <div
                         style={{
                           position: 'absolute',
-                          top: '50px',
-                          left: '100px',
+                          top: '-100px',
+                          left: '600px',
                           zIndex: '1000',
                         }}
                       >
@@ -1124,6 +1183,35 @@ export default function Newsfeed() {
                         />
                       </div>
                     )}
+
+                    <div className={`d-flex ${styles.optionsContainer} mb-2`}>
+                      <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
+                        <i className="bi bi-palette-fill"></i>
+                      </button>
+                      <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
+
+                        {/* Solid Colors */}
+                        {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
+                          <div
+                            key={solidColor}
+                            className={styles.colorOption}
+                            style={{ background: solidColor }}
+                            onClick={() => handleColorSelect(solidColor)}
+                          />
+                        ))}
+
+                        {/* Gradient Colors */}
+                        {Object.keys(gradientMap).map((gradient) => (
+                          <div
+                            key={gradient}
+                            className={styles.colorOption}
+                            style={{ background: gradient }}
+                            onClick={() => handleColorSelect(gradient)}
+                          />
+                        ))}
+
+                      </div>
+                    </div>
                   </div>
 
                   {showLocation && (
@@ -1561,10 +1649,6 @@ export default function Newsfeed() {
 
               </div>
 
-              {/* {posts.length === 0 && !loading && (
-                <p className="text-center">No posts found.</p>
-              )} */}
-
               {error && <p className="text-center text-danger">{error}</p>}
 
               {posts.map((post, index) => (
@@ -1657,64 +1741,132 @@ export default function Newsfeed() {
                           <button
                             className="btn border-0"
                             type="button"
-                            id="dropdownMenuButton2"
+                            id={`dropdownMenuButton-${post.id}`}
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                           >
                             <i className="bi bi-caret-down"></i>
                           </button>
-                          <ul
-                            className="dropdown-menu dropdown-menu-light"
-                            aria-labelledby="dropdownMenuButton2"
-                          >
-                            <li className=" align-items-center d-flex">
-                              <Link
-                                className="text-decoration-none dropdown-item text-secondary"
-                                href="#"
+
+                          {post.user.id !== userdata.data.id && (
+                            <ul
+                              className="dropdown-menu dropdown-menu-light"
+                              aria-labelledby={`dropdownMenuButton-${post.id}`}
+                            >
+                              <li className="align-items-center d-flex">
+                                <Link href="#" className="text-decoration-none dropdown-item text-secondary">
+                                  <i className="bi bi-bookmark pe-2"></i> Save post
+                                </Link>
+                              </li>
+                              <li>
+                                <hr className="dropdown-divider" />
+                              </li>
+                              <li className="align-items-center d-flex">
+                                <Link href="#" className="text-decoration-none dropdown-item text-secondary">
+                                  <i className="bi bi-flag pe-2"></i> Report Post
+                                </Link>
+                              </li>
+                              <li className="align-items-center d-flex">
+                                <Link
+                                  href={`/pages/openPostInNewTab/${post.id}`}
+                                  target="_blank" rel="noopener noreferrer"
+                                  className="text-decoration-none dropdown-item text-secondary">
+                                  <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                </Link>
+                              </li>
+                            </ul>
+                          )}
+
+                          {post.user.id === userdata.data.id && (
+                            <ul
+                              className="dropdown-menu dropdown-menu-light"
+                              aria-labelledby={`dropdownMenuButton-${post.id}`}
+                            >
+
+                              {post.comments_status === '1' && (
+                                <li className="align-items-center d-flex">
+                                  <Link href="#" className="text-decoration-none dropdown-item text-secondary">
+                                    <i className="bi bi-chat-left-dots fa-fw pe-2"></i> Disable Comments
+                                  </Link>
+                                </li>
+                              )}
+
+                              {post.comments_status === '0' && (
+                                <li className="align-items-center d-flex">
+                                  <Link href="#" className="text-decoration-none dropdown-item text-secondary">
+                                    <i className="bi bi-chat-left-dots fa-fw pe-2"></i> Enable Comments
+                                  </Link>
+                                </li>
+                              )}
+
+                              <li
+                                className="align-items-center d-flex"
                               >
-                                <i className="bi bi-bookmark pe-2"></i> Save
-                                post
-                              </Link>
-                            </li>
-                            <li>
-                              <hr className="dropdown-divider" />
-                            </li>
-                            <li className=" align-items-center d-flex">
-                              <Link
-                                className="text-decoration-none dropdown-item text-secondary"
-                                href="#"
-                              >
-                                <i className="bi bi-flag pe-2"></i> Report Post
-                              </Link>
-                            </li>
-                            <li className=" align-items-center d-flex">
-                              <Link
-                                className="text-decoration-none dropdown-item text-secondary"
-                                href="#"
-                              >
-                                <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                Open post in new tab
-                              </Link>
-                            </li>
-                            {post.user.id == userdata.data.id && (
+                                <button
+                                  className="text-decoration-none dropdown-item text-secondary"
+                                  onClick={() => {
+                                    setShowEditPostModal(true)
+                                    setPostID({ id: post.id, post_text: post.post_text })
+                                  }}
+                                >
+                                  <i className="bi bi-pencil-fill"></i> Edit Post
+                                </button>
+                              </li>
+
+                              {
+                                showEditPostModal && (
+                                  <EditPostModal
+                                    showEditPostModal={showEditPostModal}
+                                    setShowEditPostModal={setShowEditPostModal}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                    postID={postID}
+                                  />
+                                )
+                              }
+
                               <li className="align-items-center d-flex">
                                 <button
                                   className="btn dropdown-item text-secondary"
                                   onClick={() => handlePostDelete(post.id)}
                                 >
-                                  <i className="bi bi-trash3 pe-2"></i>
-                                  Delete Post
+                                  <i className="bi bi-trash3 pe-2"></i> Delete Post
                                 </button>
                               </li>
-                            )}
-                          </ul>
+
+                              <li>
+                                <hr className="dropdown-divider" />
+                              </li>
+                              <li className="align-items-center d-flex">
+                                <Link
+                                  href={`/pages/openPostInNewTab/${post.id}`}
+                                  target="_blank" rel="noopener noreferrer"
+                                  className="text-decoration-none dropdown-item text-secondary">
+                                  <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                </Link>
+                              </li>
+                            </ul>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <hr className="my-2 post-divider" />
 
-                    {post.post_type !== "donation" && (
+                    {
+                      post.bg_color && (
+                        <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                          style={{
+                            background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
+                            padding: "160px 27px"
+                          }}
+                        >
+                          <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>  {post.post_text} </span>
+                        </div>
+                      )
+                    }
+
+                    {post.post_type !== "donation" && !post.bg_color && (
                       <p
                         className="mt-2 mx-2"
                         dangerouslySetInnerHTML={{ __html: post.post_text }}
@@ -1827,13 +1979,16 @@ export default function Newsfeed() {
                                 {post.donation.collected_amount} Collected
                               </p>
                               <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+
                               <button
                                 className="btn btn-primary btn-sm"
                                 data-bs-toggle="modal"
-                                data-bs-target="#DonateModal"
+                                data-bs-target={`#DonateModal-${post.id}`}
+                                key={`btn-${post.id}`} // Ensure a unique key
                               >
                                 Donate
                               </button>
+
                             </div>
                           </div>
                         </div>
@@ -1842,19 +1997,20 @@ export default function Newsfeed() {
 
                     <div
                       className="modal fade"
-                      id="DonateModal"
+                      id={`DonateModal-${post.id}`}
                       tabIndex="-1"
-                      aria-labelledby="ModalLabel"
                       aria-hidden="true"
+                      key={`modal-${post.id}`} // Ensure a unique key
+                      aria-labelledby={`DonateModal-${post.id}`}
                     >
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header">
                             <h5
                               className="modal-title fw-semibold"
-                              id="fundModalLabel"
+                              id={`fundModalLabel-${post.id}`}
                             >
-                              Donate Amount
+                              Donate Amount for Post {post.id}
                             </h5>
                             <button
                               type="button"
@@ -1878,9 +2034,7 @@ export default function Newsfeed() {
                             <button
                               type="button"
                               className="btn btn-primary"
-                              onClick={() =>
-                                handleDonationsend(post.donation.id)
-                              }
+                              onClick={() => handleDonationsend(post.donation.id)}
                             >
                               Save changes
                             </button>
@@ -1896,7 +2050,7 @@ export default function Newsfeed() {
                       </div>
                     </div>
 
-                    <div className="d-flex flex-column align-items-center mb-4">
+                    <div className="d-flex flex-column align-items-center mb-3">
 
                       <UserImagesLayout key={`${post.id}-${index}`} post={post} />
 

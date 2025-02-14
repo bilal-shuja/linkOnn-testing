@@ -14,6 +14,7 @@ import UserImagesLayout from "./userImagesLayout";
 import Profilecard from "../../components/profile-card";
 import Greatjob from "./GreatJob";
 import CupofCoffee from "./CupofCoffee";
+import styles from '../../css/page.module.css';
 
 export default function UserProfileCard({ params }) {
 
@@ -59,6 +60,8 @@ export default function UserProfileCard({ params }) {
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
     const [repliesData, setRepliesData] = useState({});
+    const [isOpenColorPalette, setIsOpenColorPalette] = useState(false);
+    const [color, setColor] = useState("");
 
     const fileImageRef = useRef(null);
 
@@ -352,6 +355,7 @@ export default function UserProfileCard({ params }) {
             formData.append("description", donationDescription);
             formData.append("amount", donationAmount);
             formData.append("poll_option", options);
+            formData.append("bg_color", color);
             formData.append("post_location", locationText);
             images.forEach((image) => formData.append("images[]", image.file));
             donationImage.forEach((image) =>
@@ -384,6 +388,7 @@ export default function UserProfileCard({ params }) {
                 setShowimg(false);
                 setShowvideo(false);
                 setShowaudio(false);
+                setColor("");
                 setShowLocation(false);
                 setError("");
                 setImages([]);
@@ -715,6 +720,42 @@ export default function UserProfileCard({ params }) {
         setActiveGreatJobId(null);
     };
 
+    const toggleOptionsColorPalette = () => {
+        setIsOpenColorPalette(!isOpenColorPalette);
+
+    };
+
+
+    const gradientMap = {
+        'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)': '_2j79',
+        'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)': '_2j80',
+        'linear-gradient(45deg, #5d6374 0%, #16181d 100%)': '_2j81'
+    };
+
+    const reverseGradientMap = {
+        '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
+        '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
+        '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
+    };
+
+
+    const handleColorSelect = (colorValue) => {
+        if (colorValue.includes('gradient')) {
+            const shortCode = gradientMap[colorValue] || encodeURIComponent(colorValue);
+            setColor(shortCode);
+        } else {
+            setColor(colorValue);
+        }
+    };
+
+    const getDisplayColor = (color) => {
+        if (color?.startsWith('_')) {
+            return reverseGradientMap[color] || color;
+        }
+        return color;
+    };
+
+
     return (
         <>
 
@@ -807,26 +848,25 @@ export default function UserProfileCard({ params }) {
                                         </div>
                                     </div>
 
-                                    <div className="d-flex" style={{ position: 'relative' }}>
-                                        <input
-                                            className="form-control mb-5 border-0 no-border"
+                                    <div>
+                                        <textarea
+                                            className="form-control mb-2 border-0 no-border"
                                             placeholder="Share your thoughts..."
                                             value={postText}
                                             onChange={handlePostTextChange}
+                                            style={{
+                                                height: "150px", background: getDisplayColor(color)
+                                            }}
                                         />
 
-                                        <i
-                                            className="bi bi-emoji-smile text-warning"
-                                            onClick={handleEmojiButtonClick}
-                                            style={{ fontSize: '20px', cursor: 'pointer' }}
-                                        ></i>
+                                        <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "25px", top: "90px" }}>😊</button>
 
                                         {showEmojiPicker && (
                                             <div
                                                 style={{
                                                     position: 'absolute',
-                                                    top: '50px',
-                                                    left: '100px',
+                                                    top: '-100px',
+                                                    left: '600px',
                                                     zIndex: '1000',
                                                 }}
                                             >
@@ -837,6 +877,35 @@ export default function UserProfileCard({ params }) {
                                                 />
                                             </div>
                                         )}
+
+                                        <div className={`d-flex ${styles.optionsContainer} mb-2`}>
+                                            <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
+                                                <i className="bi bi-palette-fill"></i>
+                                            </button>
+                                            <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
+
+                                                {/* Solid Colors */}
+                                                {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
+                                                    <div
+                                                        key={solidColor}
+                                                        className={styles.colorOption}
+                                                        style={{ background: solidColor }}
+                                                        onClick={() => handleColorSelect(solidColor)}
+                                                    />
+                                                ))}
+
+                                                {/* Gradient Colors */}
+                                                {Object.keys(gradientMap).map((gradient) => (
+                                                    <div
+                                                        key={gradient}
+                                                        className={styles.colorOption}
+                                                        style={{ background: gradient }}
+                                                        onClick={() => handleColorSelect(gradient)}
+                                                    />
+                                                ))}
+
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {showLocation && (
@@ -1266,7 +1335,7 @@ export default function UserProfileCard({ params }) {
 
                                     <div className="d-flex justify-content-center">
                                         <button
-                                            className="btn btn-outline-success mt-3 w-50"
+                                            className="btn btn-outline-success mt-3 w-75"
                                             onClick={uploadPost}
                                         >
                                             <i className="bi bi-send"></i> Post
@@ -1280,7 +1349,7 @@ export default function UserProfileCard({ params }) {
                         {posts.map((post, index) => (
                             <div
                                 key={`${post.id}-${index}`}
-                                className="card mb-4 shadow-lg border-0 rounded-1 mt-4"
+                                className="card mb-2 shadow-lg border-0 rounded-1"
                             >
                                 <div className="card-body">
                                     <div className="d-flex align-items-center justify-content-between">
@@ -1424,7 +1493,20 @@ export default function UserProfileCard({ params }) {
 
                                     <hr className="my-2 post-divider" />
 
-                                    {post.post_type !== "donation" && (
+                                    {
+                                        post.bg_color && (
+                                            <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                                                style={{
+                                                    background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
+                                                    padding: "160px 27px"
+                                                }}
+                                            >
+                                                <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>  {post.post_text} </span>
+                                            </div>
+                                        )
+                                    }
+
+                                    {post.post_type !== "donation" && !post.bg_color && (
                                         <p
                                             className="mt-4"
                                             dangerouslySetInnerHTML={{ __html: post.post_text }}
@@ -1495,7 +1577,7 @@ export default function UserProfileCard({ params }) {
                                         )}
                                     </div>
 
-                                    <div className="container mt-5">
+                                    <div className="container mt-2">
                                         {post.donation && (
                                             <div className="card border-0 rounded p-3">
                                                 {/* Donation Image */}
@@ -1611,7 +1693,7 @@ export default function UserProfileCard({ params }) {
                                         </div>
                                     </div>
 
-                                    <div className="d-flex flex-column align-items-center mb-4">
+                                    <div className="d-flex flex-column align-items-center mb-1">
 
                                         {/* {post.images && post.images.length > 0 && (
                                             <div className="w-100">
