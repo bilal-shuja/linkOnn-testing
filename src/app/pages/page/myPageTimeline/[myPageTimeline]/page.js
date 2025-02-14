@@ -15,6 +15,8 @@ import { ReactionBarSelector } from '@charkour/react-reactions';
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 import TimelineProfileCard from "../../components/timelineProfileCard";
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import EnableDisableCommentsModal from "../../Modal/EnableDisableCommentsModal";
+import EditPostModal from "../../Modal/EditPostModal";
 import { set } from "lodash";
 // import { Dropzone, FileMosaic } from "@files-ui/react";
 // import useConfirmationToast from "@/app/hooks/useConfirmationToast";
@@ -28,6 +30,9 @@ export default function MyPageTimeline({ params }) {
     const [userdata, setUserData] = useState(null);
 
     const { myPageTimeline } = use(params);
+
+
+    const [postID, setPostID] = useState('');
     const [pageTimelineData, setPageTimelineData] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [postText, setPostText] = useState("");
@@ -79,6 +84,9 @@ export default function MyPageTimeline({ params }) {
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
     const [isOpenColorPalette, setIsOpenColorPalette] = useState(false);
+
+    const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+    const [showEditPostModal, setShowEditPostModal] = useState(false);
 
     const endpoint = "/api/post/create";
 
@@ -504,21 +512,46 @@ export default function MyPageTimeline({ params }) {
 
     const LikePost = async (postId , reactionType) => {
 
-        console.log(postId , reactionType)
-        // try {
-        //     const response = await api.post("/api/post/action", {
-        //         post_id: postId,
-        //         action: "reaction",
-        //         reaction_type: 1,
-        //     });
-        //     if (response.data.code == "200") {
-        //         toast.success(response.data.message);
-        //     } else {
-        //         toast.error(response.data.message);
-        //     }
-        // } catch (error) {
-        //     toast.error("Error while reacting to the Post");
-        // }
+        try {
+            const response = await api.post("/api/post/action", {
+                post_id: postId,
+                action: "reaction",
+                reaction_type: reactionType,
+            });
+
+           
+       
+            if (response.data.code === "200") {
+                setPosts(prevPosts => 
+                    prevPosts.map(post => {
+                        if (post.id === postId) {
+                            return {
+                                ...post,
+                                reaction: {
+                                    is_reacted: true,
+                                    reaction_type: reactionType,
+                                    count: post.reaction?.is_reacted 
+                                        ? post.reaction.count 
+                                        : (post.reaction?.count || 0) + 1,
+                                    image: post.reaction?.image || "",
+                                    color: post.reaction?.color || "",
+                                    text: post.reaction?.text || ""
+                                }
+                            };
+                        }
+                        return post;
+                    })
+                );
+                
+                // toast.success(response.data.message);
+            }
+            
+            else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            toast.error("Error while reacting to the Post");
+        }
     };
 
     const handleCommentToggle = async (postId) => {
@@ -1184,7 +1217,7 @@ export default function MyPageTimeline({ params }) {
 
 
                             {posts?.map((post, index) => {
-
+                              
                                 return (
 
                                     <div key={`${post.id}-${index}`} className="card shadow-lg border-0 rounded-1 mb-2 mt-2">
@@ -1296,22 +1329,40 @@ export default function MyPageTimeline({ params }) {
                                                             post?.user?.id === userID ?
                                                                 <>
                                                                     <li className="align-items-center d-flex">
-                                                                        <Link
+                                                                        <button
                                                                             className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
-                                                                            href="#"
+                                                                            onClick={() =>{ setShowEnableDisableCommentsModal(true)
+                                                                                setPostID(post.id)
+
+                                                                            }}
                                                                         >
-                                                                            <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>  
+                                                                            {
+                                                                                post.comments_status === '1' ?
+                                                                                <>
+                                                                                <i className="bi bi-chat-left-text "></i> <span>Disable Comments</span>
+                                                                                </>
+                                                                                :
+                                                                                <>
+                                                                                <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>  
+                                                                                </>
+                                                                                
+                                                                              
+                                                                            }
                                                                           
-                                                                        </Link>
+                                                                        </button>
                                                                     </li>
                                                                     <li>
                                                                     </li><li className=" align-items-center d-flex">
-                                                                        <Link
+                                                                        <button
                                                                             className="text-decoration-none dropdown-item text-secondary"
-                                                                            href="#"
+                                                                            onClick={() => {
+                                                                                    setShowEditPostModal(true)
+                                                                                    setPostID({id:post.id , post_text:post.post_text})
+
+                                                                            }}
                                                                         >
                                                                             <i className="bi bi-pencil-fill"></i> Edit Post
-                                                                        </Link>
+                                                                        </button>
                                                                     </li>
                                                                 </>
                                                                 :
@@ -1705,9 +1756,15 @@ export default function MyPageTimeline({ params }) {
                                             <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
                                                 <div className="d-flex align-items-center mb-2 mb-md-0">
                                                     <span className="me-2">
-                                                        {post.reaction ? post.reaction.count || 0 : 0}
+                                                        {post?.reaction ? post.reaction.count || 0 : 0}
                                                     </span>
-                                                    <i className="bi bi-hand-thumbs-up"></i>
+                                                    {
+                                                        post?.reaction.is_reacted === true ?
+                                                        <i className="bi bi-hand-thumbs-up-fill text-primary"></i>
+                                                        :
+                                                        <i className="bi bi-hand-thumbs-up"></i>
+
+                                                    }
                                                 </div>
                                                 <div className="d-flex flex-wrap align-items-center text-muted">
                                                     <span className="me-3 d-flex align-items-center">
@@ -1860,7 +1917,7 @@ export default function MyPageTimeline({ params }) {
 
                                         {
                                             post?.user?.id === userID  ? 
-                                            ""
+                                           null
                                             :
 
                                             <div className="d-flex mb-3 mt-2">
@@ -1882,8 +1939,8 @@ export default function MyPageTimeline({ params }) {
 
                                         }
                                        
-
-                                            {showComments[post.id] && (
+                                      
+                                            {post.comments_status === "1" && showComments[post.id] ? (
                                                 <div className="mt-2">
                                                     {comments[post.id] && comments[post.id].length > 0 ? (
                                                         comments[post.id].map((comment) => (
@@ -2064,35 +2121,42 @@ export default function MyPageTimeline({ params }) {
                                                         </div>
                                                     )}
                                                 </div>
-                                            )}
+                                            )
+                                            :
+                                            null
+                                        }
 
 
-
-                                            <div className="d-flex align-items-center mt-3">
-                                                <Image
-                                                    src={userdata.data.avatar}
-                                                    alt="User Avatar"
-                                                    className="rounded-5"
-                                                    width={40}
-                                                    height={40}
-                                                />
-                                                <form className="position-relative w-100 ms-2">
-                                                    <input
-                                                        type="text"
-                                                        className="form-control bg-light border-1 rounded-2"
-                                                        placeholder="Add a comment..."
-                                                        value={commentText[post.id] || ""}
-                                                        onChange={(e) => handleCommentTextChange(e, post.id)}
+                                            {
+                                                post?.comments_status === "1" && (
+                                                    <div className="d-flex align-items-center mt-3">
+                                                    <Image
+                                                        src={userdata.data.avatar}
+                                                        alt="User Avatar"
+                                                        className="rounded-5"
+                                                        width={40}
+                                                        height={40}
                                                     />
-                                                    <button
-                                                        className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                        type="button"
-                                                        onClick={() => handleCommentSubmit(post.id)}
-                                                    >
-                                                        <i className="bi bi-send"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
+                                                    <form className="position-relative w-100 ms-2">
+                                                        <input
+                                                            type="text"
+                                                            className="form-control bg-light border-1 rounded-2"
+                                                            placeholder="Add a comment..."
+                                                            value={commentText[post.id] || ""}
+                                                            onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                        />
+                                                        <button
+                                                            className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                            type="button"
+                                                            onClick={() => handleCommentSubmit(post.id)}
+                                                        >
+                                                            <i className="bi bi-send"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                )
+                                            }
+                                           
 
 
                                         </div>
@@ -2125,7 +2189,8 @@ export default function MyPageTimeline({ params }) {
 
 
                         {
-                            pollModal === true ?
+                            pollModal &&
+                            (
                                 <PostPollModal
                                     pollModal={pollModal}
                                     setPollModal={setPollModal}
@@ -2134,40 +2199,67 @@ export default function MyPageTimeline({ params }) {
                                     myPageTimeline={myPageTimeline}
                                     endpoint={endpoint}
                                 />
-                                :
-                                ""
+                            )
+
                         }
 
 
                         {
-                            fundingModal === true ?
+                            fundingModal && (
                                 <FundingModal
-                                    fundingModal={fundingModal}
-                                    setFundingModal={setFundingModal}
-                                    // posts={posts}
-                                    // setPosts={setPosts}
-                                    // myPageTimeline={myPageTimeline}
-                                    // endpoint={endpoint}
-                                    uploadPost={uploadPost}
-                                />
-                                :
-                                ""
+                                fundingModal={fundingModal}
+                                setFundingModal={setFundingModal}
+                                // posts={posts}
+                                // setPosts={setPosts}
+                                // myPageTimeline={myPageTimeline}
+                                // endpoint={endpoint}
+                                uploadPost={uploadPost}
+                            />
+                            )
+                               
+                            
                         }
 
 
                         {
-                            donationModal === true ?
+                            donationModal && (
                                 <MakeDonationModal
                                     donationID={donationID}
                                     donationModal={donationModal}
                                     setDonationModal={setDonationModal}
                                     posts={posts}
                                     setPosts={setPosts}
-                                // myPageTimeline={myPageTimeline}
-                                // endpoint={endpoint}
                                 />
-                                :
-                                ""
+                            )
+                             
+                        }
+
+                        {
+                            showEnableDisableCommentsModal && (
+                                <EnableDisableCommentsModal
+                                    showEnableDisableCommentsModal={showEnableDisableCommentsModal}
+                                    setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
+                                    postID={postID}
+                                    posts={posts}
+                                    setPosts={setPosts}
+
+                                />
+                            )
+
+                          
+                        }
+
+                        {
+
+                            showEditPostModal && (
+                                <EditPostModal
+                                    showEditPostModal={showEditPostModal}
+                                    setShowEditPostModal={setShowEditPostModal}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                    postID={postID}
+                                />
+                            )
                         }
 
 

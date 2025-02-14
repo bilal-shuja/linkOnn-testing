@@ -9,6 +9,7 @@ import MakeDonationModal from "../../Modal/MakeDonationModal";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { ReactionBarSelector } from '@charkour/react-reactions';
 import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import EnableDisableCommentsModal from '../../Modal/EnableDisableCommentsModal';
 import PageImagesLayout from "../../myPageTimeline/[myPageTimeline]/pageImagesLayout";
 
 
@@ -17,6 +18,7 @@ export default function OpenPostInNewTab({ params }) {
     const { openPostInNewTab } = use(params)
     const userID = localStorage.getItem('userid');
     const [userdata, setUserData] = useState(null);
+    const [postID, setPostID] = useState('');
 
 
     const [pageTimelineData, setPageTimelineData] = useState(null);
@@ -40,6 +42,9 @@ export default function OpenPostInNewTab({ params }) {
     const [showReplyInput, setShowReplyInput] = useState({});
     const [repliesData, setRepliesData] = useState({});
 
+    const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+
+
 
     const reverseGradientMap = {
         '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
@@ -60,12 +65,25 @@ export default function OpenPostInNewTab({ params }) {
         angry: "😡"
     };
 
+    const reactionValues = {
+        satisfaction: 1,
+        love: 2,
+        happy: 3,
+        surprise: 4,
+        sad: 5,
+        angry: 6
+    };
+
+
 
     const handleReactionSelect = (reaction, postId) => {
         const updatedReactions = {
             ...postReactions,
             [postId]: reactionEmojis[reaction] || "😊"
         };
+
+        LikePost(postId, reactionValues[reaction] || 0);
+
 
         setPostReactions(updatedReactions);
         setActiveReactionPost(null);
@@ -257,16 +275,38 @@ export default function OpenPostInNewTab({ params }) {
         }
     };
 
-    const LikePost = async (postId) => {
+    const LikePost = async (postId, reactionType) => {
         try {
             const response = await api.post("/api/post/action", {
                 post_id: postId,
                 action: "reaction",
-                reaction_type: 1,
+                reaction_type: reactionType,
             });
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
+            if (response.data.code === "200") {
+                setPosts(prevPosts =>
+                    prevPosts.map(post => {
+                        if (post.id === postId) {
+                            return {
+                                ...post,
+                                reaction: {
+                                    is_reacted: true,
+                                    reaction_type: reactionType,
+                                    count: post.reaction?.is_reacted
+                                        ? post.reaction.count
+                                        : (post.reaction?.count || 0) + 1,
+                                    image: post.reaction?.image || "",
+                                    color: post.reaction?.color || "",
+                                    text: post.reaction?.text || ""
+                                }
+                            };
+                        }
+                        return post;
+                    })
+                );
+
+                // toast.success(response.data.message);
+            }
+            else {
                 toast.error(response.data.message);
             }
         } catch (error) {
@@ -526,13 +566,27 @@ export default function OpenPostInNewTab({ params }) {
                                                             post?.user?.id === userID ?
                                                                 <>
                                                                     <li className="align-items-center d-flex">
-                                                                        <Link
+                                                                        <button
                                                                             className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
-                                                                            href="#"
-                                                                        >
-                                                                            <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>
+                                                                            onClick={() =>{ setShowEnableDisableCommentsModal(true)
+                                                                                setPostID(post.id)
 
-                                                                        </Link>
+                                                                            }}
+                                                                        >
+                                                                              {
+                                                                                post.comments_status === '1' ?
+                                                                                <>
+                                                                                <i className="bi bi-chat-left-text "></i> <span>Disable Comments</span>
+                                                                                </>
+                                                                                :
+                                                                                <>
+                                                                                <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>  
+                                                                                </>
+                                                                                
+                                                                              
+                                                                            }
+
+                                                                        </button>
                                                                     </li>
                                                                     <li>
                                                                     </li><li className=" align-items-center d-flex">
@@ -874,7 +928,13 @@ export default function OpenPostInNewTab({ params }) {
                                                     <span className="me-2">
                                                         {post.reaction ? post.reaction.count || 0 : 0}
                                                     </span>
-                                                    <i className="bi bi-hand-thumbs-up"></i>
+                                                    {
+                                                        post?.reaction.is_reacted === true ?
+                                                            <i className="bi bi-hand-thumbs-up-fill text-primary"></i>
+                                                            :
+                                                            <i className="bi bi-hand-thumbs-up"></i>
+
+                                                    }
                                                 </div>
                                                 <div className="d-flex flex-wrap align-items-center text-muted">
                                                     <span className="me-3 d-flex align-items-center">
@@ -1020,7 +1080,7 @@ export default function OpenPostInNewTab({ params }) {
 
                                             {
                                                 post?.user?.id === userID ?
-                                                    ""
+                                                    null
                                                     :
 
                                                     <div className="d-flex mb-3 mt-2">
@@ -1043,7 +1103,10 @@ export default function OpenPostInNewTab({ params }) {
                                             }
 
 
-                                            {showComments[post.id] && (
+                                            {
+                                            
+                                            
+                                            post.comments_status === "1" &&   showComments[post.id] ? (
                                                 <div className="mt-2">
                                                     {comments[post.id] && comments[post.id].length > 0 ? (
                                                         comments[post.id].map((comment) => (
@@ -1224,35 +1287,48 @@ export default function OpenPostInNewTab({ params }) {
                                                         </div>
                                                     )}
                                                 </div>
-                                            )}
+                                            )
+                                            
+                                            
+                                            :
+                                            null
+                                            
+                                            
+                                            }
 
 
-
-                                            <div className="d-flex align-items-center mt-3">
-                                                <Image
-                                                    src={userdata.data.avatar}
-                                                    alt="User Avatar"
-                                                    className="rounded-5"
-                                                    width={40}
-                                                    height={40}
-                                                />
-                                                <form className="position-relative w-100 ms-2">
-                                                    <input
-                                                        type="text"
-                                                        className="form-control bg-light border-1 rounded-2"
-                                                        placeholder="Add a comment..."
-                                                        value={commentText[post.id] || ""}
-                                                        onChange={(e) => handleCommentTextChange(e, post.id)}
+                                            {
+                                                 post?.comments_status === "1" && (
+                                                    <div className="d-flex align-items-center mt-3">
+                                                    <Image
+                                                        src={userdata.data.avatar}
+                                                        alt="User Avatar"
+                                                        className="rounded-5"
+                                                        width={40}
+                                                        height={40}
                                                     />
-                                                    <button
-                                                        className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                        type="button"
-                                                        onClick={() => handleCommentSubmit(post.id)}
-                                                    >
-                                                        <i className="bi bi-send"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
+                                                    <form className="position-relative w-100 ms-2">
+                                                        <input
+                                                            type="text"
+                                                            className="form-control bg-light border-1 rounded-2"
+                                                            placeholder="Add a comment..."
+                                                            value={commentText[post.id] || ""}
+                                                            onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                        />
+                                                        <button
+                                                            className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                            type="button"
+                                                            onClick={() => handleCommentSubmit(post.id)}
+                                                        >
+                                                            <i className="bi bi-send"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+
+                                                 )
+
+                                            }
+                                         
 
 
 
@@ -1272,21 +1348,38 @@ export default function OpenPostInNewTab({ params }) {
                         </div>
 
 
-                               {
-                                                    donationModal === true ?
-                                                        <MakeDonationModal
-                                                            donationID={donationID}
-                                                            donationModal={donationModal}
-                                                            setDonationModal={setDonationModal}
-                                                            posts={posts}
-                                                            setPosts={setPosts}
-                                                        // myPageTimeline={myPageTimeline}
-                                                        // endpoint={endpoint}
-                                                        />
-                                                        :
-                                                        ""
-                                                }
-                        
+                        {
+                            donationModal && (
+                                <MakeDonationModal
+                                    donationID={donationID}
+                                    donationModal={donationModal}
+                                    setDonationModal={setDonationModal}
+                                    posts={posts}
+                                    setPosts={setPosts}
+
+                                />
+
+                            )
+
+                        }
+
+
+                        {
+                            showEnableDisableCommentsModal && (
+                                <EnableDisableCommentsModal
+                                    showEnableDisableCommentsModal={showEnableDisableCommentsModal}
+                                    setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
+                                    postID={postID}
+                                    posts={posts}
+                                    setPosts={setPosts}
+
+                                />
+                            )
+
+
+                        }
+
+
 
                     </div>
                 </div>

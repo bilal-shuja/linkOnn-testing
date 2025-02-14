@@ -16,13 +16,6 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
 
     const handleDonationDescription = (e) => { setDonationDescription(e.target.value) };
 
-    // const handleDonationImage = (e) => {
-    //     const files = e.target.files[0];
-
-    //     setDonationImage(files);
-
-    // };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
