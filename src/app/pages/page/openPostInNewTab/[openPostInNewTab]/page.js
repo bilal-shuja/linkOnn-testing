@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
+import EditPostModal from "../../Modal/EditPostModal";
 import { useState, useEffect, useCallback } from "react";
 import MakeDonationModal from "../../Modal/MakeDonationModal";
 import Rightnav from "@/app/assets/components/rightnav/page";
@@ -43,6 +44,8 @@ export default function OpenPostInNewTab({ params }) {
     const [repliesData, setRepliesData] = useState({});
 
     const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+    const [showEditPostModal, setShowEditPostModal] = useState(false);
+
 
 
 
@@ -568,34 +571,39 @@ export default function OpenPostInNewTab({ params }) {
                                                                     <li className="align-items-center d-flex">
                                                                         <button
                                                                             className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
-                                                                            onClick={() =>{ setShowEnableDisableCommentsModal(true)
+                                                                            onClick={() => {
+                                                                                setShowEnableDisableCommentsModal(true)
                                                                                 setPostID(post.id)
 
                                                                             }}
                                                                         >
-                                                                              {
+                                                                            {
                                                                                 post.comments_status === '1' ?
-                                                                                <>
-                                                                                <i className="bi bi-chat-left-text "></i> <span>Disable Comments</span>
-                                                                                </>
-                                                                                :
-                                                                                <>
-                                                                                <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>  
-                                                                                </>
-                                                                                
-                                                                              
+                                                                                    <>
+                                                                                        <i className="bi bi-chat-left-text "></i> <span>Disable Comments</span>
+                                                                                    </>
+                                                                                    :
+                                                                                    <>
+                                                                                        <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>
+                                                                                    </>
+
+
                                                                             }
 
                                                                         </button>
                                                                     </li>
                                                                     <li>
                                                                     </li><li className=" align-items-center d-flex">
-                                                                        <Link
+                                                                        <button
                                                                             className="text-decoration-none dropdown-item text-secondary"
-                                                                            href="#"
+                                                                            onClick={() => {
+                                                                                setShowEditPostModal(true)
+                                                                                setPostID({ id: post.id, post_text: post.post_text })
+
+                                                                            }}
                                                                         >
                                                                             <i className="bi bi-pencil-fill"></i> Edit Post
-                                                                        </Link>
+                                                                        </button>
                                                                     </li>
                                                                 </>
                                                                 :
@@ -1104,231 +1112,231 @@ export default function OpenPostInNewTab({ params }) {
 
 
                                             {
-                                            
-                                            
-                                            post.comments_status === "1" &&   showComments[post.id] ? (
-                                                <div className="mt-2">
-                                                    {comments[post.id] && comments[post.id].length > 0 ? (
-                                                        comments[post.id].map((comment) => (
-                                                            <div key={comment.id} className="mb-3">
-                                                                <div className="d-flex">
-                                                                    <Image
-                                                                        src={comment.avatar}
-                                                                        alt="Profile"
-                                                                        className="rounded-circle me-1 mt-2"
-                                                                        width={40}
-                                                                        height={40}
-                                                                        style={{
-                                                                            objectFit: "cover",
-                                                                        }}
-                                                                    />
 
-                                                                    <div className="mb-3">
-                                                                        <div className="card border-0 bg-light w-100 mx-2 p-2">
-                                                                            <div className="flex-grow-1 mx-2">
-                                                                                <div className="d-flex align-items-center justify-content-between">
-                                                                                    <p className="mb-0 fw-bold">
-                                                                                        {comment.first_name}{" "}
-                                                                                        {comment.last_name}
+
+                                                post.comments_status === "1" && showComments[post.id] ? (
+                                                    <div className="mt-2">
+                                                        {comments[post.id] && comments[post.id].length > 0 ? (
+                                                            comments[post.id].map((comment) => (
+                                                                <div key={comment.id} className="mb-3">
+                                                                    <div className="d-flex">
+                                                                        <Image
+                                                                            src={comment.avatar}
+                                                                            alt="Profile"
+                                                                            className="rounded-circle me-1 mt-2"
+                                                                            width={40}
+                                                                            height={40}
+                                                                            style={{
+                                                                                objectFit: "cover",
+                                                                            }}
+                                                                        />
+
+                                                                        <div className="mb-3">
+                                                                            <div className="card border-0 bg-light w-100 mx-2 p-2">
+                                                                                <div className="flex-grow-1 mx-2">
+                                                                                    <div className="d-flex align-items-center justify-content-between">
+                                                                                        <p className="mb-0 fw-bold">
+                                                                                            {comment.first_name}{" "}
+                                                                                            {comment.last_name}
+                                                                                        </p>
+                                                                                        <small className="text-muted lead-font-size">
+                                                                                            {comment.created_human}
+                                                                                        </small>
+                                                                                    </div>
+                                                                                    <p className="mb-1">
+                                                                                        {comment.comment || "No text available"}
                                                                                     </p>
-                                                                                    <small className="text-muted lead-font-size">
-                                                                                        {comment.created_human}
-                                                                                    </small>
                                                                                 </div>
-                                                                                <p className="mb-1">
-                                                                                    {comment.comment || "No text available"}
-                                                                                </p>
+                                                                            </div>
+
+                                                                            <div className="mx-3">
+                                                                                <button
+                                                                                    className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                    onClick={() =>
+                                                                                        LikeComment(post.id, comment.id)
+                                                                                    }
+                                                                                >
+                                                                                    <i className="bi bi-hand-thumbs-up"></i>{" "}
+                                                                                    Like {comment.like_count}
+                                                                                </button>
+                                                                                <button
+                                                                                    className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                    onClick={() =>
+                                                                                        handleToggleReplyInput(comment.id)
+                                                                                    }
+                                                                                >
+                                                                                    Reply
+                                                                                </button>
+
+                                                                                <button
+                                                                                    className="btn text-dark p-0 text-danger text-decoration-none"
+                                                                                    onClick={() =>
+                                                                                        handleCommentDelete(comment.id, post.id)
+                                                                                    }
+                                                                                >
+                                                                                    Delete
+                                                                                </button>
+                                                                                <button
+                                                                                    className="btn text-secondary p-0 me-3 text-decoration-none mx-3"
+                                                                                    onClick={() => toggleReplies(comment.id)}
+                                                                                >
+                                                                                    ({comment.reply_count}) Replies
+                                                                                </button>
                                                                             </div>
                                                                         </div>
-
-                                                                        <div className="mx-3">
-                                                                            <button
-                                                                                className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                                onClick={() =>
-                                                                                    LikeComment(post.id, comment.id)
-                                                                                }
-                                                                            >
-                                                                                <i className="bi bi-hand-thumbs-up"></i>{" "}
-                                                                                Like {comment.like_count}
-                                                                            </button>
-                                                                            <button
-                                                                                className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                                onClick={() =>
-                                                                                    handleToggleReplyInput(comment.id)
-                                                                                }
-                                                                            >
-                                                                                Reply
-                                                                            </button>
-
-                                                                            <button
-                                                                                className="btn text-dark p-0 text-danger text-decoration-none"
-                                                                                onClick={() =>
-                                                                                    handleCommentDelete(comment.id, post.id)
-                                                                                }
-                                                                            >
-                                                                                Delete
-                                                                            </button>
-                                                                            <button
-                                                                                className="btn text-secondary p-0 me-3 text-decoration-none mx-3"
-                                                                                onClick={() => toggleReplies(comment.id)}
-                                                                            >
-                                                                                ({comment.reply_count}) Replies
-                                                                            </button>
-                                                                        </div>
                                                                     </div>
-                                                                </div>
 
-                                                                {showReplies[comment.id] &&
-                                                                    repliesData[comment.id] && (
-                                                                        <div className="ms-4 mt-2">
-                                                                            {repliesData[comment.id].length > 0 ? (
-                                                                                repliesData[comment.id].map((reply) => (
-                                                                                    <div
-                                                                                        key={reply.id}
-                                                                                        className="d-flex mb-2 mx-5"
-                                                                                    >
-                                                                                        <Image
-                                                                                            src={reply.avatar}
-                                                                                            alt="Profile"
-                                                                                            className="rounded-circle me-1 mt-2"
-                                                                                            width={40}
-                                                                                            height={40}
-                                                                                            style={{
-                                                                                                objectFit: "cover",
-                                                                                            }}
-                                                                                        />
+                                                                    {showReplies[comment.id] &&
+                                                                        repliesData[comment.id] && (
+                                                                            <div className="ms-4 mt-2">
+                                                                                {repliesData[comment.id].length > 0 ? (
+                                                                                    repliesData[comment.id].map((reply) => (
+                                                                                        <div
+                                                                                            key={reply.id}
+                                                                                            className="d-flex mb-2 mx-5"
+                                                                                        >
+                                                                                            <Image
+                                                                                                src={reply.avatar}
+                                                                                                alt="Profile"
+                                                                                                className="rounded-circle me-1 mt-2"
+                                                                                                width={40}
+                                                                                                height={40}
+                                                                                                style={{
+                                                                                                    objectFit: "cover",
+                                                                                                }}
+                                                                                            />
 
-                                                                                        <div className="mb-3">
-                                                                                            <div className="card border-0 bg-light w-100 mx-2 p-2">
-                                                                                                <div className="flex-grow-1 mx-2">
-                                                                                                    <div className="d-flex align-items-center justify-content-between">
-                                                                                                        <p className="mb-0 fw-bold">
-                                                                                                            {reply.first_name}{" "}
-                                                                                                            {reply.last_name}
+                                                                                            <div className="mb-3">
+                                                                                                <div className="card border-0 bg-light w-100 mx-2 p-2">
+                                                                                                    <div className="flex-grow-1 mx-2">
+                                                                                                        <div className="d-flex align-items-center justify-content-between">
+                                                                                                            <p className="mb-0 fw-bold">
+                                                                                                                {reply.first_name}{" "}
+                                                                                                                {reply.last_name}
+                                                                                                            </p>
+                                                                                                            <small className="text-muted lead-font-size">
+                                                                                                                {reply.created_human}
+                                                                                                            </small>
+                                                                                                        </div>
+                                                                                                        <p className="mb-1">
+                                                                                                            {reply.comment}
                                                                                                         </p>
-                                                                                                        <small className="text-muted lead-font-size">
-                                                                                                            {reply.created_human}
-                                                                                                        </small>
                                                                                                     </div>
-                                                                                                    <p className="mb-1">
-                                                                                                        {reply.comment}
-                                                                                                    </p>
+                                                                                                </div>
+
+                                                                                                <div className="mx-3">
+                                                                                                    <button
+                                                                                                        className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                                        onClick={() =>
+                                                                                                            commentReplyLike(reply.id)
+                                                                                                        }
+                                                                                                    >
+                                                                                                        <i className="bi bi-hand-thumbs-up"></i>{" "}
+                                                                                                        Like {reply.like_count}
+                                                                                                    </button>
+                                                                                                    <button
+                                                                                                        className="btn text-dark p-0 text-danger text-decoration-none"
+                                                                                                        onClick={() =>
+                                                                                                            handleCommentreplyDelete(
+                                                                                                                reply.id
+                                                                                                            )
+                                                                                                        }
+                                                                                                    >
+                                                                                                        Delete
+                                                                                                    </button>
                                                                                                 </div>
                                                                                             </div>
-
-                                                                                            <div className="mx-3">
-                                                                                                <button
-                                                                                                    className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                                                    onClick={() =>
-                                                                                                        commentReplyLike(reply.id)
-                                                                                                    }
-                                                                                                >
-                                                                                                    <i className="bi bi-hand-thumbs-up"></i>{" "}
-                                                                                                    Like {reply.like_count}
-                                                                                                </button>
-                                                                                                <button
-                                                                                                    className="btn text-dark p-0 text-danger text-decoration-none"
-                                                                                                    onClick={() =>
-                                                                                                        handleCommentreplyDelete(
-                                                                                                            reply.id
-                                                                                                        )
-                                                                                                    }
-                                                                                                >
-                                                                                                    Delete
-                                                                                                </button>
-                                                                                            </div>
                                                                                         </div>
-                                                                                    </div>
-                                                                                ))
-                                                                            ) : (
-                                                                                <p className="mx-5">
-                                                                                    No replies available
-                                                                                </p>
-                                                                            )}
+                                                                                    ))
+                                                                                ) : (
+                                                                                    <p className="mx-5">
+                                                                                        No replies available
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+
+                                                                    {showReplyInput[comment.id] && (
+                                                                        <div className="mt-2 w-75 mx-5">
+                                                                            <div className="input-group">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control"
+                                                                                    placeholder="Write a reply..."
+                                                                                    aria-label="Reply"
+                                                                                    value={commentreplyText[comment.id] || ""}
+                                                                                    onChange={(e) =>
+                                                                                        setCommentreplyText((prevState) => ({
+                                                                                            ...prevState,
+                                                                                            [comment.id]: e.target.value,
+                                                                                        }))
+                                                                                    }
+                                                                                />
+                                                                                <button
+                                                                                    className="btn btn-primary"
+                                                                                    type="button"
+                                                                                    onClick={() =>
+                                                                                        ReplyComment(
+                                                                                            comment.id,
+                                                                                            commentreplyText[comment.id]
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    Submit
+                                                                                </button>
+                                                                            </div>
                                                                         </div>
                                                                     )}
-
-                                                                {showReplyInput[comment.id] && (
-                                                                    <div className="mt-2 w-75 mx-5">
-                                                                        <div className="input-group">
-                                                                            <input
-                                                                                type="text"
-                                                                                className="form-control"
-                                                                                placeholder="Write a reply..."
-                                                                                aria-label="Reply"
-                                                                                value={commentreplyText[comment.id] || ""}
-                                                                                onChange={(e) =>
-                                                                                    setCommentreplyText((prevState) => ({
-                                                                                        ...prevState,
-                                                                                        [comment.id]: e.target.value,
-                                                                                    }))
-                                                                                }
-                                                                            />
-                                                                            <button
-                                                                                className="btn btn-primary"
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    ReplyComment(
-                                                                                        comment.id,
-                                                                                        commentreplyText[comment.id]
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                Submit
-                                                                            </button>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div className="form-control w-100 d-flex justify-content-center">
+                                                                No Comments Yet!
                                                             </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="form-control w-100 d-flex justify-content-center">
-                                                            No Comments Yet!
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )
-                                            
-                                            
-                                            :
-                                            null
-                                            
-                                            
+                                                        )}
+                                                    </div>
+                                                )
+
+
+                                                    :
+                                                    null
+
+
                                             }
 
 
                                             {
-                                                 post?.comments_status === "1" && (
+                                                post?.comments_status === "1" && (
                                                     <div className="d-flex align-items-center mt-3">
-                                                    <Image
-                                                        src={userdata.data.avatar}
-                                                        alt="User Avatar"
-                                                        className="rounded-5"
-                                                        width={40}
-                                                        height={40}
-                                                    />
-                                                    <form className="position-relative w-100 ms-2">
-                                                        <input
-                                                            type="text"
-                                                            className="form-control bg-light border-1 rounded-2"
-                                                            placeholder="Add a comment..."
-                                                            value={commentText[post.id] || ""}
-                                                            onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                        <Image
+                                                            src={userdata.data.avatar}
+                                                            alt="User Avatar"
+                                                            className="rounded-5"
+                                                            width={40}
+                                                            height={40}
                                                         />
-                                                        <button
-                                                            className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                            type="button"
-                                                            onClick={() => handleCommentSubmit(post.id)}
-                                                        >
-                                                            <i className="bi bi-send"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
+                                                        <form className="position-relative w-100 ms-2">
+                                                            <input
+                                                                type="text"
+                                                                className="form-control bg-light border-1 rounded-2"
+                                                                placeholder="Add a comment..."
+                                                                value={commentText[post.id] || ""}
+                                                                onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                            />
+                                                            <button
+                                                                className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                                type="button"
+                                                                onClick={() => handleCommentSubmit(post.id)}
+                                                            >
+                                                                <i className="bi bi-send"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
 
-                                                 )
+                                                )
 
                                             }
-                                         
+
 
 
 
@@ -1378,6 +1386,20 @@ export default function OpenPostInNewTab({ params }) {
 
 
                         }
+
+                        {
+
+                            showEditPostModal && (
+                                <EditPostModal
+                                    showEditPostModal={showEditPostModal}
+                                    setShowEditPostModal={setShowEditPostModal}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                    postID={postID}
+                                />
+                            )
+                        }
+
 
 
 
