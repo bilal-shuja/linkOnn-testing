@@ -3,14 +3,17 @@
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
-
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-import Greatjob from "./GreatJob";
-import CupofCoffee from "./CupofCoffee";
+import Greatjob from "../Modals/GreatJob/GreatJob";
+import CupofCoffee from "../Modals/CupOfCoffee/CupofCoffee";
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import EditPostModal from "../Modals/EditPostModal";
+import ReportPostModal from "../Modals/ReportPost";
+import EnableDisableCommentsModal from "../Modals/EnableDisableCommentsModal";
+import SavePostModal from "../Modals/SaveUnsavePost";
+import useConfirmationToast from "../Modals/useConfirmationToast";
 
 export default function VideoFeed() {
 
@@ -33,6 +36,12 @@ export default function VideoFeed() {
     const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
     const [activeGreatJobId, setActiveGreatJobId] = useState(null);
     const api = createAPI();
+    const [showEditPostModal, setShowEditPostModal] = useState(false);
+    const [postID, setPostID] = useState("")
+    const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+
 
     const handlePostDelete = (postId) => {
         showConfirmationToast([postId]);
@@ -479,57 +488,128 @@ export default function VideoFeed() {
                                                     <button
                                                         className="btn border-0"
                                                         type="button"
-                                                        id="dropdownMenuButton2"
+                                                        id={`dropdownMenuButton-${post.id}`}
                                                         data-bs-toggle="dropdown"
                                                         aria-expanded="false"
                                                     >
                                                         <i className="bi bi-caret-down"></i>
                                                     </button>
-                                                    <ul
-                                                        className="dropdown-menu dropdown-menu-light"
-                                                        aria-labelledby="dropdownMenuButton2"
-                                                    >
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-bookmark pe-2"></i> Save
-                                                                post
-                                                            </Link>
-                                                        </li>
-                                                        <li>
-                                                            <hr className="dropdown-divider" />
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-flag pe-2"></i> Report Post
-                                                            </Link>
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                                                Open post in new tab
-                                                            </Link>
-                                                        </li>
-                                                        {post.user.id == userdata.data.id && (
+
+                                                    {post.user.id !== userdata.data.id && (
+                                                        <ul
+                                                            className="dropdown-menu dropdown-menu-light"
+                                                            aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                        >
+                                                            <li className="align-items-center d-flex">
+                                                                <button className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowSavePostModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-bookmark pe-2"></i>
+                                                                    {post.is_saved === false ? "Save Post" : "Unsave Post"}
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <hr className="dropdown-divider" />
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <button className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowReportPostModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-flag pe-2"></i> Report Post
+                                                                </button>
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <Link
+                                                                    href={`/pages/openPostInNewTab/${post.id}`}
+                                                                    target="_blank" rel="noopener noreferrer"
+                                                                    className="text-decoration-none dropdown-item text-secondary">
+                                                                    <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                                </Link>
+                                                            </li>
+                                                        </ul>
+                                                    )}
+
+                                                    {post.user.id === userdata.data.id && (
+                                                        <ul
+                                                            className="dropdown-menu dropdown-menu-light"
+                                                            aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                        >
+
+                                                            <li className="align-items-center d-flex">
+                                                                <button
+                                                                    className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
+                                                                    onClick={() => {
+                                                                        setShowEnableDisableCommentsModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    {
+                                                                        post.comments_status === '1' ?
+                                                                            <>
+                                                                                <i className="bi bi-chat-left-text pe-2"></i> <span>Disable Comments</span>
+                                                                            </>
+                                                                            :
+                                                                            <>
+                                                                                <i className="bi bi-chat-left-text-fill pe-2"></i> <span>Enable Comments</span>
+                                                                            </>
+
+
+                                                                    }
+
+                                                                </button>
+                                                            </li>
+
+
+
+                                                            <li className="align-items-center d-flex">
+                                                                {post.post_type !== "donation" ? (
+                                                                    <button
+                                                                        className="text-decoration-none dropdown-item text-secondary"
+                                                                        onClick={() => {
+                                                                            setShowEditPostModal(true);
+                                                                            setPostID({ id: post.id, post_text: post.post_text });
+                                                                        }}
+                                                                    >
+                                                                        <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
+                                                                    </button>
+                                                                ) : (
+                                                                    <button className="text-decoration-none dropdown-item text-secondary">
+                                                                        <i className="bi bi-cash fa-fw pe-2"></i> Fundings
+                                                                    </button>
+                                                                )}
+                                                            </li>
+
                                                             <li className="align-items-center d-flex">
                                                                 <button
                                                                     className="btn dropdown-item text-secondary"
                                                                     onClick={() => handlePostDelete(post.id)}
                                                                 >
-                                                                    <i className="bi bi-trash3 pe-2"></i>
-                                                                    Delete Post
+                                                                    <i className="bi bi-trash3 pe-2"></i> Delete Post
                                                                 </button>
                                                             </li>
-                                                        )}
-                                                    </ul>
+
+                                                            <li>
+                                                                <hr className="dropdown-divider" />
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <Link
+                                                                    href={`/pages/openPostInNewTab/${post.id}`}
+                                                                    target="_blank" rel="noopener noreferrer"
+                                                                    className="text-decoration-none dropdown-item text-secondary">
+                                                                    <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                                </Link>
+                                                            </li>
+                                                        </ul>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -719,7 +799,7 @@ export default function VideoFeed() {
 
                                         </div>
 
-                                        {showComments[post.id] && (
+                                        {post.comments_status === "1" && showComments[post.id] ? (
                                             <div className="mt-2">
                                                 {comments[post.id] && comments[post.id].length > 0 ? (
                                                     comments[post.id].map((comment) => (
@@ -900,33 +980,42 @@ export default function VideoFeed() {
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
+                                        )
+                                            :
+                                            null
+                                        }
 
-                                        <div className="d-flex align-items-center mt-3">
-                                            <Image
-                                                src={userdata.data.avatar}
-                                                alt="User Avatar"
-                                                className="rounded-5"
-                                                width={40}
-                                                height={40}
-                                            />
-                                            <form className="position-relative w-100 ms-2">
-                                                <input
-                                                    type="text"
-                                                    className="form-control bg-light border-1 rounded-2"
-                                                    placeholder="Add a comment..."
-                                                    value={commentText[post.id] || ""}
-                                                    onChange={(e) => handleCommentTextChange(e, post.id)}
-                                                />
-                                                <button
-                                                    className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                    type="button"
-                                                    onClick={() => handleCommentSubmit(post.id)}
-                                                >
-                                                    <i className="bi bi-send"></i>
-                                                </button>
-                                            </form>
-                                        </div>
+
+                                        {
+                                            post?.comments_status === "1" && (
+                                                <div className="d-flex align-items-center mt-3">
+                                                    <Image
+                                                        src={userdata.data.avatar}
+                                                        alt="User Avatar"
+                                                        className="rounded-5"
+                                                        width={40}
+                                                        height={40}
+                                                    />
+                                                    <form className="position-relative w-100 ms-2">
+                                                        <input
+                                                            type="text"
+                                                            className="form-control bg-light border-1 rounded-2"
+                                                            placeholder="Add a comment..."
+                                                            value={commentText[post.id] || ""}
+                                                            onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                        />
+                                                        <button
+                                                            className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                            type="button"
+                                                            onClick={() => handleCommentSubmit(post.id)}
+                                                        >
+                                                            <i className="bi bi-send"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            )
+                                        }
+
                                     </div>
                                 </div>
                             ))}
@@ -938,7 +1027,7 @@ export default function VideoFeed() {
                                             <span className="visually-hidden">Loading...</span>
                                         </div>
                                     </div>
-                                ) : noMorePosts ? ( // Now it will check for noMorePosts separately
+                                ) : noMorePosts ? (
                                     <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
                                         <div className="my-sm-5 py-sm-5 text-center">
                                             <i className="display-1 text-secondary bi bi-card-list" />
@@ -948,7 +1037,6 @@ export default function VideoFeed() {
                                 ) : null}
                             </div>
 
-
                         </div>
                         <div className="col-md-3 p-3 rounded">
                             <Leftnav />
@@ -956,6 +1044,54 @@ export default function VideoFeed() {
                     </div>
                 </div>
             </div>
+            {
+                showEditPostModal && (
+                    <EditPostModal
+                        showEditPostModal={showEditPostModal}
+                        setShowEditPostModal={setShowEditPostModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                        postID={postID}
+                    />
+                )
+            }
+
+            {
+                showEnableDisableCommentsModal && (
+                    <EnableDisableCommentsModal
+                        showEnableDisableCommentsModal={showEnableDisableCommentsModal}
+                        setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+
+                    />
+                )}
+
+
+            {
+                showReportPostModal && (
+                    <ReportPostModal
+
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showReportPostModal={showReportPostModal}
+                        setShowReportPostModal={setShowReportPostModal}
+                    />
+                )}
+
+
+            {
+                showSavePostModal && (
+                    <SavePostModal
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showSavePostModal={showSavePostModal}
+                        setShowSavePostModal={setShowSavePostModal}
+                    />
+                )}
         </div>
     );
 }

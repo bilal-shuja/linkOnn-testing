@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
    
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import { toast } from 'react-toastify';
 
 export default function Notifications() {

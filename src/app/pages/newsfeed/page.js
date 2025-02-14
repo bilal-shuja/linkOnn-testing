@@ -11,12 +11,16 @@ import Storycreate from "@/app/pages/storydata/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
 import Image from "next/image";
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
-import Greatjob from "./GreatJob";
-import CupofCoffee from "./CupofCoffee";
-import UserImagesLayout from "./userImagesLayout";
+import Greatjob from "../Modals/GreatJob/GreatJob";
+import CupofCoffee from "../Modals/CupOfCoffee/CupofCoffee";
 import styles from './css/page.module.css'
-import EditPostModal from "./EditPostModal";
+import EditPostModal from "../Modals/EditPostModal";
+import ReportPostModal from "../Modals/ReportPost";
+import EnableDisableCommentsModal from "../Modals/EnableDisableCommentsModal";
+import SavePostModal from "../Modals/SaveUnsavePost";
+import useConfirmationToast from "../Modals/useConfirmationToast";
+import MakeDonationModal from "../Modals/MakeDonationModal";
+import UserImagesLayout from "../components/userImagesLayout";
 
 export default function Newsfeed() {
 
@@ -54,7 +58,6 @@ export default function Newsfeed() {
   const [showReplyInput, setShowReplyInput] = useState({});
   const [commentreplyText, setCommentreplyText] = useState({});
   const [donationTitle, setDonationTitle] = useState("");
-  const [donate, setDonate] = useState("");
   const [donationAmount, setDonationAmount] = useState("");
   const [donationDescription, setDonationDescription] = useState("");
   const [stories, setStories] = useState([]);
@@ -66,10 +69,15 @@ export default function Newsfeed() {
   const [activeGreatJobId, setActiveGreatJobId] = useState(null);
   const [isOpenColorPalette, setIsOpenColorPalette] = useState(false);
   const [color, setColor] = useState("");
-  const [updatePostText, setUpdatePostText] = useState("");
   const api = createAPI();
   const [showEditPostModal, setShowEditPostModal] = useState(false);
   const [postID, setPostID] = useState("")
+  const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+  const [showReportPostModal, setShowReportPostModal] = useState(false);
+  const [showSavePostModal, setShowSavePostModal] = useState(false);
+  const [donationModal, setDonationModal] = useState(false);
+  const [donationID, setDonationID] = useState("");
+
 
   const fileImageRef = useRef(null);
 
@@ -706,26 +714,6 @@ export default function Newsfeed() {
     }
   };
 
-  const donateAmount = (e) => {
-    setDonate(e.target.value);
-  };
-
-  const handleDonationsend = async (postDonationId) => {
-    try {
-      const response = await api.post("/api/donate", {
-        fund_id: postDonationId,
-        amount: donate,
-      });
-      if (response.data.code == "200") {
-        toast.success(response.data.message);
-
-      } else {
-        toast.error(response.data.message);
-      }
-    } catch (error) {
-      toast.error("Error while donating Fund.");
-    }
-  };
 
   const handleEmojiButtonClick = () => {
     setShowEmojiPicker((prev) => !prev);
@@ -796,22 +784,6 @@ export default function Newsfeed() {
       return reverseGradientMap[color] || color;
     }
     return color;
-  };
-
-  const handleUpdatePost = async (postId) => {
-    try {
-      const response = await api.post("/api/post/update", {
-        post_id: postId,
-        post_text: updatePostText,
-      });
-      if (response.data.status == "200") {
-        toast.success(response.data.message);
-      } else {
-        toast.error(response.data.message);
-      }
-    } catch (error) {
-      toast.error("Error");
-    }
   };
 
   return (
@@ -1753,18 +1725,38 @@ export default function Newsfeed() {
                               className="dropdown-menu dropdown-menu-light"
                               aria-labelledby={`dropdownMenuButton-${post.id}`}
                             >
+
+
                               <li className="align-items-center d-flex">
-                                <Link href="#" className="text-decoration-none dropdown-item text-secondary">
-                                  <i className="bi bi-bookmark pe-2"></i> Save post
-                                </Link>
+                                <button
+                                  className="text-decoration-none dropdown-item text-secondary"
+                                  onClick={() => {
+                                    setShowSavePostModal(true);
+                                    setPostID(post.id);
+                                  }}
+                                >
+                                  <i className="bi bi-bookmark pe-2"></i>
+
+                                  {post.is_saved === false ? "Save Post" : "Unsave Post"}
+
+                                </button>
                               </li>
+
+
+
                               <li>
                                 <hr className="dropdown-divider" />
                               </li>
                               <li className="align-items-center d-flex">
-                                <Link href="#" className="text-decoration-none dropdown-item text-secondary">
+                                <button className="text-decoration-none dropdown-item text-secondary"
+                                  onClick={() => {
+                                    setShowReportPostModal(true)
+                                    setPostID(post.id)
+
+                                  }}
+                                >
                                   <i className="bi bi-flag pe-2"></i> Report Post
-                                </Link>
+                                </button>
                               </li>
                               <li className="align-items-center d-flex">
                                 <Link
@@ -1783,47 +1775,50 @@ export default function Newsfeed() {
                               aria-labelledby={`dropdownMenuButton-${post.id}`}
                             >
 
-                              {post.comments_status === '1' && (
-                                <li className="align-items-center d-flex">
-                                  <Link href="#" className="text-decoration-none dropdown-item text-secondary">
-                                    <i className="bi bi-chat-left-dots fa-fw pe-2"></i> Disable Comments
-                                  </Link>
-                                </li>
-                              )}
-
-                              {post.comments_status === '0' && (
-                                <li className="align-items-center d-flex">
-                                  <Link href="#" className="text-decoration-none dropdown-item text-secondary">
-                                    <i className="bi bi-chat-left-dots fa-fw pe-2"></i> Enable Comments
-                                  </Link>
-                                </li>
-                              )}
-
-                              <li
-                                className="align-items-center d-flex"
-                              >
+                              <li className="align-items-center d-flex">
                                 <button
-                                  className="text-decoration-none dropdown-item text-secondary"
+                                  className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
                                   onClick={() => {
-                                    setShowEditPostModal(true)
-                                    setPostID({ id: post.id, post_text: post.post_text })
+                                    setShowEnableDisableCommentsModal(true)
+                                    setPostID(post.id)
+
                                   }}
                                 >
-                                  <i className="bi bi-pencil-fill"></i> Edit Post
+                                  {
+                                    post.comments_status === '1' ?
+                                      <>
+                                        <i className="bi bi-chat-left-text pe-2"></i> <span>Disable Comments</span>
+                                      </>
+                                      :
+                                      <>
+                                        <i className="bi bi-chat-left-text-fill pe-2"></i> <span>Enable Comments</span>
+                                      </>
+
+
+                                  }
+
                                 </button>
                               </li>
 
-                              {
-                                showEditPostModal && (
-                                  <EditPostModal
-                                    showEditPostModal={showEditPostModal}
-                                    setShowEditPostModal={setShowEditPostModal}
-                                    posts={posts}
-                                    setPosts={setPosts}
-                                    postID={postID}
-                                  />
-                                )
-                              }
+
+
+                              <li className="align-items-center d-flex">
+                                {post.post_type !== "donation" ? (
+                                  <button
+                                    className="text-decoration-none dropdown-item text-secondary"
+                                    onClick={() => {
+                                      setShowEditPostModal(true);
+                                      setPostID({ id: post.id, post_text: post.post_text });
+                                    }}
+                                  >
+                                    <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
+                                  </button>
+                                ) : (
+                                  <button className="text-decoration-none dropdown-item text-secondary">
+                                    <i className="bi bi-cash fa-fw pe-2"></i> Fundings
+                                  </button>
+                                )}
+                              </li>
 
                               <li className="align-items-center d-flex">
                                 <button
@@ -1849,6 +1844,7 @@ export default function Newsfeed() {
                           )}
                         </div>
                       </div>
+
                     </div>
 
                     <hr className="my-2 post-divider" />
@@ -1982,9 +1978,11 @@ export default function Newsfeed() {
 
                               <button
                                 className="btn btn-primary btn-sm"
-                                data-bs-toggle="modal"
-                                data-bs-target={`#DonateModal-${post.id}`}
-                                key={`btn-${post.id}`} // Ensure a unique key
+                                onClick={() => {
+                                  setDonationModal(!donationModal)
+
+                                  setDonationID(post.donation.id)
+                                }}
                               >
                                 Donate
                               </button>
@@ -1993,61 +1991,6 @@ export default function Newsfeed() {
                           </div>
                         </div>
                       )}
-                    </div>
-
-                    <div
-                      className="modal fade"
-                      id={`DonateModal-${post.id}`}
-                      tabIndex="-1"
-                      aria-hidden="true"
-                      key={`modal-${post.id}`} // Ensure a unique key
-                      aria-labelledby={`DonateModal-${post.id}`}
-                    >
-                      <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                          <div className="modal-header">
-                            <h5
-                              className="modal-title fw-semibold"
-                              id={`fundModalLabel-${post.id}`}
-                            >
-                              Donate Amount for Post {post.id}
-                            </h5>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                            ></button>
-                          </div>
-                          <div className="modal-body">
-                            <div>
-                              <label className="form-label">Amount</label>
-                              <input
-                                type="number"
-                                className="form-control"
-                                value={donate}
-                                onChange={donateAmount}
-                              />
-                            </div>
-                          </div>
-                          <div className="modal-footer">
-                            <button
-                              type="button"
-                              className="btn btn-primary"
-                              onClick={() => handleDonationsend(post.donation.id)}
-                            >
-                              Save changes
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-dark"
-                              data-bs-dismiss="modal"
-                            >
-                              Close
-                            </button>
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     <div className="d-flex flex-column align-items-center mb-3">
@@ -2292,7 +2235,8 @@ export default function Newsfeed() {
                       )}
                     </div>
 
-                    {showComments[post.id] && (
+
+                    {post.comments_status === "1" && showComments[post.id] ? (
                       <div className="mt-2">
                         {comments[post.id] && comments[post.id].length > 0 ? (
                           comments[post.id].map((comment) => (
@@ -2473,33 +2417,43 @@ export default function Newsfeed() {
                           </div>
                         )}
                       </div>
-                    )}
+                    )
+                      :
+                      null
+                    }
 
-                    <div className="d-flex align-items-center mt-3">
-                      <Image
-                        src={userdata.data.avatar}
-                        alt="User Avatar"
-                        className="rounded-5"
-                        width={40}
-                        height={40}
-                      />
-                      <form className="position-relative w-100 ms-2">
-                        <input
-                          type="text"
-                          className="form-control bg-light border-1 rounded-2"
-                          placeholder="Add a comment..."
-                          value={commentText[post.id] || ""}
-                          onChange={(e) => handleCommentTextChange(e, post.id)}
-                        />
-                        <button
-                          className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                          type="button"
-                          onClick={() => handleCommentSubmit(post.id)}
-                        >
-                          <i className="bi bi-send"></i>
-                        </button>
-                      </form>
-                    </div>
+
+                    {
+                      post?.comments_status === "1" && (
+                        <div className="d-flex align-items-center mt-3">
+                          <Image
+                            src={userdata.data.avatar}
+                            alt="User Avatar"
+                            className="rounded-5"
+                            width={40}
+                            height={40}
+                          />
+                          <form className="position-relative w-100 ms-2">
+                            <input
+                              type="text"
+                              className="form-control bg-light border-1 rounded-2"
+                              placeholder="Add a comment..."
+                              value={commentText[post.id] || ""}
+                              onChange={(e) => handleCommentTextChange(e, post.id)}
+                            />
+                            <button
+                              className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                              type="button"
+                              onClick={() => handleCommentSubmit(post.id)}
+                            >
+                              <i className="bi bi-send"></i>
+                            </button>
+                          </form>
+                        </div>
+                      )
+                    }
+
+
                   </div>
                 </div>
               ))}
@@ -2531,6 +2485,69 @@ export default function Newsfeed() {
           </div>
         </div>
       </div>
+
+      {
+        showEditPostModal && (
+          <EditPostModal
+            showEditPostModal={showEditPostModal}
+            setShowEditPostModal={setShowEditPostModal}
+            posts={posts}
+            setPosts={setPosts}
+            postID={postID}
+          />
+        )
+      }
+
+      {
+        showEnableDisableCommentsModal && (
+          <EnableDisableCommentsModal
+            showEnableDisableCommentsModal={showEnableDisableCommentsModal}
+            setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
+            postID={postID}
+            posts={posts}
+            setPosts={setPosts}
+
+          />
+        )}
+
+
+      {
+        showReportPostModal && (
+          <ReportPostModal
+            postID={postID}
+            posts={posts}
+            setPosts={setPosts}
+            showReportPostModal={showReportPostModal}
+            setShowReportPostModal={setShowReportPostModal}
+          />
+        )}
+
+
+      {
+        showSavePostModal && (
+          <SavePostModal
+            postID={postID}
+            posts={posts}
+            setPosts={setPosts}
+            showSavePostModal={showSavePostModal}
+            setShowSavePostModal={setShowSavePostModal}
+          />
+        )}
+
+      {
+        donationModal && (
+          <MakeDonationModal
+            donationID={donationID}
+            donationModal={donationModal}
+            setDonationModal={setDonationModal}
+            posts={posts}
+            setPosts={setPosts}
+          />
+        )
+
+      }
+
     </div>
+
   );
 }

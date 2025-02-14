@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
    
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "../Modals/useConfirmationToast";
 import Link from "next/link";
 
 export default function Events() {

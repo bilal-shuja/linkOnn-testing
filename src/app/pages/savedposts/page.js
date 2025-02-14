@@ -7,9 +7,13 @@ import Link from "next/link";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-import Greatjob from "./GreatJob";
-import CupofCoffee from "./CupofCoffee";
+import Greatjob from "../Modals/GreatJob/GreatJob";
+import CupofCoffee from "../Modals/CupOfCoffee/CupofCoffee";
 import { toast } from "react-toastify";
+import ReportPostModal from "../Modals/ReportPost";
+import SavePostModal from "../Modals/SaveUnsavePost";
+import MakeDonationModal from "../Modals/MakeDonationModal";
+import UserImagesLayout from "../components/userImagesLayout";
 
 export default function Savedposts() {
 
@@ -31,9 +35,13 @@ export default function Savedposts() {
     const [commentreplyText, setCommentreplyText] = useState({});
     const [message, setMessage] = useState("");
     const [showList, setShowList] = useState(false);
-    const [donate, setDonate] = useState("");
     const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
     const [activeGreatJobId, setActiveGreatJobId] = useState(null);
+    const [postID, setPostID] = useState("")
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+    const [donationModal, setDonationModal] = useState(false);
+    const [donationID, setDonationID] = useState("");
 
     const api = createAPI();
 
@@ -329,27 +337,6 @@ export default function Savedposts() {
             toast.error("Error while reacting to the Post");
         }
     };
-
-    const donateAmount = (e) => {
-        setDonate(e.target.value);
-    };
-
-    const handleDonationsend = async (postDonationId) => {
-        try {
-            const response = await api.post("/api/donate", {
-                fund_id: postDonationId,
-                amount: donate,
-            });
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("Error while donating Fund.");
-        }
-    };
-
     const handleVote = async (optionId, pollId, postId) => {
         try {
             const response = await api.post("/api/post/poll-vote", {
@@ -510,46 +497,55 @@ export default function Savedposts() {
                                                     <button
                                                         className="btn border-0"
                                                         type="button"
-                                                        id="dropdownMenuButton2"
+                                                        id={`dropdownMenuButton-${post.id}`}
                                                         data-bs-toggle="dropdown"
                                                         aria-expanded="false"
                                                     >
                                                         <i className="bi bi-caret-down"></i>
                                                     </button>
-                                                    <ul
-                                                        className="dropdown-menu dropdown-menu-light"
-                                                        aria-labelledby="dropdownMenuButton2"
-                                                    >
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-bookmark pe-2"></i> Unsave
-                                                                post
-                                                            </Link>
-                                                        </li>
-                                                        <li>
-                                                            <hr className="dropdown-divider" />
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-flag pe-2"></i> Report Post
-                                                            </Link>
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                                                Open post in new tab
-                                                            </Link>
-                                                        </li>
-                                                    </ul>
+
+                                                    {post.user.id !== userdata.data.id && (
+                                                        <ul
+                                                            className="dropdown-menu dropdown-menu-light"
+                                                            aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                        >
+                                                            <li className="align-items-center d-flex">
+                                                                <button className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowSavePostModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-bookmark pe-2"></i>
+                                                                    {post.is_saved === false ? "Save Post" : "Unsave Post"}
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <hr className="dropdown-divider" />
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <button className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowReportPostModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-flag pe-2"></i> Report Post
+                                                                </button>
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <Link
+                                                                    href={`/pages/openPostInNewTab/${post.id}`}
+                                                                    target="_blank" rel="noopener noreferrer"
+                                                                    className="text-decoration-none dropdown-item text-secondary">
+                                                                    <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                                </Link>
+                                                            </li>
+                                                        </ul>
+                                                    )}
+
                                                 </div>
                                             </div>
                                         </div>
@@ -670,8 +666,11 @@ export default function Savedposts() {
                                                             <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
                                                             <button
                                                                 className="btn btn-primary btn-sm"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#DonateModal"
+                                                                onClick={() => {
+                                                                    setDonationModal(!donationModal)
+
+                                                                    setDonationID(post.donation.id)
+                                                                }}
                                                             >
                                                                 Donate
                                                             </button>
@@ -681,79 +680,9 @@ export default function Savedposts() {
                                             )}
                                         </div>
 
-                                        <div
-                                            className="modal fade"
-                                            id="DonateModal"
-                                            tabIndex="-1"
-                                            aria-labelledby="ModalLabel"
-                                            aria-hidden="true"
-                                        >
-                                            <div className="modal-dialog modal-dialog-centered">
-                                                <div className="modal-content">
-                                                    <div className="modal-header">
-                                                        <h5
-                                                            className="modal-title fw-semibold"
-                                                            id="fundModalLabel"
-                                                        >
-                                                            Donate Amount
-                                                        </h5>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-close"
-                                                            data-bs-dismiss="modal"
-                                                            aria-label="Close"
-                                                        ></button>
-                                                    </div>
-                                                    <div className="modal-body">
-                                                        <div>
-                                                            <label className="form-label">Amount</label>
-                                                            <input
-                                                                type="number"
-                                                                className="form-control"
-                                                                value={donate}
-                                                                onChange={donateAmount}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div className="modal-footer">
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-primary"
-                                                            onClick={() =>
-                                                                handleDonationsend(post.donation.id)
-                                                            }
-                                                        >
-                                                            Save changes
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-dark"
-                                                            data-bs-dismiss="modal"
-                                                        >
-                                                            Close
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
                                         <div className="d-flex justify-content-center flex-wrap mb-3">
-                                            {post.images &&
-                                                post.images.length > 0 &&
-                                                post.images.map((image, index) => (
-                                                    <Image
-                                                        key={index}
-                                                        src={image.media_path}
-                                                        alt={`Post image ${index + 1}`}
-                                                        className="img-fluid mt-1"
-                                                        width={500}
-                                                        height={300}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
-
-                                                ))}
+                                            
+                                        <UserImagesLayout key={`${post.id}-${index}`} post={post} />
 
                                             {post.event && post.event.cover && (
                                                 <div>
@@ -1191,6 +1120,44 @@ export default function Savedposts() {
                     </div>
                 </div>
             </div>
+
+            {
+                showReportPostModal && (
+                    <ReportPostModal
+
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showReportPostModal={showReportPostModal}
+                        setShowReportPostModal={setShowReportPostModal}
+                    />
+                )}
+
+
+            {
+                showSavePostModal && (
+                    <SavePostModal
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showSavePostModal={showSavePostModal}
+                        setShowSavePostModal={setShowSavePostModal}
+                    />
+                )}
+
+            {
+                donationModal && (
+                    <MakeDonationModal
+                        donationID={donationID}
+                        donationModal={donationModal}
+                        setDonationModal={setDonationModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                    />
+                )
+
+            }
+
         </div>
     );
 }

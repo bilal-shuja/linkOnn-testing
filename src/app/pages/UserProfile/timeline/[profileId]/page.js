@@ -9,12 +9,17 @@ import Link from "next/link";
 import EmojiPicker from 'emoji-picker-react';
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
-import UserImagesLayout from "./userImagesLayout";
 import Profilecard from "../../components/profile-card";
-import Greatjob from "./GreatJob";
-import CupofCoffee from "./CupofCoffee";
+import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
+import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
 import styles from '../../css/page.module.css';
+import EditPostModal from "@/app/pages/Modals/EditPostModal";
+import EnableDisableCommentsModal from "@/app/pages/Modals/EnableDisableCommentsModal";
+import SavePostModal from "@/app/pages/Modals/SaveUnsavePost";
+import ReportPostModal from "@/app/pages/Modals/ReportPost";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
+import MakeDonationModal from "@/app/pages/Modals/MakeDonationModal";
+import UserImagesLayout from "@/app/pages/components/userImagesLayout";
 
 export default function UserProfileCard({ params }) {
 
@@ -31,7 +36,6 @@ export default function UserProfileCard({ params }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [posts, setPosts] = useState([]);
-    const [donate, setDonate] = useState("");
     const [error, setError] = useState(null);
     const [dropdownSelection, setDropdownSelection] = useState("PUBLIC");
     const [success, setSuccess] = useState("");
@@ -62,6 +66,13 @@ export default function UserProfileCard({ params }) {
     const [repliesData, setRepliesData] = useState({});
     const [isOpenColorPalette, setIsOpenColorPalette] = useState(false);
     const [color, setColor] = useState("");
+    const [showEditPostModal, setShowEditPostModal] = useState(false);
+    const [postID, setPostID] = useState("")
+    const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+    const [donationModal, setDonationModal] = useState(false);
+    const [donationID, setDonationID] = useState("");
 
     const fileImageRef = useRef(null);
 
@@ -551,26 +562,6 @@ export default function UserProfileCard({ params }) {
             }
         } catch (error) {
             toast.error("Error while reacting to the Post");
-        }
-    };
-
-    const donateAmount = (e) => {
-        setDonate(e.target.value);
-    };
-
-    const handleDonationsend = async (postDonationId) => {
-        try {
-            const response = await api.post("/api/donate", {
-                fund_id: postDonationId,
-                amount: donate,
-            });
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("Error while donating Fund.");
         }
     };
 
@@ -1430,65 +1421,137 @@ export default function UserProfileCard({ params }) {
                                             </div>
 
                                         </div>
-
                                         <div>
                                             <div className="dropstart">
                                                 <button
                                                     className="btn border-0"
                                                     type="button"
-                                                    id="dropdownMenuButton2"
+                                                    id={`dropdownMenuButton-${post.id}`}
                                                     data-bs-toggle="dropdown"
                                                     aria-expanded="false"
                                                 >
                                                     <i className="bi bi-caret-down"></i>
                                                 </button>
-                                                <ul
-                                                    className="dropdown-menu dropdown-menu-light"
-                                                    aria-labelledby="dropdownMenuButton2"
-                                                >
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-bookmark pe-2"></i> Save
-                                                            post
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <hr className="dropdown-divider" />
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-flag pe-2"></i> Report Post
-                                                        </Link>
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                                            Open post in new tab
-                                                        </Link>
-                                                    </li>
-                                                    {post.user.id == userdata.data.id && (
+
+                                                {post.user.id !== userdata.data.id && (
+                                                    <ul
+                                                        className="dropdown-menu dropdown-menu-light"
+                                                        aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                    >
+                                                        <li className="align-items-center d-flex">
+                                                            <button className="text-decoration-none dropdown-item text-secondary"
+                                                                onClick={() => {
+                                                                    setShowSavePostModal(true)
+                                                                    setPostID(post.id)
+
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-bookmark pe-2"></i>
+
+                                                                {post.is_saved === false ? "Save Post" : "Unsave Post"}
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <hr className="dropdown-divider" />
+                                                        </li>
+                                                        <li className="align-items-center d-flex">
+                                                            <button className="text-decoration-none dropdown-item text-secondary"
+                                                                onClick={() => {
+                                                                    setShowReportPostModal(true)
+                                                                    setPostID(post.id)
+
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-flag pe-2"></i> Report Post
+                                                            </button>
+                                                        </li>
+                                                        <li className="align-items-center d-flex">
+                                                            <Link
+                                                                href={`/pages/openPostInNewTab/${post.id}`}
+                                                                target="_blank" rel="noopener noreferrer"
+                                                                className="text-decoration-none dropdown-item text-secondary">
+                                                                <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                            </Link>
+                                                        </li>
+                                                    </ul>
+                                                )}
+
+                                                {post.user.id === userdata.data.id && (
+                                                    <ul
+                                                        className="dropdown-menu dropdown-menu-light"
+                                                        aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                    >
+
+                                                        <li className="align-items-center d-flex">
+                                                            <button
+                                                                className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
+                                                                onClick={() => {
+                                                                    setShowEnableDisableCommentsModal(true)
+                                                                    setPostID(post.id)
+
+                                                                }}
+                                                            >
+                                                                {
+                                                                    post.comments_status === '1' ?
+                                                                        <>
+                                                                            <i className="bi bi-chat-left-text pe-2"></i> <span>Disable Comments</span>
+                                                                        </>
+                                                                        :
+                                                                        <>
+                                                                            <i className="bi bi-chat-left-text-fill pe-2"></i> <span>Enable Comments</span>
+                                                                        </>
+
+
+                                                                }
+
+                                                            </button>
+                                                        </li>
+
+
+
+                                                        <li className="align-items-center d-flex">
+                                                            {post.post_type !== "donation" ? (
+                                                                <button
+                                                                    className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowEditPostModal(true);
+                                                                        setPostID({ id: post.id, post_text: post.post_text });
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
+                                                                </button>
+                                                            ) : (
+                                                                <button className="text-decoration-none dropdown-item text-secondary">
+                                                                    <i className="bi bi-cash fa-fw pe-2"></i> Fundings
+                                                                </button>
+                                                            )}
+                                                        </li>
+
                                                         <li className="align-items-center d-flex">
                                                             <button
                                                                 className="btn dropdown-item text-secondary"
                                                                 onClick={() => handlePostDelete(post.id)}
                                                             >
-                                                                <i className="bi bi-trash3 pe-2"></i>
-                                                                Delete Post
+                                                                <i className="bi bi-trash3 pe-2"></i> Delete Post
                                                             </button>
                                                         </li>
-                                                    )}
-                                                </ul>
+
+                                                        <li>
+                                                            <hr className="dropdown-divider" />
+                                                        </li>
+                                                        <li className="align-items-center d-flex">
+                                                            <Link
+                                                                href={`/pages/openPostInNewTab/${post.id}`}
+                                                                target="_blank" rel="noopener noreferrer"
+                                                                className="text-decoration-none dropdown-item text-secondary">
+                                                                <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                            </Link>
+                                                        </li>
+                                                    </ul>
+                                                )}
                                             </div>
                                         </div>
+
                                     </div>
 
                                     <hr className="my-2 post-divider" />
@@ -1625,11 +1688,14 @@ export default function UserProfileCard({ params }) {
                                                     {/* Donate Button */}
                                                     <div className="text-center mt-3">
                                                         <button
-                                                            className="btn btn-primary rounded-pill px-4 py-2"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#DonateModal"
+                                                            className="btn btn-primary btn-sm"
+                                                            onClick={() => {
+                                                                setDonationModal(!donationModal)
+
+                                                                setDonationID(post.donation.id)
+                                                            }}
                                                         >
-                                                            Donate Now
+                                                            Donate
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1637,119 +1703,7 @@ export default function UserProfileCard({ params }) {
                                         )}
                                     </div>
 
-                                    <div
-                                        className="modal fade"
-                                        id="DonateModal"
-                                        tabIndex="-1"
-                                        aria-labelledby="ModalLabel"
-                                        aria-hidden="true"
-                                    >
-                                        <div className="modal-dialog modal-dialog-centered">
-                                            <div className="modal-content">
-                                                <div className="modal-header">
-                                                    <h5
-                                                        className="modal-title fw-semibold"
-                                                        id="fundModalLabel"
-                                                    >
-                                                        Donate Amount
-                                                    </h5>
-                                                    <button
-                                                        type="button"
-                                                        className="btn-close"
-                                                        data-bs-dismiss="modal"
-                                                        aria-label="Close"
-                                                    ></button>
-                                                </div>
-                                                <div className="modal-body">
-                                                    <div>
-                                                        <label className="form-label">Amount</label>
-                                                        <input
-                                                            type="number"
-                                                            className="form-control"
-                                                            value={donate}
-                                                            onChange={donateAmount}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="modal-footer">
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-primary"
-                                                        onClick={() =>
-                                                            handleDonationsend(post.donation.id)
-                                                        }
-                                                    >
-                                                        Save changes
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-dark"
-                                                        data-bs-dismiss="modal"
-                                                    >
-                                                        Close
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <div className="d-flex flex-column align-items-center mb-1">
-
-                                        {/* {post.images && post.images.length > 0 && (
-                                            <div className="w-100">
-                                                <div className="d-flex flex-wrap gap-2 justify-content-center">
-                                             
-                                                    {post.images.slice(0, 2).map((image, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="rounded overflow-hidden"
-                                                            style={{ width: "48%", height: "250px", position: "relative" }}
-                                                        >
-                                                            <Image
-                                                                src={image.media_path}
-                                                                alt={`Post image ${index + 1}`}
-                                                                width={600}
-                                                                height={300}
-                                                                className="img-fluid"
-                                                                style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                                                            />
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                              
-                                                {post.images.length > 2 && (
-                                                    <div className="d-flex mt-2 gap-2 justify-content-center">
-                                                        {post.images.slice(2, 5).map((image, index) => (
-                                                            <div
-                                                                key={index}
-                                                                className="rounded overflow-hidden position-relative"
-                                                                style={{ width: "30%", height: "120px" }}
-                                                            >
-                                                                <Image
-                                                                    src={image.media_path}
-                                                                    alt={`Post image ${index + 3}`}
-                                                                    width={200}
-                                                                    height={150}
-                                                                    className="img-fluid"
-                                                                    style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                                                                />
-
-                                                         
-                                                                {index === 2 && post.images.length > 5 && (
-                                                                    <div
-                                                                        className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white fw-bold fs-4"
-                                                                        style={{ backgroundColor: "rgba(0, 0, 0, 0.6)", borderRadius: "10px" }}
-                                                                    >
-                                                                        +{post.images.length - 5}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )} */}
 
                                         <UserImagesLayout key={`${post.id}-${index}`} post={post} />
 
@@ -1995,7 +1949,7 @@ export default function UserProfileCard({ params }) {
 
                                     </div>
 
-                                    {showComments[post.id] && (
+                                    {post.comments_status === "1" && showComments[post.id] ? (
                                         <div className="mt-2">
                                             {comments[post.id] && comments[post.id].length > 0 ? (
                                                 comments[post.id].map((comment) => (
@@ -2176,33 +2130,43 @@ export default function UserProfileCard({ params }) {
                                                 </div>
                                             )}
                                         </div>
-                                    )}
+                                    )
+                                        :
+                                        null
+                                    }
 
-                                    <div className="d-flex align-items-center mt-3">
-                                        <Image
-                                            src={userdata.data.avatar}
-                                            alt="User Avatar"
-                                            className="rounded-5"
-                                            width={40}
-                                            height={40}
-                                        />
-                                        <form className="position-relative w-100 ms-2">
-                                            <input
-                                                type="text"
-                                                className="form-control bg-light border-1 rounded-2"
-                                                placeholder="Add a comment..."
-                                                value={commentText[post.id] || ""}
-                                                onChange={(e) => handleCommentTextChange(e, post.id)}
-                                            />
-                                            <button
-                                                className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                type="button"
-                                                onClick={() => handleCommentSubmit(post.id)}
-                                            >
-                                                <i className="bi bi-send"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+
+                                    {
+                                        post?.comments_status === "1" && (
+                                            <div className="d-flex align-items-center mt-3">
+                                                <Image
+                                                    src={userdata.data.avatar}
+                                                    alt="User Avatar"
+                                                    className="rounded-5"
+                                                    width={40}
+                                                    height={40}
+                                                />
+                                                <form className="position-relative w-100 ms-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control bg-light border-1 rounded-2"
+                                                        placeholder="Add a comment..."
+                                                        value={commentText[post.id] || ""}
+                                                        onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                    />
+                                                    <button
+                                                        className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                        type="button"
+                                                        onClick={() => handleCommentSubmit(post.id)}
+                                                    >
+                                                        <i className="bi bi-send"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        )
+                                    }
+
+
                                 </div>
                             </div>
                         ))}
@@ -2220,6 +2184,69 @@ export default function UserProfileCard({ params }) {
 
                 </div>
             </div>
+
+            {
+                showEditPostModal && (
+                    <EditPostModal
+                        showEditPostModal={showEditPostModal}
+                        setShowEditPostModal={setShowEditPostModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                        postID={postID}
+                    />
+                )
+            }
+
+            {
+                showEnableDisableCommentsModal && (
+                    <EnableDisableCommentsModal
+                        showEnableDisableCommentsModal={showEnableDisableCommentsModal}
+                        setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+
+                    />
+                )}
+
+
+            {
+                showReportPostModal && (
+                    <ReportPostModal
+
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showReportPostModal={showReportPostModal}
+                        setShowReportPostModal={setShowReportPostModal}
+                    />
+                )}
+
+
+            {
+                showSavePostModal && (
+                    <SavePostModal
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showSavePostModal={showSavePostModal}
+                        setShowSavePostModal={setShowSavePostModal}
+                    />
+                )}
+
+            {
+                donationModal && (
+                    <MakeDonationModal
+                        donationID={donationID}
+                        donationModal={donationModal}
+                        setDonationModal={setDonationModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                    />
+                )
+
+            }
+
         </>
     );
 }

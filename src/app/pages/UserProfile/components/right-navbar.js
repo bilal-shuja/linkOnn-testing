@@ -170,7 +170,7 @@ const RightNavbar = ({ user }) => {
         </div>
 
         <div className="col-md-6 col-lg-12">
-          <div className="card shadow-lg border-0">
+          <div className="card shadow-lg border-0 mt-2">
             <div className="card-body p-4">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h4 className="mb-0">Photos</h4>
