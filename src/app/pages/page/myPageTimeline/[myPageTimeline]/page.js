@@ -12,14 +12,14 @@ import FundingModal from "../../Modal/FundingModal";
 import PostPollModal from "../../Modal/PostPollModal";
 import MakeDonationModal from "../../Modal/MakeDonationModal";
 import { ReactionBarSelector } from '@charkour/react-reactions';
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import TimelineProfileCard from "../../components/timelineProfileCard";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import EnableDisableCommentsModal from "../../Modal/EnableDisableCommentsModal";
 import EditPostModal from "../../Modal/EditPostModal";
 import { set } from "lodash";
 // import { Dropzone, FileMosaic } from "@files-ui/react";
-// import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+// import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 // import { FacebookSelector } from 'react-reactions';
 
 export default function MyPageTimeline({ params }) {

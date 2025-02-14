@@ -7,7 +7,7 @@ import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
    
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 
 export default function DeleteAcc() {
       

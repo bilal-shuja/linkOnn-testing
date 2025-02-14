@@ -6,7 +6,7 @@ import createAPI from "@/app/lib/axios";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
-export default function EditPostModal({ postID, posts, setPosts, showEditPostModal, setShowEditPostModal }) {
+export default function EditPostModal({ postID, setPosts, showEditPostModal, setShowEditPostModal }) {
 
     const [postText, setPostText] = useState("");
     const handleClose = () => setShowEditPostModal(!showEditPostModal);
@@ -24,16 +24,16 @@ export default function EditPostModal({ postID, posts, setPosts, showEditPostMod
 
             if (response.data.status == "200") {
 
-                // setPosts(prevPosts =>
-                //     prevPosts.map(post =>
-                //         post.id === postID
-                //             ? { 
-                //                 ...post, 
-                //                 post_text: postText
-                //               }
-                //             : post
-                //     )
-                // );
+                setPosts(prevPosts =>
+                    prevPosts.map(post =>
+                        post.id === id  
+                            ? { 
+                                ...post, 
+                                post_text: postText? postText : post_text
+                              }
+                            : post
+                    )
+                );
 
                 toast.success(response.data.message);
                 handleClose();

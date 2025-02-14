@@ -155,7 +155,7 @@ const Profilecard = ({ user_id }) => {
 
     return (
         <>
-            <div className="card shadow-lg border-0 rounded-3">
+            <div className="card shadow-lg border-0 rounded-3 mb-3">
                 <div className="position-relative">
                     <Image
                         src={user.cover || '/default-cover.jpg'}

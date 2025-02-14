@@ -6,7 +6,7 @@ import createAPI from "@/app/lib/axios";
 import Image from "next/image";
    
 import { toast } from 'react-toastify';
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 
 export default function GeneralSett() {
       

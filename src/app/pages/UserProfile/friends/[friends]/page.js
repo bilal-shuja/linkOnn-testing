@@ -6,7 +6,7 @@ import Image from "next/image";
 import { use } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import RightNavbar from "../../components/right-navbar";
 import Profilecard from "../../components/profile-card";
 

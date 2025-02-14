@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from "react";
 import MakeDonationModal from "../../Modal/MakeDonationModal";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { ReactionBarSelector } from '@charkour/react-reactions';
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import EnableDisableCommentsModal from '../../Modal/EnableDisableCommentsModal';
 import PageImagesLayout from "../../myPageTimeline/[myPageTimeline]/pageImagesLayout";
 
