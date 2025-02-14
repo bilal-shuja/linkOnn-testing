@@ -315,13 +315,12 @@
 
 
 
-
 /* 📌 Ensure Everything Stays in One Line */
 .post-card-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 0; /* Adjust padding */
+  padding: 0px 10; /* Adjust padding */
   margin-bottom: 5px;
   width: 100%;
 }
