@@ -10,13 +10,15 @@ import RightNav from "../../components/rightNav";
 import PageImagesLayout from "./pageImagesLayout";
 import FundingModal from "../../Modal/FundingModal";
 import PostPollModal from "../../Modal/PostPollModal";
+import EditPostModal from "../../Modal/EditPostModal";
 import MakeDonationModal from "../../Modal/MakeDonationModal";
 import { ReactionBarSelector } from '@charkour/react-reactions';
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import TimelineProfileCard from "../../components/timelineProfileCard";
+import SharePostTimelineModal from "../../Modal/SharePostTimelineModal";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import EnableDisableCommentsModal from "../../Modal/EnableDisableCommentsModal";
-import EditPostModal from "../../Modal/EditPostModal";
+import SharedPosts from "../../components/sharedPosts";
 import { set } from "lodash";
 // import { Dropzone, FileMosaic } from "@files-ui/react";
 // import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
@@ -87,6 +89,7 @@ export default function MyPageTimeline({ params }) {
 
     const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
     const [showEditPostModal, setShowEditPostModal] = useState(false);
+    const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
 
     const endpoint = "/api/post/create";
 
@@ -274,7 +277,6 @@ export default function MyPageTimeline({ params }) {
     }, []);
 
     const handlePageTimeline = () => {
-        // Store the data in localStorage
         localStorage.setItem('_pageData', JSON.stringify(pageTimelineData));
     }
 
@@ -543,7 +545,7 @@ export default function MyPageTimeline({ params }) {
                     })
                 );
                 
-                // toast.success(response.data.message);
+            
             }
             
             else {
@@ -783,88 +785,6 @@ export default function MyPageTimeline({ params }) {
 
                             <TimelineProfileCard pageTimelineID={myPageTimeline} />
 
-                            {/* <div className="card shadow-lg border-0 rounded-3 mt-5">
-                                <div className="position-relative">
-                                    <Image
-                                        src={!pageTimelineData?.cover || pageTimelineData.cover.trim() === ""
-                                            ? '/assets/images/placeholder-image.png'
-                                            : pageTimelineData.cover}
-                                        className="card-img-top rounded-top img-fluid"
-                                        alt="cover"
-                                        width={800}
-                                        height={400}
-                                        style={{ objectFit: 'cover', height: '200px' }}
-                                    />
-                                    <div
-                                        className="position-absolute start-0 translate-middle-y ms-4"
-                                        style={{ top: 'calc(125% - 31px)', zIndex: 2 }}
-                                    >
-                                        <Image
-                                            className="rounded-circle border border-white border-3 shadow-sm"
-                                            src={!pageTimelineData?.avatar || pageTimelineData.avatar.trim() === ""
-                                                ? '/assets/images/placeholder-image.png'
-                                                : pageTimelineData.avatar}
-                                            alt="avatar"
-                                            width={125}
-                                            height={125}
-                                            style={{ objectFit: 'cover' }}
-                                            onError={(e) => {
-                                                console.error('Image load error:', e);
-                                                e.target.src = '/assets/images/placeholder-image.png';
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="card-body">
-                                    <div className={`mt-1 ${styles.userTimelineInfoContainer}`}>
-                                        <div className="user-timeline-info">
-                                            <h5 className="text-dark">
-                                                {pageTimelineData?.page_title}
-                                            </h5>
-                                            <span className="small text-muted">@{pageTimelineData?.website}</span>
-                                        </div>
-                                        {
-                                            userID === pageTimelineData.user_id ?
-                                                <div className="edit-btn">
-                                                    <Link href={`/pages/page/editMyPage/${pageTimelineData.id}`} className="btn btn-danger"> <i className="fa fa-pencil"></i> Edit button</Link>
-                                                </div>
-                                                :
-                                                null
-                                        }
-
-                                    </div>
-                                    <p className="text-muted mt-4 mx-3">
-                                        <i className="bi bi-calendar2-plus me-1"></i>
-                                        Joined on {moment(user.created_at).format("MMM DD, YYYY")}
-
-                                    </p>
-
-                                    <hr className="text-muted" />
-
-
-                                    <div className="d-flex justify-content-start gap-4 ms-3">
-                                        <div
-                                            href={`/pages/UserProfile/timeline/${myPageTimeline}`} 
-                                            className="text-decoration-none text-muted">
-                                            Posts
-                                        </div>
-                                        <Link
-                                            href={`/pages/page/About/${myPageTimeline}`}
-                                            className="text-decoration-none text-muted">
-                                            About
-                                        </Link>
-                                        <div className="text-decoration-none text-muted">
-                                            href={`/pages/UserProfile/images/${myPageTimeline}`}
-                                            Followers
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                            </div> */}
-
-
                             <div className="card shadow-lg border-0 rounded-3 mt-3">
                                 <div className="card-body">
 
@@ -900,23 +820,12 @@ export default function MyPageTimeline({ params }) {
                                         )}
 
 
-
-                                        {/* <input
-                                            type="color"
-                                            className="form-control-color mb-4"
-                                            id="exampleColorInput"
-                                            title="Choose your color"
-                                            value={color}
-                                            onChange={(e) => setColor(e.target.value)}
-                                        /> */}
-
                                         <div className={`d-flex ${styles.optionsContainer} mb-2`}>
                                             <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
                                                 <i className="bi bi-palette-fill"></i>
                                             </button>
                                             <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
 
-                                                {/* Solid Colors */}
                                                 {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
                                                     <div
                                                         key={solidColor}
@@ -926,7 +835,6 @@ export default function MyPageTimeline({ params }) {
                                                     />
                                                 ))}
 
-                                                {/* Gradient Colors */}
                                                 {Object.keys(gradientMap).map((gradient) => (
                                                     <div
                                                         key={gradient}
@@ -935,23 +843,6 @@ export default function MyPageTimeline({ params }) {
                                                         onClick={() => handleColorSelect(gradient)}
                                                     />
                                                 ))}
-
-                                                {/* <div className={styles.colorOption} style={{ background: '#FFFFFF' }}  onClick={()=> handleColorSelect('#FFFFFF')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#c600ff' }}  onClick={()=> handleColorSelect('#c600ff')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#000000' }}  onClick={()=> handleColorSelect('#000000')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#C70039' }}  onClick={()=> handleColorSelect('#C70039')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#900C3F' }}  onClick={()=> handleColorSelect('#900C3F')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#581845' }}  onClick={()=> handleColorSelect('#581845')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#FF5733' }}  onClick={()=> handleColorSelect('#FF5733')}></div>
-                                                <div className={styles.colorOption} style={{ background: '#00a859' }}  onClick={()=> handleColorSelect('#00a859')}></div>
-
-                                                <div className={styles.colorOption} style={{ background: '#0098da' }}  onClick={()=> handleColorSelect('#0098da')}></div>
-
-
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)')}></div>
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)')}></div>
-                                                <div className={styles.colorOption} style={{ background: 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)' }}  onClick={()=> handleGradientClick('linear-gradient(45deg, #5d6374 0%, #16181d 100%)')}></div> */}
-
 
                                             </div>
                                         </div>
@@ -1219,8 +1110,8 @@ export default function MyPageTimeline({ params }) {
                             {posts?.map((post, index) => {
                               
                                 return (
-
-                                    <div key={`${post.id}-${index}`} className="card shadow-lg border-0 rounded-1 mb-2 mt-2">
+                                    <div key={`${post.id}-${index}`}>
+                                            <div  className="card shadow-lg border-0 rounded-1 mb-2 mt-2">
                                         <div className="card-body" >
 
 
@@ -1270,7 +1161,6 @@ export default function MyPageTimeline({ params }) {
                                                                 {post?.user.first_name} {post?.user.last_name}  {post?.post_location && post.post_location !== "" && (
                                                                     <span className="text-primary ms-1">
                                                                         <small className="text-dark"> is in </small>
-                                                                        {/* {post.post_location} */}
                                                                         <i className="bi bi-geo-fill"></i>
                                                                         <a
                                                                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post?.post_location)}`}
@@ -1584,67 +1474,9 @@ export default function MyPageTimeline({ params }) {
                                             {/* </div> */}
 
                                             <div className="d-flex justify-content-center flex-wrap">
-                                                {/* 
-                                            <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
-                                                {
-                                                post.images && post.images.length > 0 &&
-                                                post.images.map((image, index) => (
-                                                    <div key={index} className={styles.imageContainer}>
-                                                        <Image
-                                                            src={image.media_path}
-                                                            alt={`Post image ${index + 1}`}
-                                                            width={400}
-                                                            height={300}
-                                                            className={styles.postImage}
-                                                            style={{ objectFit: "cover" }}
-                                                        />
-                                                    </div>
-                                                ))}
-                                                    post.images && post.images.length > 0 &&
-                                                    post.images.map((image, index) => (
-                                                        <div key={index} className={styles.imageContainer}>
-                                                            <Image
-                                                                src={image.media_path}
-                                                                alt={`Post image ${index + 1}`}
-                                                                width={400}
-                                                                height={300}
-                                                                className={styles.postImage}
-                                                                style={{ objectFit: "cover" }}
-                                                            />
-                                                        </div>
-                                                    ))}
-                                            </div>
-
-                                            </div> */}
-
-                                                {/* <div className={`${styles.postImages} ${getGridClass(post?.images?.length)}`}>
-                                            {post.images && post.images.length > 0 &&
-                                                post.images?.map((image, index) => (
-                                                    <div key={index} className={styles.imageContainer}
-                                                 
-                                                    
-                                                    >
-                                                    <Image
-                                                     
-                                                        src={image.media_path}
-                                                        alt={`Post image ${index + 1}`}
-                                                        width={400}
-                                                        height={200}
-                                                        className={`img-fluid ${styles.postImage}`}
-                                                        loader={({ src }) => src}
-
-                                                    />
-                                                    </div>
-
-                                                ))}
-                                                 </div> */}
 
 
                                                 <PageImagesLayout key={`${post.id}-${index}`} post={post} />
-
-
-
-
 
                                                 {
                                                 post.event && post.event.cover && (
@@ -1786,14 +1618,6 @@ export default function MyPageTimeline({ params }) {
 
                                             <div className="d-flex justify-content-between">
 
-                                                {/* <button
-                                                className="btn border-0 d-flex align-items-center"
-                                                onClick={() => LikePost(post.id)}
-                                            >
-                                                <i className="bi bi-emoji-smile me-2"></i> Reaction
-                                            </button> */}
-
-
 
                                                 <div style={{ position: "relative", display: "inline-block" }}>
                                                     <button
@@ -1890,15 +1714,20 @@ export default function MyPageTimeline({ params }) {
                                                         <li>
                                                             <hr className="dropdown-divider" />
                                                         </li>
+
                                                         <li className=" align-items-center d-flex">
-                                                            <Link
+                                                            <button
                                                                 className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                                href="#"
+                                                                onClick={()=> {
+                                                                    setShareShowTimelineModal(true)
+                                                                    setPostID(post.id)
+                                                                }}
                                                             >
                                                                 <i className="bi bi-bookmark-check pe-2"></i> Post
                                                                 on Timeline
-                                                            </Link>
+                                                            </button>
                                                         </li>
+
                                                         <li className=" align-items-center d-flex">
                                                             <span
                                                                 className="text-decoration-none dropdown-item text-muted"
@@ -2163,8 +1992,15 @@ export default function MyPageTimeline({ params }) {
                                     </div>
 
 
-                                )
+                                    {post.shared_post &&      <SharedPosts  sharedPost={post.shared_post}/>  }
+                                    
+                                    
+                                    </div>
 
+                                
+
+
+                                )
 
                             }
 
@@ -2209,10 +2045,6 @@ export default function MyPageTimeline({ params }) {
                                 <FundingModal
                                 fundingModal={fundingModal}
                                 setFundingModal={setFundingModal}
-                                // posts={posts}
-                                // setPosts={setPosts}
-                                // myPageTimeline={myPageTimeline}
-                                // endpoint={endpoint}
                                 uploadPost={uploadPost}
                             />
                             )
@@ -2258,6 +2090,17 @@ export default function MyPageTimeline({ params }) {
                                     posts={posts}
                                     setPosts={setPosts}
                                     postID={postID}
+                                />
+                            )
+                        }
+
+
+                        {
+                            sharePostTimelineModal && (
+                                <SharePostTimelineModal
+                                sharePostTimelineModal = {sharePostTimelineModal}
+                                setShareShowTimelineModal = {setShareShowTimelineModal}
+                                postID = {postID}
                                 />
                             )
                         }
