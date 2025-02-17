@@ -58,8 +58,6 @@ export default function SharePostTimelineModal({ postID, sharePostTimelineModal,
         }
     };
 
-
-
     const sharePost = async () => {
         setIsPosting(true);
         try {
