@@ -4,7 +4,6 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 
 export default function SharePostTimelineModal({ postID, sharePostTimelineModal, setShareShowTimelineModal }) {
     const api = createAPI();
@@ -60,7 +59,6 @@ export default function SharePostTimelineModal({ postID, sharePostTimelineModal,
     };
 
 
-    console.log("selectedOption",selectedOption)
 
     const sharePost = async () => {
         setIsPosting(true);

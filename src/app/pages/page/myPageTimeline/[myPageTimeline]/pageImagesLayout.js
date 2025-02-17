@@ -8,6 +8,8 @@ function PageImagesLayout({post}) {
   const [openModalId, setOpenModalId] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const isSingleImage = post?.images?.length === 1;
+
   const getGridClass = (count) => {
     switch (count) {
       case 1:
@@ -27,7 +29,7 @@ function PageImagesLayout({post}) {
   // const remainingCount = post?.images?.length > 5 ? post?.images?.length - 5 : 0;
 
   const visibleImages = post?.images?.length > 5 
-  ? post.images.slice(0, 6) // Show 6 images for grid of 6 or more
+  ? post.images.slice(0, 6) 
   : post?.images;
 const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
   const isModalOpen = openModalId === post.id;
@@ -51,9 +53,12 @@ const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
             <Image
               src={image.media_path}
               alt={`Post image ${index + 1}`}
-              className={`image-fluid position-static ${styles.postImage}`}
+              className={`image-fluid position-static ${styles.postImage} ${
+                isSingleImage ? styles.singleImage : styles.multipleImage
+              }`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               fill
+              loader={({ src }) => src}
             />
             {index === 5  && remainingCount > 0 && (
               <div className={styles.remainingCount}>
@@ -64,7 +69,6 @@ const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
         ))}
       </div>
 
-      {/* Modal code remains the same */}
 
       <Modal
         show={isModalOpen}
@@ -80,7 +84,7 @@ const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
             activeIndex={activeIndex}
             onSelect={setActiveIndex}
             interval={null}
-            indicators={false}
+            // indicators={false}
             className={styles.carousel}
           >
             {post.images?.map((image, idx) => (
@@ -90,8 +94,9 @@ const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
                     src={image.media_path}
                     alt={`Image ${idx + 1}`}
                     fill
-                    className={`img-fluid ${styles.carouselImage}`}
+                    className={`img-fluid position-absolute ${styles.carouselImage}`}
                     sizes="90vw"
+                    loader={({ src }) => src}
                   />
                 </div>
               </Carousel.Item>

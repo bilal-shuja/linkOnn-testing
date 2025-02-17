@@ -1,9 +1,11 @@
-.imageGridWrapper {
+/* .imageGridWrapper {
   position: relative;
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
   margin: 12px 0;
+  margin: 0;
+  padding: 0;
 }
 
 .postImagesContainer {
@@ -11,7 +13,10 @@
   gap: 2px;
   width: 100%;
   background-color: #f0f2f5;
+  max-height: 600px;
+  position: relative;
 }
+
 
 .imageContainer {
   position: relative;
@@ -30,71 +35,145 @@
   display: block;
   margin: 0 auto;
   transform: scale(1.01);
+} */
+
+
+.imageGridWrapper {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
+.postImagesContainer {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  max-height: 600px;
+  position: relative;
+
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+}
+
+.imageContainer:hover {
+  opacity: 0.9;
+}
+
+
+.postImage {
+  display: block;
+  margin: 0 auto;
+}
+
+.singleImage {
+  object-fit: contain !important;
+  object-position: center;
+  transform: scale(1.01);
+}
+
+.multipleImage {
+  object-fit: cover !important;
+}
+
+/* Grid layouts with !important to override any inherited styles */
+/* .gridLayout1 {
+  grid-template-columns: 1fr !important;
+  grid-template-rows: 1fr !important;
+}
+
+.gridLayout2 {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: 1fr !important;
+}
+
+.gridLayout3 {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+}
+
+.gridLayout4 {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+}
+
+.gridLayoutMore {
+  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+} */
 
 .gridLayout1 {
+  grid-template-columns: 1fr;
   aspect-ratio: 16/9;
-  max-height: 500px;
 }
-
 
 .gridLayout2 {
   grid-template-columns: repeat(2, 1fr);
   aspect-ratio: 16/9;
 }
 
-
 .gridLayout3 {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  aspect-ratio: 4/3;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  aspect-ratio: 16/9;
 }
-
-.gridLayout3 .firstOfThree {
-  grid-row: 1 / span 2;
-}
-
 
 .gridLayout4 {
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  aspect-ratio: 4/3;
+  aspect-ratio: 16/9;
 }
 
-
-.gridLayout5,
-.gridLayoutMore {
+.gridLayout5 {
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  aspect-ratio: 4/3;
+  aspect-ratio: 16/9;
 }
 
-.gridLayout5 .firstOfFive {
-  grid-column: span 2;
-  height: 100%;
+.gridLayoutMore {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: dense;
+  grid-auto-rows: 1fr;
+  /* min-height: 400px; */
+  height: fit-content;
+}
+.firstOfThree {
+  grid-row: span 2 !important;
 }
 
+.firstOfFive {
+  grid-column: span 2 !important;
+}
 .remainingCount {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: bold;
 }
 
-
+/* Carousel styles */
 .carouselModal :global(.modal-content) {
-  background: transparent;
   border: none;
 }
+
+
 
 .carouselModal :global(.modal-header) {
   border: none;
@@ -102,14 +181,19 @@
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 1;
+  z-index: 1050; 
+  /* background-color: white; */
+}
+
+.carouselModal :global(.modal-header) {
+  pointer-events: auto;
 }
 
 .carouselModal :global(.modal-header .btn-close) {
-  background-color: white;
-  opacity: 0.8;
-  border-radius: 50%;
-  padding: 0.75rem;
+background-color: white;
+opacity: 0.8;
+border-radius: 50%;
+padding: 0.75rem;
 }
 
 .carouselModal :global(.modal-body) {
@@ -130,15 +214,4 @@
 
 .carouselImage {
   object-fit: contain;
-}
-
-
-.carousel :global(.carousel-control-prev),
-.carousel :global(.carousel-control-next) {
-  width: 10%;
-  opacity: 0.8;
-}
-
-.carousel :global(.carousel-indicators) {
-  margin-bottom: 2rem;
 }
