@@ -23,6 +23,7 @@ import UserImagesLayout from "@/app/pages/components/userImagesLayout";
 import PostPollModal from "@/app/pages/Modals/PostPollModal";
 import FundingModal from "@/app/pages/Modals/FundingModal";
 import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
+import Spinner from 'react-bootstrap/Spinner';
 
 
 export default function UserProfileCard({ params }) {
@@ -38,6 +39,7 @@ export default function UserProfileCard({ params }) {
     const [lastPostId, setLastPostId] = useState(0);
     const [noMorePosts, setNoMorePosts] = useState(false);
     const [user, setUser] = useState(null);
+    const [uploadPloading, setUploadPLoading] = useState(false)
     const [loading, setLoading] = useState(false);
     const [posts, setPosts] = useState([]);
     const [error, setError] = useState(null);
@@ -364,7 +366,7 @@ export default function UserProfileCard({ params }) {
 
             formData.append("privacy", privacy);
 
-            setLoading(true);
+            setUploadPLoading(true);
 
             const response = await api.post("/api/post/create", formData, {
                 headers: {
@@ -390,7 +392,7 @@ export default function UserProfileCard({ params }) {
         } catch (error) {
             toast.error(error.response.data.message)
         } finally {
-            setLoading(false);
+            setUploadPLoading(false);
         }
     };
 
@@ -1109,10 +1111,21 @@ export default function UserProfileCard({ params }) {
 
                                     <div className="d-flex justify-content-center">
                                         <button
-                                            className="btn btn-outline-success mt-3 w-75"
+                                            className="btn btn-outline-success mt-3 w-100 d-flex align-items-center justify-content-center"
+                                            disabled={uploadPloading}
                                             onClick={uploadPost}
                                         >
-                                            <i className="bi bi-send"></i> Post
+                                            {!uploadPloading && <i className="bi bi-send me-2"></i>}
+                                            {uploadPloading ? (
+                                                <Spinner
+                                                    as="span"
+                                                    animation="border"
+                                                    role="status"
+                                                    aria-hidden="true"
+                                                />
+                                            ) : (
+                                                "Post"
+                                            )}
                                         </button>
                                     </div>
 
@@ -1656,7 +1669,7 @@ export default function UserProfileCard({ params }) {
                                             className="post-action-btn"
                                             onClick={() => LikePost(post.id)}
                                         >
-                                            <i className="bi bi-emoji-smile"></i> Reaction
+                                            <i className="bi bi-emoji-smile"></i> React
                                         </button>
 
                                         <button

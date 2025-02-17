@@ -24,12 +24,14 @@ import UserImagesLayout from "../components/userImagesLayout";
 import FundingModal from "../Modals/FundingModal";
 import PostPollModal from "../Modals/PostPollModal";
 import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
+import Spinner from 'react-bootstrap/Spinner';
 
 export default function Newsfeed() {
 
   const router = useRouter();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploadPloading, setUploadPLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastPostId, setLastPostId] = useState(0);
   const [limit] = useState(5);
@@ -425,6 +427,7 @@ export default function Newsfeed() {
 
 
   const uploadPost = async (donationData = {}) => {
+
     try {
       const formData = new FormData();
       const combinedText = donationData.donationTitle
@@ -454,7 +457,7 @@ export default function Newsfeed() {
 
       formData.append("privacy", privacy);
 
-      setLoading(true);
+      setUploadPLoading(true);
 
       const response = await api.post("/api/post/create", formData, {
         headers: {
@@ -480,7 +483,7 @@ export default function Newsfeed() {
     } catch (error) {
       toast.error(error.response.data.message)
     } finally {
-      setLoading(false);
+      setUploadPLoading(false);
     }
   };
 
@@ -1392,12 +1395,24 @@ export default function Newsfeed() {
                   </div>
                   <div className="d-flex justify-content-center">
                     <button
-                      className="btn btn-outline-success mt-3 w-50"
+                      className="btn btn-outline-success mt-3 w-100 d-flex align-items-center justify-content-center"
+                      disabled={uploadPloading}
                       onClick={uploadPost}
                     >
-                      <i className="bi bi-send"></i> Post
+                      {!uploadPloading && <i className="bi bi-send me-2"></i>}
+                      {uploadPloading ? (
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        "Post"
+                      )}
                     </button>
                   </div>
+
                 </div>
 
               </div>
@@ -2293,6 +2308,8 @@ export default function Newsfeed() {
                   </div>
                 </div>
               ))}
+
+
 
               <div className="d-flex justify-content-center align-items-center mt-4">
                 {!noMorePosts ? (
