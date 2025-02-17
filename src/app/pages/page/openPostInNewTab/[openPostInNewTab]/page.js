@@ -339,7 +339,7 @@ export default function OpenPostInNewTab({ params }) {
                     }));
                 }
             } catch (error) {
-                setError("An error occurred while fetching comments.");
+              return error
             }
         }
     };
