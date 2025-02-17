@@ -16,6 +16,7 @@ import ReportPostModal from "../../Modals/ReportPost";
 import EnableDisableCommentsModal from "../../Modals/EnableDisableCommentsModal";
 import SavePostModal from "../../Modals/SaveUnsavePost";
 import MakeDonationModal from "../../Modals/MakeDonationModal";
+import SharePostTimelineModal from "../../Modals/SharePostTimelineModal";
 
 
 export default function OpenPostInNewTab({ params }) {
@@ -41,6 +42,7 @@ export default function OpenPostInNewTab({ params }) {
     const [showSavePostModal, setShowSavePostModal] = useState(false);
     const [donationModal, setDonationModal] = useState(false);
     const [donationID, setDonationID] = useState("");
+    const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
 
     const reverseGradientMap = {
         '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
@@ -464,20 +466,54 @@ export default function OpenPostInNewTab({ params }) {
 
                                                 <div className="mx-2">
                                                     <h6 className="card-title">
-
                                                         <span
-                                                            style={{ cursor: 'pointer' }}
-                                                            onClick={() => handleClick(post.user.id)}
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
                                                         >
                                                             {post.user.first_name} {post.user.last_name}
                                                         </span>
 
                                                         {post.post_location && post.post_location !== "" && (
                                                             <span className="text-primary">
-                                                                <small className="text-dark"> is in </small>
-                                                                {post.post_location}
+                                                                <small className="text-dark"> is in </small> {post.post_location}
                                                             </span>
                                                         )}
+                                                        {(post.group || post.page) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
+
+                                                        {post.group &&
+                                                            <span
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                                            >
+                                                                {post.group.group_title}
+                                                            </span>
+                                                        }
+
+                                                        {post.page &&
+                                                            <span
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/page/myPageTimeline/${post.group_id}`)}
+                                                            >
+                                                                {post.page.page_title}
+                                                            </span>}
                                                     </h6>
                                                     <small className="text-secondary">
                                                         {post.created_human} -
@@ -728,11 +764,14 @@ export default function OpenPostInNewTab({ params }) {
                                                     <Image
                                                         src={post.donation.image}
                                                         alt={post.donation.title}
-                                                        className="img-fluid"
                                                         width={500}
                                                         height={300}
+                                                        className="img-fluid rounded"
                                                         style={{
-                                                            objectFit: "cover",
+                                                            objectFit: "contain",
+                                                            objectPosition: "center",
+                                                            display: "block",
+                                                            margin: "0 auto",
                                                         }}
                                                     />
 
@@ -794,7 +833,18 @@ export default function OpenPostInNewTab({ params }) {
                                                         className="img-fluid rounded"
                                                         style={{ objectFit: "cover" }}
                                                     />
-                                                    <h5 className="fw-bold mt-2">{post.event.name}</h5>
+                                                    <h5 className="fw-bold mt-2"
+                                                        style={{
+                                                            cursor: 'pointer',
+                                                            color: 'inherit',
+                                                            transition: 'color 0.3s ease'
+                                                        }}
+                                                        onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                        onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                        onClick={() => router.push(`/pages/Events/eventDetails/${post.event_id}`)}
+                                                    >
+                                                        {post.event.name}
+                                                    </h5>
                                                     <span className="badge bg-primary rounded-pill mt-2 px-3 py-2">{post.event.start_date}</span>
                                                 </div>
                                             )}
@@ -959,13 +1009,16 @@ export default function OpenPostInNewTab({ params }) {
                                                         <hr className="dropdown-divider" />
                                                     </li>
                                                     <li className=" align-items-center d-flex">
-                                                        <Link
+                                                        <button
                                                             className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                            href="#"
+                                                            onClick={() => {
+                                                                setShareShowTimelineModal(true)
+                                                                setPostID(post.id)
+                                                            }}
                                                         >
                                                             <i className="bi bi-bookmark-check pe-2"></i> Post
                                                             on Timeline
-                                                        </Link>
+                                                        </button>
                                                     </li>
                                                     <li className=" align-items-center d-flex">
                                                         <span
@@ -1246,6 +1299,7 @@ export default function OpenPostInNewTab({ params }) {
 
                     </div>
                 </div>
+
                 {
                     showEditPostModal && (
                         <EditPostModal
@@ -1274,7 +1328,6 @@ export default function OpenPostInNewTab({ params }) {
                 {
                     showReportPostModal && (
                         <ReportPostModal
-
                             postID={postID}
                             posts={posts}
                             setPosts={setPosts}
@@ -1307,6 +1360,18 @@ export default function OpenPostInNewTab({ params }) {
                     )
 
                 }
+
+
+                {
+                    sharePostTimelineModal && (
+                        <SharePostTimelineModal
+                            sharePostTimelineModal={sharePostTimelineModal}
+                            setShareShowTimelineModal={setShareShowTimelineModal}
+                            postID={postID}
+                        />
+                    )
+                }
+
             </div>
         </>
     )

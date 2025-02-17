@@ -21,6 +21,9 @@ import SavePostModal from "../Modals/SaveUnsavePost";
 import useConfirmationToast from "../Modals/useConfirmationToast";
 import MakeDonationModal from "../Modals/MakeDonationModal";
 import UserImagesLayout from "../components/userImagesLayout";
+import FundingModal from "../Modals/FundingModal";
+import PostPollModal from "../Modals/PostPollModal";
+import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
 
 export default function Newsfeed() {
 
@@ -40,11 +43,8 @@ export default function Newsfeed() {
   const [userdata, setUserdata] = useState(null);
   const [privacy, setPrivacy] = useState(0);
   const [postText, setPostText] = useState("");
-  const [pollText, setPollText] = useState("");
-  const [options, setOptions] = useState(["", ""]);
   const [locationText, setlocationText] = useState("");
   const [images, setImages] = useState([]);
-  const [donationImage, setDonationImage] = useState([]);
   const [video, setvideo] = useState([]);
   const [audio, setaudio] = useState([]);
   const [success, setSuccess] = useState("");
@@ -57,9 +57,6 @@ export default function Newsfeed() {
   const [repliesData, setRepliesData] = useState({});
   const [showReplyInput, setShowReplyInput] = useState({});
   const [commentreplyText, setCommentreplyText] = useState({});
-  const [donationTitle, setDonationTitle] = useState("");
-  const [donationAmount, setDonationAmount] = useState("");
-  const [donationDescription, setDonationDescription] = useState("");
   const [stories, setStories] = useState([]);
   const [showCarousel, setShowCarousel] = useState(false);
   const [currentUserStories, setCurrentUserStories] = useState([]);
@@ -77,6 +74,9 @@ export default function Newsfeed() {
   const [showSavePostModal, setShowSavePostModal] = useState(false);
   const [donationModal, setDonationModal] = useState(false);
   const [donationID, setDonationID] = useState("");
+  const [fundingModal, setFundingModal] = useState(false);
+  const [pollModal, setPollModal] = useState(false);
+  const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
 
 
   const fileImageRef = useRef(null);
@@ -376,13 +376,6 @@ export default function Newsfeed() {
 
   const handleLocationTextChange = (e) => { setlocationText(e.target.value) };
 
-  const handleDonationImage = (e) => {
-    const files = e.target.files;
-    if (files.length > 0) {
-      setDonationImage(Array.from(files));
-    }
-  };
-
   const handleImageChange = (event) => {
     const files = event.target.files;
     if (files) {
@@ -430,47 +423,30 @@ export default function Newsfeed() {
 
   const handlePostTextChange = (e) => { setPostText(e.target.value) };
 
-  const handlePollTextChange = (e) => { setPollText(e.target.value) };
 
-  const handleAddOption = () => {
-    setOptions((prevOptions) => [...prevOptions, ""])
-  };
-
-  const handleRemoveOption = (index) => {
-    if (options.length > 2) {
-      const updatedOptions = [...options];
-      updatedOptions.splice(index, 1);
-      setOptions(updatedOptions);
-    }
-  };
-
-  const handleDonationTitle = (e) => { setDonationTitle(e.target.value) };
-
-  const handleDonationAmount = (e) => { setDonationAmount(e.target.value) };
-
-  const handleDonationDescription = (e) => { setDonationDescription(e.target.value) };
-
-  const uploadPost = async () => {
+  const uploadPost = async (donationData = {}) => {
     try {
       const formData = new FormData();
-      const combinedText = `${postText} ${pollText} ${donationTitle}`;
+      const combinedText = donationData.donationTitle
+        ? `${postText} ${donationData.donationTitle}`
+        : postText;
       formData.append("post_text", combinedText);
-      formData.append("description", donationDescription);
-      formData.append("amount", donationAmount);
+      if (donationData.donationAmount) {
+        formData.append("amount", donationData.donationAmount);
+      }
+      if (donationData.donationDescription) {
+        formData.append("description", donationData.donationDescription);
+      }
+
+      if (donationData.donationImage) formData.append("donation_image", donationData.donationImage);
       formData.append("bg_color", color);
-      formData.append("poll_option", options);
       formData.append("post_location", locationText);
       images.forEach((image) => formData.append("images[]", image.file));
-      donationImage.forEach((image) =>
-        formData.append("donation_image", image)
-      );
       audio.forEach((audioFile) => formData.append("audio", audioFile.file));
       video.forEach((videoFile) => formData.append("video", videoFile.file));
 
       let postType = "post";
-      if (pollText) {
-        postType = "poll";
-      } else if (donationAmount) {
+      if (donationData.donationAmount) {
         postType = "donation";
       }
 
@@ -493,15 +469,10 @@ export default function Newsfeed() {
         setError("");
         setImages([]);
         setColor("");
+        setFundingModal(false);
         setaudio([]);
         setvideo([]);
         setlocationText("");
-        setOptions(["", ""]);
-        setPollText("");
-        setDonationAmount("");
-        setDonationTitle("");
-        setDonationDescription("");
-        setDonationImage([]);
       } else {
         toast.error("Error from server: " + response.data.message)
         setSuccess("");
@@ -1407,204 +1378,14 @@ export default function Newsfeed() {
                     </button>
 
                     <div>
-                      <button
-                        className="btn btn-light text-secondary align-items-center mt-2"
-                        data-bs-toggle="modal"
-                        data-bs-target="#pollModal"
-                      >
-                        <i className="bi bi-bar-chart text-primary pe-1"></i>{" "}
-                        Poll
+                      <button className="btn btn-light text-secondary align-items-center mt-2" onClick={() => setPollModal(!pollModal)}>
+                        <i className="fas fa-poll text-info pe-1" /> Poll
                       </button>
-
-                      <div
-                        className="modal fade"
-                        id="pollModal"
-                        tabIndex="-1"
-                        aria-labelledby="pollModalLabel"
-                        aria-hidden="true"
-                      >
-                        <div className="modal-dialog modal-dialog-centered">
-                          <div className="modal-content">
-                            <div className="modal-header">
-                              <h5 className="modal-title" id="pollModalLabel">
-                                Create Poll
-                              </h5>
-                              <button
-                                type="button"
-                                className="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                              ></button>
-                            </div>
-
-                            <div className="modal-body">
-                              <div className="mb-3">
-                                <label className="form-label text-muted">
-                                  Question
-                                </label>
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  placeholder="Enter your question"
-                                  value={pollText}
-                                  onChange={handlePollTextChange}
-                                />
-                              </div>
-
-                              {options.map((option, index) => (
-                                <div
-                                  key={index}
-                                  className="mb-2 d-flex align-items-center"
-                                >
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                    placeholder={`Option ${index + 1}`}
-                                    value={option}
-                                    onChange={(e) => {
-                                      const updatedOptions = [...options];
-                                      updatedOptions[index] = e.target.value;
-                                      setOptions(updatedOptions);
-                                    }}
-                                  />
-
-                                  {index === 0 && (
-                                    <button
-                                      className="btn btn-success btn-sm me-2"
-                                      onClick={handleAddOption}
-                                    >
-                                      <i className="bi bi-plus"></i>
-                                    </button>
-                                  )}
-
-                                  {index > 1 && (
-                                    <button
-                                      className="btn btn-danger btn-sm"
-                                      onClick={() => handleRemoveOption(index)}
-                                    >
-                                      <i className="bi bi-dash"></i>
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                            <div className="modal-footer">
-                              <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={uploadPost}
-                              >
-                                Create Post
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-dark"
-                                data-bs-dismiss="modal"
-                              >
-                                Close
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     <div>
-                      <div
-                        className="modal fade"
-                        id="fundModal"
-                        tabIndex="-1"
-                        aria-labelledby="fundModalLabel"
-                        aria-hidden="true"
-                      >
-                        <div className="modal-dialog modal-dialog-centered">
-                          <div className="modal-content">
-                            <div className="modal-header">
-                              <h5 className="modal-title" id="fundModalLabel">
-                                Raise Funding
-                              </h5>
-                              <button
-                                type="button"
-                                className="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                              ></button>
-                            </div>
-                            <div className="modal-body">
-                              <div>
-                                <label className="form-label text-muted">
-                                  Donation Title
-                                </label>
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  value={donationTitle}
-                                  onChange={handleDonationTitle}
-                                />
-                              </div>
-                              <div>
-                                <label className="form-label text-muted">
-                                  Donation Image
-                                </label>
-                                <input
-                                  className="form-control"
-                                  type="file"
-                                  onChange={handleDonationImage}
-                                  accept="image/*"
-                                />
-                              </div>
-                              <div>
-                                <label className="form-label text-muted">
-                                  Donation Amount
-                                </label>
-                                <input
-                                  type="number"
-                                  className="form-control"
-                                  value={donationAmount}
-                                  onChange={handleDonationAmount}
-                                />
-                              </div>
-                              <div>
-                                <label className="form-label text-muted">
-                                  Donation Description
-                                </label>
-                                <textarea
-                                  type="text"
-                                  className="form-control"
-                                  rows="2"
-                                  value={donationDescription}
-                                  onChange={handleDonationDescription}
-                                />
-                              </div>
-                            </div>
-                            <div className="modal-footer">
-                              <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={uploadPost}
-                              >
-                                Save changes
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-dark"
-                                data-bs-dismiss="modal"
-                              >
-                                Close
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="btn btn-light text-secondary align-items-center mt-2"
-                        data-bs-toggle="modal"
-                        data-bs-target="#fundModal"
-                      >
-                        <i className="bi bi-cash-coin text-success pe-1"></i>
-                        Raise Funding
+                      <button className="btn btn-light text-secondary align-items-center mt-2" onClick={() => setFundingModal(!fundingModal)}>
+                        <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding
                       </button>
                     </div>
 
@@ -1668,21 +1449,56 @@ export default function Newsfeed() {
 
                         <div className="mx-2">
                           <h6 className="card-title">
-
                             <span
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => handleClick(post.user.id)}
+                              style={{
+                                cursor: 'pointer',
+                                color: 'inherit',
+                                transition: 'color 0.3s ease'
+                              }}
+                              onMouseEnter={(e) => e.target.style.color = 'blue'}
+                              onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                              onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
                             >
                               {post.user.first_name} {post.user.last_name}
                             </span>
 
                             {post.post_location && post.post_location !== "" && (
                               <span className="text-primary">
-                                <small className="text-dark"> is in </small>
-                                {post.post_location}
+                                <small className="text-dark"> is in </small> {post.post_location}
                               </span>
                             )}
+                            {(post.group || post.page) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
+
+                            {post.group &&
+                              <span
+                                style={{
+                                  cursor: 'pointer',
+                                  color: 'inherit',
+                                  transition: 'color 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                              >
+                                {post.group.group_title}
+                              </span>
+                            }
+
+                            {post.page &&
+                              <span
+                                style={{
+                                  cursor: 'pointer',
+                                  color: 'inherit',
+                                  transition: 'color 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                onClick={() => router.push(`/pages/page/myPageTimeline/${post.group_id}`)}
+                              >
+                                {post.page.page_title}
+                              </span>}
                           </h6>
+
                           <small className="text-secondary">
                             {post.created_human} -
                             {post.privacy === '1' && (
@@ -1940,13 +1756,17 @@ export default function Newsfeed() {
                           <Image
                             src={post.donation.image}
                             alt={post.donation.title}
-                            className="img-fluid"
                             width={500}
                             height={300}
+                            className="img-fluid rounded"
                             style={{
-                              objectFit: "cover",
+                              objectFit: "contain",
+                              objectPosition: "center",
+                              display: "block",
+                              margin: "0 auto",
                             }}
                           />
+
 
                           <div className="card-body text-center">
                             <h5 className="card-title">
@@ -2008,7 +1828,20 @@ export default function Newsfeed() {
                             className="img-fluid rounded"
                             style={{ objectFit: "cover" }}
                           />
-                          <h5 className="fw-bold mt-2">{post.event.name}</h5>
+
+                          <h5 className="fw-bold mt-2"
+                            style={{
+                              cursor: 'pointer',
+                              color: 'inherit',
+                              transition: 'color 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                            onClick={() => router.push(`/pages/Events/eventDetails/${post.event_id}`)}
+                          >
+                            {post.event.name}
+                          </h5>
+
                           <span className="badge bg-primary rounded-pill mt-2 px-3 py-2">{post.event.start_date}</span>
                         </div>
                       )}
@@ -2173,13 +2006,16 @@ export default function Newsfeed() {
                             <hr className="dropdown-divider" />
                           </li>
                           <li className=" align-items-center d-flex">
-                            <Link
+                            <button
                               className="text-decoration-none dropdown-item text-muted custom-hover"
-                              href="#"
+                              onClick={() => {
+                                setShareShowTimelineModal(true)
+                                setPostID(post.id)
+                              }}
                             >
                               <i className="bi bi-bookmark-check pe-2"></i> Post
                               on Timeline
-                            </Link>
+                            </button>
                           </li>
                           <li className=" align-items-center d-flex">
                             <span
@@ -2545,6 +2381,41 @@ export default function Newsfeed() {
           />
         )
 
+      }
+
+      {
+        pollModal &&
+        (
+          <PostPollModal
+            pollModal={pollModal}
+            setPollModal={setPollModal}
+            posts={posts}
+            setPosts={setPosts}
+            newsFeed="newsFeed"
+            privacy={privacy}
+          />
+        )
+
+      }
+
+      {
+        fundingModal && (
+          <FundingModal
+            fundingModal={fundingModal}
+            setFundingModal={setFundingModal}
+            uploadPost={uploadPost}
+          />
+        )
+      }
+
+      {
+        sharePostTimelineModal && (
+          <SharePostTimelineModal
+            sharePostTimelineModal={sharePostTimelineModal}
+            setShareShowTimelineModal={setShareShowTimelineModal}
+            postID={postID}
+          />
+        )
       }
 
     </div>

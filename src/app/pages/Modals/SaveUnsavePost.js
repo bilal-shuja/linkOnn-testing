@@ -1,14 +1,21 @@
 "use client";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
-import Modal from 'react-bootstrap/Modal';
+import Modal from "react-bootstrap/Modal";
+import Spinner from "react-bootstrap/Spinner"; // Import Bootstrap Spinner
 
 export default function SavePostModal({ postID, setPosts, showSavePostModal, setShowSavePostModal }) {
+    const [loading, setLoading] = useState(false); // Loading state
     const api = createAPI();
 
-    const handleClose = () => setShowSavePostModal(false);
+    const handleClose = () => {
+        if (!loading) setShowSavePostModal(false);
+    };
 
     const savePost = async () => {
+        setLoading(true); // Start loading
+
         try {
             const response = await api.post("/api/post/action", {
                 post_id: postID,
@@ -21,8 +28,8 @@ export default function SavePostModal({ postID, setPosts, showSavePostModal, set
                     prevPosts.map(post =>
                         post.id === postID ? { 
                             ...post,
-                            is_saved: post.is_saved == false ? "Save Post" : "Unsave Post" }
-                            : post
+                            is_saved: post.is_saved === false ? true : false
+                        } : post
                     )
                 );
 
@@ -33,25 +40,31 @@ export default function SavePostModal({ postID, setPosts, showSavePostModal, set
             }
         } catch (error) {
             toast.error("Error while saving the post");
+        } finally {
+            setLoading(false); // Stop loading
         }
     };
 
     return (
-        <>
-            <Modal show={showSavePostModal} centered>
-                <Modal.Body className='text-center'>
-                    <i className="bi bi-bookmark-fill text-info pe-3"></i>
-                    Are you sure to perform this action?
-                </Modal.Body>
-                <Modal.Footer>
-                    <button className='btn btn-sm btn-primary ps-4 pe-4' onClick={savePost}>
-                        Yes
-                    </button>
-                    <button className='btn btn-sm btn-secondary ps-4 pe-4' onClick={handleClose}>
-                        Cancel
-                    </button>
-                </Modal.Footer>
-            </Modal>
-        </>
+        <Modal show={showSavePostModal} centered>
+            <Modal.Body className="text-center">
+                <i className="bi bi-bookmark-fill text-info pe-3"></i>
+                Are you sure you want to perform this action?
+            </Modal.Body>
+            <Modal.Footer>
+                <button className="btn btn-sm btn-primary ps-4 pe-4" onClick={savePost} disabled={loading}>
+                    {loading ? (
+                        <>
+                            <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                        </>
+                    ) : (
+                        "Yes"
+                    )}
+                </button>
+                <button className="btn btn-sm btn-secondary ps-4 pe-4" onClick={handleClose} disabled={loading}>
+                    Cancel
+                </button>
+            </Modal.Footer>
+        </Modal>
     );
 }

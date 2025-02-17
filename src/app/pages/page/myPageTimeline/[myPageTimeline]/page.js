@@ -749,9 +749,7 @@ export default function MyPageTimeline({ params }) {
                 setPostText("");
                 setLocation("");
                 setColor("");
-
                 setIsOpenColorPalette(false);
-
                 setImages([]);
                 setVideoFiles([]);
                 setAudioFiles([]);

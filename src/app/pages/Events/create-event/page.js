@@ -76,7 +76,7 @@ export default function Eventform() {
 
       if (response.data.code == "200") {
         toast.success(response.data.message);
-        router.push("/newsfeed");
+        router.push("/pages/newsfeed");
       } else {
         toast.error("Error from server: " + response.data.message);
       }
