@@ -25,6 +25,7 @@ import FundingModal from "../Modals/FundingModal";
 import PostPollModal from "../Modals/PostPollModal";
 import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
 import Spinner from 'react-bootstrap/Spinner';
+import SharedPosts from "../components/sharedPosts";
 
 export default function Newsfeed() {
 
@@ -380,23 +381,39 @@ export default function Newsfeed() {
 
   const handleImageChange = (event) => {
     const files = event.target.files;
-    if (files) {
-      const newImages = Array.from(files).map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
-      setImages((prevImages) => [...prevImages, ...newImages]);
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    if (newFiles.length + images.length > 10) {
+      alert("You can only upload up to 10 images.");
+      toast.info("You can only upload up to 10 images.")
+      return;
     }
+
+    const newImages = newFiles.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    setImages((prevImages) => [...prevImages, ...newImages]);
   };
+
 
   const handlevideoChange = (e) => {
     const videoFiles = e.target.files;
-    if (videoFiles.length > 0) {
-      const newVideos = Array.from(videoFiles).map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
-      setvideo((prevVideos) => [...prevVideos, ...newVideos]);
+
+    if (videoFiles.length > 1) {
+      alert("You can only upload one video at a time.");
+      toast.info("You can only upload one video at a time.");
+      return;
+    }
+
+    if (videoFiles.length === 1) {
+      const newVideo = {
+        file: videoFiles[0],
+        url: URL.createObjectURL(videoFiles[0]),
+      };
+      setvideo([newVideo]);
     }
   };
 
@@ -555,6 +572,7 @@ export default function Newsfeed() {
       });
 
       if (response.data.status == "200") {
+        
         setPosts(prevPosts =>
           prevPosts.map(post => {
             if (post.id === postId) {
@@ -1700,229 +1718,240 @@ export default function Newsfeed() {
                       />
                     )}
 
-                    <div className="d-flex justify-content-center flex-wrap">
-                      {post.poll && post.poll.poll_options && (
-                        <div className="w-100">
-                          <ul className="list-unstyled">
-                            {post.poll.poll_options.map((option) => {
-                              const totalVotes =
-                                post.poll.poll_total_votes || 0;
-                              const percentage =
-                                totalVotes > 0
-                                  ? Math.round(
-                                    (option.no_of_votes / totalVotes) * 100
-                                  )
-                                  : 0;
+                    {post.shared_post === null ?
 
-                              return (
-                                <li key={option.id} className="mb-4 w-100">
-                                  <div className="d-flex align-items-center justify-content-between">
-                                    <div
-                                      className="progress flex-grow-1"
-                                      style={{
-                                        height: "30px",
-                                        cursor: "pointer",
-                                      }}
-                                      onClick={() =>
-                                        handleVote(
-                                          option.id,
-                                          post.poll.id,
-                                          post.id
-                                        )
-                                      }
-                                    >
-                                      <div
-                                        className="progress-bar"
-                                        role="progressbar"
-                                        style={{
-                                          width: `${percentage}%`,
-                                          backgroundColor: "#66b3ff",
-                                        }}
-                                        aria-valuenow={percentage}
-                                        aria-valuemin="0"
-                                        aria-valuemax="100"
-                                      >
+                      <>
+                        <div className="d-flex justify-content-center flex-wrap">
+                          {post.poll && post.poll.poll_options && (
+                            <div className="w-100">
+                              <ul className="list-unstyled">
+                                {post.poll.poll_options.map((option) => {
+                                  const totalVotes =
+                                    post.poll.poll_total_votes || 0;
+                                  const percentage =
+                                    totalVotes > 0
+                                      ? Math.round(
+                                        (option.no_of_votes / totalVotes) * 100
+                                      )
+                                      : 0;
+
+                                  return (
+                                    <li key={option.id} className="mb-4 w-100">
+                                      <div className="d-flex align-items-center justify-content-between">
                                         <div
-                                          className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                          className="progress flex-grow-1"
                                           style={{
-                                            position: "absolute",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
+                                            height: "30px",
+                                            cursor: "pointer",
                                           }}
+                                          onClick={() =>
+                                            handleVote(
+                                              option.id,
+                                              post.poll.id,
+                                              post.id
+                                            )
+                                          }
                                         >
-                                          {option.option_text}
+                                          <div
+                                            className="progress-bar"
+                                            role="progressbar"
+                                            style={{
+                                              width: `${percentage}%`,
+                                              backgroundColor: "#66b3ff",
+                                            }}
+                                            aria-valuenow={percentage}
+                                            aria-valuemin="0"
+                                            aria-valuemax="100"
+                                          >
+                                            <div
+                                              className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                              style={{
+                                                position: "absolute",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                whiteSpace: "nowrap",
+                                              }}
+                                            >
+                                              {option.option_text}
+                                            </div>
+                                          </div>
                                         </div>
+                                        <span className="px-3">{percentage}%</span>
                                       </div>
-                                    </div>
-                                    <span className="px-3">{percentage}%</span>
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
 
-                    <div className="container mt-1">
-                      {post.donation && (
-                        <div>
-                          <Image
-                            src={post.donation.image}
-                            alt={post.donation.title}
-                            width={500}
-                            height={300}
-                            className="img-fluid rounded"
-                            style={{
-                              objectFit: "contain",
-                              objectPosition: "center",
-                              display: "block",
-                              margin: "0 auto",
-                            }}
-                          />
-
-
-                          <div className="card-body text-center">
-                            <h5 className="card-title">
-                              {post.donation.title}
-                            </h5>
-                            <p className="card-text">
-                              {post.donation.description}
-                            </p>
-                            <div className="progress mb-3">
-                              <div
-                                className="progress-bar"
-                                role="progressbar"
+                        <div className="container mt-1">
+                          {post.donation && (
+                            <div>
+                              <Image
+                                src={post.donation.image}
+                                alt={post.donation.title}
+                                width={500}
+                                height={300}
+                                className="img-fluid rounded"
                                 style={{
-                                  width: `${(post.donation.collected_amount /
-                                    post.donation.amount) *
-                                    100
-                                    }%`,
+                                  objectFit: "contain",
+                                  objectPosition: "center",
+                                  display: "block",
+                                  margin: "0 auto",
                                 }}
-                                aria-valuenow={post.donation.collected_amount}
-                                aria-valuemin="0"
-                                aria-valuemax={post.donation.amount}
-                              ></div>
-                            </div>
-                            <div className="d-flex align-items-center justify-content-between">
-                              <p className="text-muted">
-                                {post.donation.collected_amount} Collected
-                              </p>
-                              <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+                              />
 
-                              <button
-                                className="btn btn-primary btn-sm"
-                                onClick={() => {
-                                  setDonationModal(!donationModal)
 
-                                  setDonationID(post.donation.id)
-                                }}
-                              >
-                                Donate
-                              </button>
-
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="d-flex flex-column align-items-center mb-3">
-
-                      <UserImagesLayout key={`${post.id}-${index}`} post={post} />
-
-                      {/* Event Section */}
-                      {post.event && post.event.cover && (
-                        <div className="w-100 text-center mt-2">
-                          <Image
-                            src={post.event.cover}
-                            alt="Event Cover"
-                            width={500}
-                            height={300}
-                            className="img-fluid rounded"
-                            style={{ objectFit: "cover" }}
-                          />
-
-                          <h5 className="fw-bold mt-2"
-                            style={{
-                              cursor: 'pointer',
-                              color: 'inherit',
-                              transition: 'color 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => e.target.style.color = 'blue'}
-                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                            onClick={() => router.push(`/pages/Events/eventDetails/${post.event_id}`)}
-                          >
-                            {post.event.name}
-                          </h5>
-
-                          <span className="badge bg-primary rounded-pill mt-2 px-3 py-2">{post.event.start_date}</span>
-                        </div>
-                      )}
-
-                      {post.product && post.product.images.length > 0 && (
-                        <div className="w-100 mt-4 card shadow-sm border-0 rounded p-3">
-                          {/* Product Image */}
-                          <div className="text-center">
-                            <Image
-                              src={post.product.images[0].image}
-                              alt={post.product.product_name}
-                              width={600}
-                              height={400}
-                              className="img-fluid rounded"
-                              style={{ objectFit: "cover", maxHeight: "300px" }}
-                            />
-                          </div>
-
-                          {/* Product Details */}
-                          <div className="card-body">
-                            <h5 className="fw-bold text-dark">{post.product.product_name}</h5>
-                            <hr className="mb-2" />
-
-                            <div className="row align-items-center">
-                              <div className="col-md-9">
-                                <p className="mb-1"><b>Price:</b> <span className="text-success fw-bold">{post.product.price} {post.product.currency}</span></p>
-                                <p className="mb-1"><b>Category:</b> {post.product.category}</p>
-                                <p className="mb-0 text-primary">
-                                  <i className="bi bi-geo-alt-fill"></i> {post.product.location}
+                              <div className="card-body text-center">
+                                <h5 className="card-title">
+                                  {post.donation.title}
+                                </h5>
+                                <p className="card-text">
+                                  {post.donation.description}
                                 </p>
-                              </div>
+                                <div className="progress mb-3">
+                                  <div
+                                    className="progress-bar"
+                                    role="progressbar"
+                                    style={{
+                                      width: `${(post.donation.collected_amount /
+                                        post.donation.amount) *
+                                        100
+                                        }%`,
+                                    }}
+                                    aria-valuenow={post.donation.collected_amount}
+                                    aria-valuemin="0"
+                                    aria-valuemax={post.donation.amount}
+                                  ></div>
+                                </div>
+                                <div className="d-flex align-items-center justify-content-between">
+                                  <p className="text-muted">
+                                    {post.donation.collected_amount} Collected
+                                  </p>
+                                  <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
 
-                              {/* Edit Product Button */}
-                              <div className="col-md-3 text-end">
-                                <Link href="#">
-                                  <button className="btn btn-primary rounded-pill px-3 py-2">
-                                    Edit Product
+                                  <button
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => {
+                                      setDonationModal(!donationModal)
+
+                                      setDonationID(post.donation.id)
+                                    }}
+                                  >
+                                    Donate
                                   </button>
-                                </Link>
+
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          )}
                         </div>
-                      )}
 
-                      {/* Video Section */}
-                      {post.video && (
-                        <div className="w-100 mt-3">
-                          <video controls className="w-100 rounded">
-                            <source src={post.video.media_path} type="video/mp4" />
-                            Your browser does not support the video tag.
-                          </video>
+                        <div className="d-flex flex-column align-items-center mb-3">
+
+                          <UserImagesLayout key={`${post.id}-${index}`} post={post} />
+
+                          {/* Event Section */}
+                          {post.event && post.event.cover && (
+                            <div className="w-100 text-center mt-2">
+                              <Image
+                                src={post.event.cover}
+                                alt="Event Cover"
+                                width={500}
+                                height={300}
+                                className="img-fluid rounded"
+                                style={{ objectFit: "cover" }}
+                              />
+
+                              <h5 className="fw-bold mt-2"
+                                style={{
+                                  cursor: 'pointer',
+                                  color: 'inherit',
+                                  transition: 'color 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                onClick={() => router.push(`/pages/Events/eventDetails/${post.event_id}`)}
+                              >
+                                {post.event.name}
+                              </h5>
+
+                              <span className="badge bg-primary rounded-pill mt-2 px-3 py-2">{post.event.start_date}</span>
+                            </div>
+                          )}
+
+                          {post.product && post.product.images.length > 0 && (
+                            <div className="w-100 mt-4 card shadow-sm border-0 rounded p-3">
+                              {/* Product Image */}
+                              <div className="text-center">
+                                <Image
+                                  src={post.product.images[0].image}
+                                  alt={post.product.product_name}
+                                  width={600}
+                                  height={400}
+                                  className="img-fluid rounded"
+                                  style={{ objectFit: "cover", maxHeight: "300px" }}
+                                />
+                              </div>
+
+                              {/* Product Details */}
+                              <div className="card-body">
+                                <h5 className="fw-bold text-dark">{post.product.product_name}</h5>
+                                <hr className="mb-2" />
+
+                                <div className="row align-items-center">
+                                  <div className="col-md-9">
+                                    <p className="mb-1"><b>Price:</b> <span className="text-success fw-bold">{post.product.price} {post.product.currency}</span></p>
+                                    <p className="mb-1"><b>Category:</b> {post.product.category}</p>
+                                    <p className="mb-0 text-primary">
+                                      <i className="bi bi-geo-alt-fill"></i> {post.product.location}
+                                    </p>
+                                  </div>
+
+                                  {/* Edit Product Button */}
+                                  <div className="col-md-3 text-end">
+                                    <Link href="#">
+                                      <button className="btn btn-primary rounded-pill px-3 py-2">
+                                        Edit Product
+                                      </button>
+                                    </Link>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Video Section */}
+                          {post.video && (
+                            <div className="w-100 mt-3">
+                              <video controls className="w-100 rounded">
+                                <source src={post.video.media_path} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                            </div>
+                          )}
+
+                          {/* Audio Section */}
+                          {post.audio && (
+                            <div className="w-100 mt-3">
+                              <audio controls className="w-100">
+                                <source src={post.audio.media_path} />
+                                Your browser does not support the audio tag.
+                              </audio>
+                            </div>
+                          )}
+
                         </div>
-                      )}
 
-                      {/* Audio Section */}
-                      {post.audio && (
-                        <div className="w-100 mt-3">
-                          <audio controls className="w-100">
-                            <source src={post.audio.media_path} />
-                            Your browser does not support the audio tag.
-                          </audio>
-                        </div>
-                      )}
+                      </>
 
-                    </div>
+                      :
+
+                      post.shared_post && <SharedPosts sharedPost={post.shared_post} post={post} posts={posts} setPosts={setPosts} />
+
+                    }
 
                     <div className="post-card-info">
                       {/* Reaction Section */}

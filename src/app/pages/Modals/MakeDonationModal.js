@@ -24,6 +24,7 @@ export default function MakeDonationModal({ postID, donationID, donationModal, s
             });
 
             if (response.data.code == "200") {
+
                 setPosts(prevPosts =>
                     prevPosts.map(post =>
                         post.donation && post.donation.id === donationID
@@ -37,6 +38,7 @@ export default function MakeDonationModal({ postID, donationID, donationModal, s
                             : post
                     )
                 );
+                
                 toast.success(response.data.message);
                 setDonationModal(false);
             } else {

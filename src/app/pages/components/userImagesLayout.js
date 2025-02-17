@@ -56,6 +56,7 @@ function UserImagesLayout({ post }) {
               className={styles.postImage}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               priority={index === 0}
+              loader={({ src }) => src}
             />
             {index === 4 && remainingCount > 0 && (
               <div className={styles.remainingCount}>

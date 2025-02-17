@@ -398,7 +398,7 @@ export default function Groups() {
                                     </div>
                                     <div className="d-flex justify-content-center mt-3">
                                       <Link 
-                                          href={`/pages/groups/${group.id}`}
+                                          href={`/pages/groups/editGroup/${group.id}`}
                                         className="btn btn-sm btn-outline-info me-2">
                                       <i className="bi bi-pencil"></i>&nbsp;
                                         Edit
