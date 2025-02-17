@@ -22,6 +22,7 @@ export default function SharePostTimelineModal({ postID, sharePostTimelineModal,
     const handleClose = () => setShareShowTimelineModal(!sharePostTimelineModal);
 
     const fetchMyPages = async () => {
+        setGroupID("")
         try {
             setSelectedOption("pages");
             const response = await api.post("/api/get-my-pages", {
@@ -40,6 +41,7 @@ export default function SharePostTimelineModal({ postID, sharePostTimelineModal,
     };
 
     const fetchMyGroups = async () => {
+        setPageID("")
         try {
             setSelectedOption("groups");
             const response = await api.post("/api/get-my-group", {
@@ -58,31 +60,48 @@ export default function SharePostTimelineModal({ postID, sharePostTimelineModal,
     };
 
 
-
-
+    console.log("selectedOption",selectedOption)
 
     const sharePost = async () => {
         setIsPosting(true);
-
-
         try {
-            const response = await api.post("/api/post/share", {
-                post_id: postID,
-                shared_text: sharedText,
-                page_id: pageID ? pageID : "",
-                group_id: groupID ? groupID : ""
-            });
 
-            console.log(response)
-            if (response.data.code === "200") {
+            if(sharedText && (pageID ||  groupID || selectedOption === "timeline") ){
+                const formData = new FormData();
 
-                toast.success(response.data.message);
-                handleClose();
+                formData.append("post_id", postID);
+                formData.append("shared_text", sharedText);
+                if (pageID) formData.append("page_id", pageID);
+                if (groupID) formData.append("group_id", groupID);
+    
+    
+                // formData.append("privacy", privacy);
+    
+                const response = await api.post("/api/post/share", formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                });
+    
+                if (response.data.code === "200") {
+    
+                    toast.success(response.data.message);
+                    handleClose();
+                }
+    
+                else {
+                    toast.error(response.data.message);
+                }
+
             }
 
-            else {
-                toast.error(response.data.message);
+            else{
+                toast.error("kindly complete respective info!")
             }
+
+
+
+
         } catch (error) {
             toast.error("Error while updating post");
         }
@@ -171,18 +190,20 @@ export default function SharePostTimelineModal({ postID, sharePostTimelineModal,
                     </select>
                 )}
 
-                {/* Comment Box */}
-                <div className="form-floating mt-3">
+                <div className="input-group has-validation">                
+                <div className="form-floating is-invalid mt-3">
                     <textarea className="form-control" placeholder="Leave a comment here" id="floatingTextarea" style={{ height: "100px" }}
                         onChange={(e) => setSharedText(e.target.value)}
                     />
                     <label htmlFor="floatingTextarea">Share your thoughts...</label>
+
+                </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <button className={`btn ${isPosting ? "btn-secondary" : "btn-primary"}`} 
-                onClick={sharePost}
-                disabled={isPosting}
+                <button className={`btn ${isPosting ? "btn-secondary" : "btn-primary"}`}
+                    onClick={sharePost}
+                    disabled={isPosting}
                 >
                     <i className="bi bi-send"></i>
                     &nbsp;

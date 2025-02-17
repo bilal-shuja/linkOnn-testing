@@ -21,9 +21,23 @@ export default function MakeDonationModal({ donationID, donationModal, setDonati
             });
             if (response.data.code == "200") {
                 toast.success(response.data.message);
-                // setPosts([response.data.data, ...posts]);
+                setPosts(prevPosts =>
+                    prevPosts.map(post =>
+
+                        post.donation && post.donation.id === donationID  
+                            ? { 
+                                ...post, 
+                                donation: {
+                                    ...post.donation,
+                                    collected_amount: (Number(post.donation.collected_amount) || 0) + Number(donate) 
+                                }
+                              }
+                            : post
+                    )
+                );
                 setDonationModal(false);
-            } else {
+            }
+            else {
                 toast.error(response.data.message);
             }
         } catch (error) {

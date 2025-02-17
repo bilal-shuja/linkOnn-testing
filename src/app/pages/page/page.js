@@ -185,7 +185,7 @@ export default function Pages() {
                 </ul>
               </div>
 
-              <div className="tab-content mt-5">
+              <div className="tab-content mt-2">
                 <div
                   className={`tab-pane fade ${activeTab === 0 ? "show active" : ""
                     }`}
