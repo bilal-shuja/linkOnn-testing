@@ -14,6 +14,7 @@ import ReportPostModal from "../Modals/ReportPost";
 import EnableDisableCommentsModal from "../Modals/EnableDisableCommentsModal";
 import SavePostModal from "../Modals/SaveUnsavePost";
 import useConfirmationToast from "../Modals/useConfirmationToast";
+import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
 
 export default function VideoFeed() {
 
@@ -41,7 +42,7 @@ export default function VideoFeed() {
     const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
     const [showReportPostModal, setShowReportPostModal] = useState(false);
     const [showSavePostModal, setShowSavePostModal] = useState(false);
-
+    const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
 
     const handlePostDelete = (postId) => {
         showConfirmationToast([postId]);
@@ -469,14 +470,54 @@ export default function VideoFeed() {
 
                                                 <div className="mx-2">
                                                     <h6 className="card-title">
-                                                        {post.user.first_name} {post.user.last_name}
-                                                        {post.post_location &&
-                                                            post.post_location !== "" && (
-                                                                <span className="text-primary">
-                                                                    <small className="text-dark"> is in </small>
-                                                                    {post.post_location}
-                                                                </span>
-                                                            )}
+                                                        <span
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                                        >
+                                                            {post.user.first_name} {post.user.last_name}
+                                                        </span>
+
+                                                        {post.post_location && post.post_location !== "" && (
+                                                            <span className="text-primary">
+                                                                <small className="text-dark"> is in </small> {post.post_location}
+                                                            </span>
+                                                        )}
+                                                        {(post.group || post.page) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
+
+                                                        {post.group &&
+                                                            <span
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                                            >
+                                                                {post.group.group_title}
+                                                            </span>
+                                                        }
+
+                                                        {post.page &&
+                                                            <span
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/page/myPageTimeline/${post.group_id}`)}
+                                                            >
+                                                                {post.page.page_title}
+                                                            </span>}
                                                     </h6>
                                                     <small className="text-muted lead-font-size">
                                                         {post.created_human}
@@ -738,13 +779,16 @@ export default function VideoFeed() {
                                                         <hr className="dropdown-divider" />
                                                     </li>
                                                     <li className=" align-items-center d-flex">
-                                                        <Link
+                                                        <button
                                                             className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                            href="#"
+                                                            onClick={() => {
+                                                                setShareShowTimelineModal(true)
+                                                                setPostID(post.id)
+                                                            }}
                                                         >
                                                             <i className="bi bi-bookmark-check pe-2"></i> Post
                                                             on Timeline
-                                                        </Link>
+                                                        </button>
                                                     </li>
                                                     <li className=" align-items-center d-flex">
                                                         <span
@@ -1092,6 +1136,16 @@ export default function VideoFeed() {
                         setShowSavePostModal={setShowSavePostModal}
                     />
                 )}
+
+            {
+                sharePostTimelineModal && (
+                    <SharePostTimelineModal
+                        sharePostTimelineModal={sharePostTimelineModal}
+                        setShareShowTimelineModal={setShareShowTimelineModal}
+                        postID={postID}
+                    />
+                )
+            }
         </div>
     );
 }

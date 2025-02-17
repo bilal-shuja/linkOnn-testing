@@ -2,25 +2,24 @@ import createAPI from "@/app/lib/axios";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import styles from "./CupofCoffee.module.css";  // ✅ Import CSS Module
+import Spinner from 'react-bootstrap/Spinner';  // ✅ Import Bootstrap Spinner
 
 const CupofCoffee = ({ postId, handleClose }) => {
     const api = createAPI();
-    const [balance, setBalance] = useState(null); // State to store balance
+    const [balance, setBalance] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);  // ✅ Loading state
 
     useEffect(() => {
-        // Disable scrolling when modal opens
         document.documentElement.classList.add(styles.modalOpen);
         document.body.classList.add(styles.modalOpen);
 
-        // Fetch balance when modal opens
         GetBalance();
 
         return () => {
-            // Enable scrolling when modal closes
             document.documentElement.classList.remove(styles.modalOpen);
             document.body.classList.remove(styles.modalOpen);
         };
-    }, []); // Runs once when the modal opens
+    }, []);
 
     const GetBalance = async () => {
         try {
@@ -37,17 +36,20 @@ const CupofCoffee = ({ postId, handleClose }) => {
     };
 
     const handleConfirm = async () => {
-        handleClose();
+        setIsLoading(true);  // ✅ Start loading
         try {
             const response = await api.post("/api/post/cup-of-coffee", { post_id: postId });
 
-            if (response.data.status == "200") {
+            if (response.data.status === "200") {
                 toast.success(response.data.message);
             } else {
                 toast.info(response.data.message);
             }
         } catch (error) {
             toast.error("Error processing request");
+        } finally {
+            setIsLoading(false);  // ✅ Stop loading
+            handleClose();
         }
     };
 
@@ -68,10 +70,12 @@ const CupofCoffee = ({ postId, handleClose }) => {
                         </p>
                     </div>
                     <div className={styles.cupCoffeeModalFooter}>
-                        <button className="btn btn-primary mx-2" onClick={handleConfirm}>
-                            Yes!
+                        <button className="btn btn-primary mx-2" onClick={handleConfirm} disabled={isLoading}>
+                            {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Yes!"}
                         </button>
-                        <button className="btn btn-danger mx-2" onClick={handleClose}>Cancel</button>
+                        <button className="btn btn-danger mx-2" onClick={handleClose} disabled={isLoading}>
+                            Cancel
+                        </button>
                     </div>
                 </div>
             </div>
