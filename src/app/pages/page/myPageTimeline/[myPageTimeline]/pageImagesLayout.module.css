@@ -122,7 +122,6 @@
     padding: 0;
   }
   
-  /* More specific class name to avoid conflicts */
   .postImagesContainer {
     display: grid;
     gap: 2px;
@@ -132,8 +131,6 @@
   
   }
 
-
-  /* Rest of the styles remain the same but with more specific selectors */
   .imageContainer {
     position: relative;
     width: 100%;
@@ -147,8 +144,21 @@
   .imageContainer:hover {
     opacity: 0.9;
   }
+
+
   .postImage {
-    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+  }
+  
+  .singleImage {
+    object-fit: contain !important;
+    object-position: center;
+    transform: scale(1.01);
+  }
+  
+  .multipleImage {
+    object-fit: cover !important;
   }
   
   /* Grid layouts with !important to override any inherited styles */
@@ -237,29 +247,48 @@
   
   /* Carousel styles */
   .carouselModal :global(.modal-content) {
-    /* background-color: transparent; */
     border: none;
   }
   
+
+
   .carouselModal :global(.modal-header) {
     border: none;
-    /* padding: 1rem; */
+    padding: 1rem;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1050; 
+    /* background-color: white; */
+  }
+
+  .carouselModal :global(.modal-header) {
+    pointer-events: auto;
   }
   
+  .carouselModal :global(.modal-header .btn-close) {
+  background-color: white;
+  opacity: 0.8;
+  border-radius: 50%;
+  padding: 0.75rem;
+}
+
   .carouselModal :global(.modal-body) {
     padding: 0;
   }
   
   .carousel {
     width: 100%;
+    background: black;
   }
   
   .carouselImageWrapper {
     position: relative;
     width: 100%;
-    height: 50vh;
+    height: 80vh;
+    background: black;
   }
   
   .carouselImage {
-    object-fit: fill;
+    object-fit: contain;
   }
