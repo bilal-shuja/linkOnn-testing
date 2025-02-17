@@ -4,13 +4,10 @@ import React, { useState } from 'react';
 import Image from "next/image";
 
 function UserImagesLayout({ post }) {
-
-  if (!post?.images || post.images.length === 0) {
-    return null;
-  }
-
   const [openModalId, setOpenModalId] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const isSingleImage = post?.images?.length === 1;
 
   const getGridClass = (count) => {
     switch (count) {
@@ -22,28 +19,31 @@ function UserImagesLayout({ post }) {
         return styles.gridLayout3;
       case 4:
         return styles.gridLayout4;
-      case 5:
-        return styles.gridLayout5;
       default:
         return styles.gridLayoutMore;
     }
   };
 
-  const visibleImages = post?.images?.length > 5
-    ? post.images.slice(0, 5)
-    : post?.images;
-  const remainingCount = post?.images?.length > 5 ? post?.images?.length - 5 : 0;
-  const isModalOpen = openModalId === post.id;
+  // const visibleImages = post?.images?.slice(0, 5);
+  // const remainingCount = post?.images?.length > 5 ? post?.images?.length - 5 : 0;
 
+  const visibleImages = post?.images?.length > 5 
+  ? post.images.slice(0, 6) 
+  : post?.images;
+const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
+  const isModalOpen = openModalId === post.id;
   return (
-    <div className={styles.imageGridWrapper}>
+    <>
+   
+      <div className={styles.imageGridWrapper}>
       <div className={`${styles.postImagesContainer} ${getGridClass(post?.images?.length)}`}>
         {visibleImages?.map((image, index) => (
           <div
             key={index}
-            className={`${styles.imageContainer} ${post.images.length === 3 && index === 0 ? styles.firstOfThree :
-                post.images.length === 5 && index === 0 ? styles.firstOfFive : ''
-              }`}
+            className={`${styles.imageContainer} ${
+              post.images.length === 3 && index === 0 ? styles.firstOfThree :
+              post.images.length === 5 && index === 0 ? styles.firstOfFive : ''
+            }`}
             onClick={() => {
               setActiveIndex(index);
               setOpenModalId(post.id);
@@ -52,13 +52,14 @@ function UserImagesLayout({ post }) {
             <Image
               src={image.media_path}
               alt={`Post image ${index + 1}`}
-              fill
-              className={styles.postImage}
+              className={`image-fluid position-static ${styles.postImage} ${
+                isSingleImage ? styles.singleImage : styles.multipleImage
+              }`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              priority={index === 0}
+              fill
               loader={({ src }) => src}
             />
-            {index === 4 && remainingCount > 0 && (
+            {index === 5  && remainingCount > 0 && (
               <div className={styles.remainingCount}>
                 +{remainingCount}
               </div>
@@ -67,12 +68,14 @@ function UserImagesLayout({ post }) {
         ))}
       </div>
 
+
       <Modal
         show={isModalOpen}
         onHide={() => setOpenModalId(null)}
         centered
-        size="xl"
+        size="lg"
         className={styles.carouselModal}
+        keyboard={false}
       >
         <Modal.Header closeButton />
         <Modal.Body>
@@ -80,7 +83,7 @@ function UserImagesLayout({ post }) {
             activeIndex={activeIndex}
             onSelect={setActiveIndex}
             interval={null}
-            indicators={true}
+            // indicators={false}
             className={styles.carousel}
           >
             {post.images?.map((image, idx) => (
@@ -90,9 +93,9 @@ function UserImagesLayout({ post }) {
                     src={image.media_path}
                     alt={`Image ${idx + 1}`}
                     fill
-                    className={styles.carouselImage}
+                    className={`img-fluid position-absolute ${styles.carouselImage}`}
                     sizes="90vw"
-                    priority
+                    loader={({ src }) => src}
                   />
                 </div>
               </Carousel.Item>
@@ -101,7 +104,8 @@ function UserImagesLayout({ post }) {
         </Modal.Body>
       </Modal>
     </div>
-  );
+    </>
+  )
 }
 
 export default UserImagesLayout;

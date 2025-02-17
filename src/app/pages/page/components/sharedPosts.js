@@ -37,10 +37,6 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
     const [donationModal, setDonationModal] = useState(false);
     const [donationID, setDonationID] = useState("");
 
-    // const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
-    // const [showEditPostModal, setShowEditPostModal] = useState(false);
-    // const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
-
 
     const reactionEmojis = {
         satisfaction: "👍",
@@ -89,257 +85,7 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
     };
 
 
-    const toggleReplies = async (commentId) => {
-        try {
-            const response = await api.post("/api/post/comments/get-replies", {
-                comment_id: commentId,
-            });
-
-            if (response.data.code == "200") {
-                const replies = response.data.data || [];
-
-                setRepliesData((prevState) => ({
-                    ...prevState,
-                    [commentId]: replies,
-                }));
-
-                setShowReplies((prevState) => ({
-                    ...prevState,
-                    [commentId]: !prevState[commentId],
-                }));
-
-
-            } else {
-                toast.error(response.data.message)
-            }
-        } catch (error) {
-            console.log(error)
-            toast.error("An error occurred while fetching replies.");
-        }
-    };
-
-
-    const handleToggleReplyInput = (commentId) => {
-        setShowReplyInput((prevState) => ({
-            ...prevState,
-            [commentId]: !prevState[commentId],
-        }));
-    };
-
-    const ReplyComment = async (commentId, commentreplyText) => {
-        try {
-            const response = await api.post("/api/post/comments/add-reply", {
-                comment_id: commentId,
-                comment: commentreplyText,
-            });
-
-            if (response.data.code == "200") {
-                toast.success("Reply added successfully!");
-                setCommentreplyText((prevState) => ({
-                    ...prevState,
-                    [commentId]: "",
-                }));
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("An error occurred while adding the reply");
-        }
-    };
-
-    const LikeComment = async (commentId, postId) => {
-        try {
-            const response = await api.post("/api/post/comments/like", {
-                comment_id: commentId,
-                post_id: postId,
-            });
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("Error while reacting to the comment");
-        }
-    };
-
-    const commentReplyLike = async (replyId) => {
-        try {
-            const response = await api.post("/api/post/comments/reply_like", {
-                comment_reply_id: replyId,
-            });
-
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
-                toast.info(response.data.message);
-            }
-
-        } catch (error) {
-            toast.error("Error while reacting to the comment reply");
-        }
-    };
-
-    const LikePost = async (postId, reactionType) => {
-        try {
-            const response = await api.post("/api/post/action", {
-                post_id: postId,
-                action: "reaction",
-                reaction_type: reactionType,
-            });
-            if (response.data.code === "200") {
-                setPosts(prevPosts =>
-                    prevPosts.map(post => {
-                        if (post.id === postId) {
-                            return {
-                                ...post,
-                                reaction: {
-                                    is_reacted: true,
-                                    reaction_type: reactionType,
-                                    count: post.reaction?.is_reacted
-                                        ? post.reaction.count
-                                        : (post.reaction?.count || 0) + 1,
-                                    image: post.reaction?.image || "",
-                                    color: post.reaction?.color || "",
-                                    text: post.reaction?.text || ""
-                                }
-                            };
-                        }
-                        return post;
-                    })
-                );
-
-                // toast.success(response.data.message);
-            }
-            else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("Error while reacting to the Post");
-        }
-    };
-
-    const handleCommentToggle = async (postId) => {
-        setShowList(!showList);
-
-        setShowComments((prevState) => ({
-            ...prevState,
-            [postId]: !prevState[postId],
-        }));
-
-        if (!comments[postId]) {
-            try {
-                const response = await api.get(
-                    `/api/post/comments/getcomment?post_id=${postId}`,
-                    {}
-                );
-
-                if (response.data.data && Array.isArray(response.data.data)) {
-                    setComments((prevComments) => ({
-                        ...prevComments,
-                        [postId]: response.data.data,
-                    }));
-                }
-            } catch (error) {
-                return error;
-            }
-        }
-    };
-
-
-    const handleCommentTextChange = (e, postId) => {
-        setCommentText((prevText) => ({
-            ...prevText,
-            [postId]: e.target.value,
-        }));
-    };
-
-    const handleCommentSubmit = async (postId) => {
-        const comment = commentText[postId] || "";
-
-        if (!comment || comment.trim() === "") {
-            toast.error("Comment cannot be empty.")
-            return;
-        }
-        setLoading(true);
-        try {
-            const response = await api.post("/api/post/comments/add", {
-                post_id: postId,
-                comment_text: comment,
-            });
-
-            if (response.data.code === "200") {
-                const optimisticComment = response.data.data;
-                setComments((prevComments) => {
-                    const updatedComments = prevComments[postId]
-                        ? [...prevComments[postId]]
-                        : [];
-                    updatedComments.push(optimisticComment);
-                    return {
-                        ...prevComments,
-                        [postId]: updatedComments,
-                    };
-                });
-                toast.success(response.data.message);
-                setCommentText((prevText) => ({
-                    ...prevText,
-                    [postId]: "",
-                }));
-            } else {
-                toast.error(response.data.message || "Failed to add the comment.")
-            }
-        } catch (error) {
-            toast.error("An error occurred while adding the comment.")
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCommentDelete = async (comment_id, postId) => {
-        try {
-            const response = await api.post("/api/post/comments/delete", {
-                comment_id,
-            });
-
-            if (response.data.code == "200") {
-                setComments((prevComments) => {
-                    const updatedComments = prevComments[postId].filter(
-                        (comment) => comment.id !== comment_id
-                    );
-                    return {
-                        ...prevComments,
-                        [postId]: updatedComments,
-                    };
-                });
-
-                toast.success(response.data.message);
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("An error occurred while deleting the comment.");
-        }
-    };
-
-
-    const handleCommentreplyDelete = async (reply_id) => {
-        try {
-            const response = await api.post("/api/post/comments/delete-reply", {
-                reply_id,
-            });
-
-            if (response.data.code == "200") {
-                toast.success("Reply deleted successfully.");
-            } else {
-                toast.error(`Error: ${response.data.code}`);
-            }
-        } catch (error) {
-            toast.error("An error occurred while deleting the reply.");
-        }
-    };
-
-
+ 
     const handleCopy = (link) => {
         navigator.clipboard.writeText(link);
         toast.success("Link copied successfully!");
@@ -384,12 +130,12 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
                                 <div className="d-flex align-items-center">
 
                                     <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                                        onClick={() => handleClick(post.user.id)} >
+                                        onClick={() => handleClick(sharedPost.user.id)} >
 
                                         <Link href="#">
                                             <Image
                                                 className="avatar-img rounded-circle"
-                                                src={post.user.avatar}
+                                                src={sharedPost.user.avatar}
                                                 alt="User Avatar"
                                                 width={50}
                                                 height={50}
@@ -397,7 +143,7 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
                                             />
                                         </Link>
 
-                                        {post.user.is_verified === '1' && (
+                                        {sharedPost.user.is_verified === '1' && (
                                             <div
                                                 className="bg-light rounded-circle d-flex align-items-center justify-content-center"
                                                 style={{
@@ -423,46 +169,46 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
                                                 style={{ cursor: 'pointer' }}
                                             // onClick={() => handleClick(post.user.id)}
                                             >
-                                                {post?.user.first_name} {post?.user.last_name}  {post?.post_location && post.post_location !== "" && (
+                                                {sharedPost?.user.first_name} {sharedPost?.user.last_name}  {sharedPost?.post_location && sharedPost.post_location !== "" && (
                                                     <span className="text-primary ms-1">
                                                         <small className="text-dark"> is in </small>
                                                         <i className="bi bi-geo-fill"></i>
                                                         <a
-                                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post?.post_location)}`}
+                                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sharedPost?.post_location)}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-primary text-decoration-none"
                                                         >
-                                                            {post.post_location}
+                                                            {sharedPost.post_location}
                                                         </a>
                                                     </span>
-                                                )} <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
+                                                )} <i className="bi bi-arrow-right"></i> {sharedPost?.page?.page_title}
                                             </span>
 
 
                                         </h6>
-                                        {/* <small className="text-secondary">
-                                            {post.created_human} -
-                                            {post.privacy === '1' && (
+                                        <small className="text-secondary">
+                                            {sharedPost.created_human} -
+                                            {sharedPost.privacy === '1' && (
                                                 <i className="bi bi-globe-asia-australia mx-1 text-primary"></i>
                                             )}
 
-                                            {post.privacy === '2' && (
+                                            {sharedPost.privacy === '2' && (
                                                 <i className=" bi bi-people-fill mx-1 text-primary"></i>
                                             )}
 
-                                            {post.privacy === '4' && (
+                                            {sharedPost.privacy === '4' && (
                                                 <i className=" bi bi-people mx-1 text-primary"></i>
                                             )}
 
-                                            {post.privacy === '5' && (
+                                            {sharedPost.privacy === '5' && (
                                                 <i className=" bi bi-briefcase mx-1 text-primary"></i>
                                             )}
 
-                                            {post.privacy === '3' && (
+                                            {sharedPost.privacy === '3' && (
                                                 <i className=" bi bi-lock-fill mx-1 text-primary"></i>
                                             )}
-                                        </small> */}
+                                        </small>
                                     </div>
                                 </div>
 
