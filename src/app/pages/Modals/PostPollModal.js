@@ -75,7 +75,7 @@ export default function PostPollModal({ pollModal, setPollModal, posts, setPosts
             </Modal.Header>
             <Modal.Body>
                 <div className="mb-3">
-                    <label className="form-label text-muted">Question</label>
+                    <label className="form-label text-muted fw-bold">Question*</label>
                     <input
                         type="text"
                         className="form-control"

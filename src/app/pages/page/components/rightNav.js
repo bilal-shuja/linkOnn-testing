@@ -6,7 +6,7 @@ import ConfirmModal from '../Modal/ConfirmModal';
 import React, { useState, useEffect } from 'react'
 
 
-export default function RightNav({ pageTimelineData , pageTimelineID }) {
+export default function RightNav({ pageTimelineData }) {
 
   const api = createAPI();
   const [suggestedPages, setSuggestedPages] = useState([])
@@ -19,6 +19,7 @@ export default function RightNav({ pageTimelineData , pageTimelineID }) {
       .then((res) => {
         if (res.data.code == "200") {
           setSuggestedPages(res.data.data);
+          console.log(res.data.data)
         }
 
       })
@@ -36,11 +37,11 @@ export default function RightNav({ pageTimelineData , pageTimelineID }) {
 
 
   function SuggestedPages({ items }) {
-    
-  const [pageID, setPageID] = useState("")
-  const [showPageLikeModal , setShowPageLikeModal] = useState(false);
-  const [thumbsClick , setThumbsClick] = useState(false)
-  
+
+    const [pageID, setPageID] = useState("")
+    const [showPageLikeModal, setShowPageLikeModal] = useState(false);
+    const [thumbsClick, setThumbsClick] = useState(false)
+
 
 
     return (
@@ -58,6 +59,7 @@ export default function RightNav({ pageTimelineData , pageTimelineID }) {
                 width={50}
                 height={50}
                 style={{ objectFit: 'cover', height: '50px', width: '50px' }}
+                loader={({ src }) => src}
               />
               <div className='suggested-pages-info'>
                 <h6>{items.page_title}</h6>
@@ -68,25 +70,33 @@ export default function RightNav({ pageTimelineData , pageTimelineID }) {
           </div>
           <div className="p-2 flex-shrink-1">
 
-            <i className={thumbsClick ? "bi bi-hand-thumbs-up-fill text-primary fs-3": "bi bi-hand-thumbs-up fs-3"} onClick={()=>{
-              setPageID(items.id)
-              setShowPageLikeModal(true)
-
-            }} style={{cursor:"pointer"}}></i>
+            <i
+              className={
+                thumbsClick
+                  ? "bi bi-hand-thumbs-up-fill text-primary fs-3"
+                  : "bi bi-hand-thumbs-up fs-3"
+              }
+              onClick={() => {
+                setPageID(items.id);
+                setShowPageLikeModal(true);
+              }}
+              style={{ cursor: "pointer" }}
+            ></i>
           </div>
         </div>
 
         {
-          showPageLikeModal === true ?
-          <ConfirmModal
-          pageID ={pageID}
-          showPageLikeModal = {showPageLikeModal}
-          setShowPageLikeModal = {setShowPageLikeModal}
-          thumbsClick = {thumbsClick}
-          setThumbsClick = {setThumbsClick}
-          />
-          :
-          null
+          showPageLikeModal && (
+            <ConfirmModal
+              pageID={pageID}
+              showPageLikeModal={showPageLikeModal}
+              setShowPageLikeModal={setShowPageLikeModal}
+              thumbsClick={thumbsClick}
+              setThumbsClick={setThumbsClick}
+            />
+          )
+            
+      
 
         }
 
@@ -136,7 +146,7 @@ export default function RightNav({ pageTimelineData , pageTimelineID }) {
         </div>
 
 
-        
+
 
         <div className="card shadow-lg border-0 mt-4">
           <div className="card-body p-4">
@@ -144,7 +154,7 @@ export default function RightNav({ pageTimelineData , pageTimelineID }) {
               <h5>Followers</h5>
 
               {/* href={`/pages/page/Followers/${}`} */}
-              <a  className='btn btn-outline-primary btn-sm'>See All Followers</a>
+              <a className='btn btn-outline-primary btn-sm'>See All Followers</a>
 
             </div>
 
@@ -152,16 +162,16 @@ export default function RightNav({ pageTimelineData , pageTimelineID }) {
             <span className="text-muted">No Followers Found!</span>
 
 
-            </div>
+          </div>
 
 
-</div>
+        </div>
 
       </div>
 
 
 
-      
+
 
 
 

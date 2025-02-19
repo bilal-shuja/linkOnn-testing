@@ -31,7 +31,7 @@ export default function ReportPostModal({ postID, showReportPostModal, setShowRe
         } catch (error) {
             toast.error("Error while reporting the post");
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false); 
         }
     };
 

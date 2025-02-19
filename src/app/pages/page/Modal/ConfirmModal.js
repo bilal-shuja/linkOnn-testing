@@ -11,19 +11,20 @@ export default function ConfirmModal({pageID , showPageLikeModal, setShowPageLik
     const endpoint = `/api/like-unlike-page`;
 
     function likeDislikePage(){
+      alert(pageID)
         api.post(endpoint,{
             page_id:pageID
         })
         .then((res) => {
           if (res.data.code == "200") {
              toast.success(res.data.message);
-             setThumbsClick(prevState => !prevState)
+            //  setThumbsClick(prevState => !prevState)
+            setThumbsClick(res.data.data === 1);
              setShowPageLikeModal(!showPageLikeModal)
           }
   
         })
         .catch((error) => {
-            console.log(error)
           if (error)
             toast.error("Something went wrong.");
         })

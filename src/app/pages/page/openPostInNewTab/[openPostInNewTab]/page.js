@@ -9,13 +9,21 @@ import { useState, useEffect, useCallback } from "react";
 import MakeDonationModal from "../../Modal/MakeDonationModal";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { ReactionBarSelector } from '@charkour/react-reactions';
+import SavePostModal from "@/app/pages/Modals/SaveUnsavePost";
+import ReportPostModal from "@/app/pages/Modals/ReportPost";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
+import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
 import EnableDisableCommentsModal from '../../Modal/EnableDisableCommentsModal';
 import PageImagesLayout from "../../myPageTimeline/[myPageTimeline]/pageImagesLayout";
+import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
+import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
+import { useRouter } from "next/navigation";
 
 
 export default function OpenPostInNewTab({ params }) {
     const api = createAPI();
+    const router = useRouter();
+
     const { openPostInNewTab } = use(params)
     const userID = localStorage.getItem('userid');
     const [userdata, setUserData] = useState(null);
@@ -46,17 +54,18 @@ export default function OpenPostInNewTab({ params }) {
     const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
     const [showEditPostModal, setShowEditPostModal] = useState(false);
 
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
 
 
-
-    const reverseGradientMap = {
-        '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
-        '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
-        '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
-    };
+    const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+    const [activeGreatJobId, setActiveGreatJobId] = useState(null);
 
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
+
+    const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+
 
 
     const reactionEmojis = {
@@ -78,7 +87,6 @@ export default function OpenPostInNewTab({ params }) {
     };
 
 
-
     const handleReactionSelect = (reaction, postId) => {
         const updatedReactions = {
             ...postReactions,
@@ -87,11 +95,52 @@ export default function OpenPostInNewTab({ params }) {
 
         LikePost(postId, reactionValues[reaction] || 0);
 
-
         setPostReactions(updatedReactions);
         setActiveReactionPost(null);
-        localStorage.setItem("postReactions", JSON.stringify(updatedReactions));
     };
+
+    
+    // localStorage.setItem("postReactions", JSON.stringify(updatedReactions));
+
+    const colorMap = {
+        '23jo': '#FFFFFF',
+        '23ju': '#C600FF',
+        '_2j78': '#111111',
+        '_2j79': 'linear-gradient(45deg, rgb(255, 0, 71) 0%, rgb(44, 52, 199) 100%)',
+        '_2j80': 'linear-gradient(45deg, rgb(252, 54, 253) 0%, rgb(93, 63, 218) 100%)',
+        '_2j81': 'linear-gradient(45deg, rgb(93, 99, 116) 0%, rgb(22, 24, 29) 100%)',
+        '_2j82': '#00A859',
+        '_2j83': '#0098DA',
+        '_2j84': '#3E4095',
+        '_2j85': '#4B4F56',
+        '_2j86': '#161616',
+        '_2j87': 'url(https://images.socioon.com/assets/images/post/bgpst1.png)',
+        '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
+        '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
+        '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
+    };
+
+    const getDisplayColor = (code) => {
+        return colorMap[code] || code;
+    };
+
+    const openModalCupCoffee = (id) => {
+        setActiveCupCoffeeId(id);
+        setActiveGreatJobId(null);
+    };
+    const closeModalCupCoffee = () => {
+        setActiveCupCoffeeId(null);
+    };
+
+    const openModalGreatJob = (id) => {
+        setActiveGreatJobId(id);
+        setActiveCupCoffeeId(null); // Ensure other modal closes
+      };
+      const closeModalGreatJob = () => {
+        setActiveGreatJobId(null);
+      };
+
+
 
     const fetchPosts = async (isInitialLoad = true, limit = 10) => {
         if (loading || noMorePosts) return;
@@ -118,6 +167,26 @@ export default function OpenPostInNewTab({ params }) {
 
                 setPosts((prevPosts) => [...prevPosts, ...newPosts.filter((post) => !prevPosts.some((p) => p.id === post.id))]);
                 setPosts(newPosts)
+
+                
+                const reactionsMap = {};
+                newPosts.forEach((post) => {
+                    if (post.reaction && post.reaction.reaction_type) {
+                        const reactionType = Number(post.reaction.reaction_type);
+                        const reactionKey = Object.keys(reactionValues).find(
+                            (key) => reactionValues[key] === reactionType
+                        );
+                        if (reactionKey) {
+                            reactionsMap[post.id] = reactionEmojis[reactionKey];
+                        }
+                    }
+                });
+
+                setPostReactions((prevReactions) => ({
+                    ...prevReactions,
+                    ...reactionsMap,
+                }));
+
 
                 // if (isInitialLoad) setPage(1);
             }
@@ -285,6 +354,7 @@ export default function OpenPostInNewTab({ params }) {
                 action: "reaction",
                 reaction_type: reactionType,
             });
+         
             if (response.data.code === "200") {
                 setPosts(prevPosts =>
                     prevPosts.map(post => {
@@ -307,7 +377,17 @@ export default function OpenPostInNewTab({ params }) {
                     })
                 );
 
-                // toast.success(response.data.message);
+
+                const reactionKey = Object.keys(reactionValues).find(
+                    key => reactionValues[key] === reactionType
+                );
+
+                if (reactionKey) {
+                    setPostReactions(prevReactions => ({
+                        ...prevReactions,
+                        [postId]: reactionEmojis[reactionKey]
+                    }));
+                }
             }
             else {
                 toast.error(response.data.message);
@@ -339,7 +419,7 @@ export default function OpenPostInNewTab({ params }) {
                     }));
                 }
             } catch (error) {
-              return error
+                return error
             }
         }
     };
@@ -505,7 +585,9 @@ export default function OpenPostInNewTab({ params }) {
 
                                                             <span
                                                                 style={{ cursor: 'pointer' }}
-                                                            // onClick={() => handleClick(post.user.id)}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
                                                             >
                                                                 {post?.user.first_name} {post?.user.last_name}  {post?.post_location && post.post_location !== "" && (
                                                                     <span className="text-primary ms-1">
@@ -521,8 +603,9 @@ export default function OpenPostInNewTab({ params }) {
                                                                             {post.post_location}
                                                                         </a>
                                                                     </span>
-                                                                )} <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
+                                                                )}
                                                             </span>
+                                                            <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
 
 
                                                         </h6>
@@ -566,7 +649,7 @@ export default function OpenPostInNewTab({ params }) {
                                                         aria-labelledby="dropdownMenuButton2"
                                                     >
                                                         {
-                                                            post?.user?.id === userID ?
+                                                            userID && post?.user?.id === userID ?
                                                                 <>
                                                                     <li className="align-items-center d-flex">
                                                                         <button
@@ -611,23 +694,39 @@ export default function OpenPostInNewTab({ params }) {
                                                                 (
                                                                     <>
                                                                         <li className="align-items-center d-flex">
-                                                                            <Link
+                                                                            <button
                                                                                 className="text-decoration-none dropdown-item text-secondary"
-                                                                                href="#"
+                                                                                onClick={() => {
+                                                                                    setShowSavePostModal(true);
+                                                                                    setPostID(post.id);
+                                                                                }}
                                                                             >
-                                                                                <i className="bi bi-bookmark pe-2"></i> Save
-                                                                                post
-                                                                            </Link>
+
+                                                                                {post.is_saved === false ?
+                                                                                    <>
+                                                                                        <i className="bi bi-bookmark"></i> Save
+                                                                                        post
+                                                                                    </>
+                                                                                    :
+                                                                                    <>
+                                                                                        <i className="bi bi-bookmark-fill"></i> Un save
+                                                                                        post
+                                                                                    </>}
+                                                                            </button>
                                                                         </li>
                                                                         <li>
                                                                             <hr className="dropdown-divider" />
                                                                         </li><li className=" align-items-center d-flex">
-                                                                            <Link
+                                                                            <button
                                                                                 className="text-decoration-none dropdown-item text-secondary"
-                                                                                href="#"
+                                                                                onClick={() => {
+                                                                                    setShowReportPostModal(true)
+                                                                                    setPostID(post.id)
+
+                                                                                }}
                                                                             >
-                                                                                <i className="bi bi-flag pe-2"></i> Report Post
-                                                                            </Link>
+                                                                                <i className="bi bi-flag"></i> Report Post
+                                                                            </button>
                                                                         </li>
                                                                     </>
                                                                 )
@@ -687,11 +786,25 @@ export default function OpenPostInNewTab({ params }) {
                                             }
 
                                             {
+                                                // post.bg_color && (
+                                                //     <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                                                //         style={{
+                                                //             background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
+                                                //             padding: "160px 27px"
+                                                //         }}
+                                                //     >
+                                                //         <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
+                                                //     </div>
+                                                // )
+
                                                 post.bg_color && (
-                                                    <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                                                    <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                                                         style={{
-                                                            background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
-                                                            padding: "160px 27px"
+                                                            background: getDisplayColor(post.bg_color),
+                                                            backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                                            backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                                            backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                                            padding: "220px 27px",
                                                         }}
                                                     >
                                                         <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
@@ -974,9 +1087,15 @@ export default function OpenPostInNewTab({ params }) {
                                                             setActiveReactionPost(activeReactionPost === post.id ? null : post.id);
                                                         }}
                                                     >
-                                                        <span style={{ fontSize: "18px", marginRight: "8px" }}>
-                                                            {postReactions[post.id] || "😊"}
-                                                        </span>
+                                                          <span style={{ fontSize: "18px", marginRight: "8px" }}>
+                                                           
+                                                           {postReactions[post.id] || (post.reaction?.reaction_type ?
+                                                               reactionEmojis[
+                                                               Object.keys(reactionValues).find(
+                                                                   key => reactionValues[key] === Number(post.reaction.reaction_type)
+                                                               )
+                                                               ] : "😊")}
+                                                       </span>
                                                         Reaction
                                                     </button>
 
@@ -1061,13 +1180,16 @@ export default function OpenPostInNewTab({ params }) {
                                                             <hr className="dropdown-divider" />
                                                         </li>
                                                         <li className=" align-items-center d-flex">
-                                                            <Link
+                                                            <button
                                                                 className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                                href="#"
+                                                                onClick={() => {
+                                                                    setShareShowTimelineModal(true)
+                                                                    setPostID(post.id)
+                                                                }}
                                                             >
                                                                 <i className="bi bi-bookmark-check pe-2"></i> Post
                                                                 on Timeline
-                                                            </Link>
+                                                            </button>
                                                         </li>
                                                         <li className=" align-items-center d-flex">
                                                             <span
@@ -1087,7 +1209,7 @@ export default function OpenPostInNewTab({ params }) {
 
 
                                             {
-                                                post?.user?.id === userID ?
+                                                userID && post?.user?.id === userID ?
                                                     null
                                                     :
 
@@ -1099,16 +1221,27 @@ export default function OpenPostInNewTab({ params }) {
                                                                 borderRadius: "10px",
                                                                 color: "#fff",
                                                             }}
+                                                            onClick={() => openModalCupCoffee(post.id)}
                                                         >
                                                             <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
                                                         </button>
-                                                        <button className="btn btn-danger d-flex align-items-center rounded-1">
+
+                                                        {activeCupCoffeeId === post.id && (
+                                                            <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                                        )}
+
+                                                        <button className="btn btn-danger d-flex align-items-center rounded-1"
+                                                          onClick={() => openModalGreatJob(post.id)}
+                                                        >
                                                             <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
                                                         </button>
+                                                        {activeGreatJobId === post.id && (
+                                                            <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                                        )}
                                                     </div>
 
-
-                                            }
+                                           } 
+                                           
 
 
                                             {
@@ -1387,6 +1520,31 @@ export default function OpenPostInNewTab({ params }) {
 
                         }
 
+
+                        {
+                            showSavePostModal && (
+                                <SavePostModal
+                                    postID={postID}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                    showSavePostModal={showSavePostModal}
+                                    setShowSavePostModal={setShowSavePostModal}
+                                />
+                            )}
+
+
+                        {
+                            showReportPostModal && (
+                                <ReportPostModal
+                                    postID={postID}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                    showReportPostModal={showReportPostModal}
+                                    setShowReportPostModal={setShowReportPostModal}
+                                />
+                            )}
+
+
                         {
 
                             showEditPostModal && (
@@ -1395,6 +1553,16 @@ export default function OpenPostInNewTab({ params }) {
                                     setShowEditPostModal={setShowEditPostModal}
                                     posts={posts}
                                     setPosts={setPosts}
+                                    postID={postID}
+                                />
+                            )
+                        }
+
+                        {
+                            sharePostTimelineModal && (
+                                <SharePostTimelineModal
+                                    sharePostTimelineModal={sharePostTimelineModal}
+                                    setShareShowTimelineModal={setShareShowTimelineModal}
                                     postID={postID}
                                 />
                             )
