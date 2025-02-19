@@ -60,14 +60,12 @@ export default function UserAbout({ params }) {
                         <div className="card shadow-lg border-0 rounded-3 mt-5">
                             <div className="card-body">
                                 <h4 className="fw-bold text-primary mb-4">Profile Information</h4>
-
-                                {/* Overview Section */}
                                 <div className="rounded border p-3 mb-4 bg-light">
                                     <h6 className="fw-semibold text-secondary">Overview</h6>
                                     <p className="text-muted mb-0">{user.about_you || "No overview available."}</p>
                                 </div>
 
-                                {/* Profile Details Grid */}
+                
                                 <div className="row g-4">
                                     <ProfileDetail
                                         icon="bi-calendar-date"
@@ -104,7 +102,6 @@ export default function UserAbout({ params }) {
                         </div>
                     </div>
 
-                    {/* Right Sidebar */}
                     <RightNavbar user={user} />
                 </div>
             </div>
@@ -112,7 +109,7 @@ export default function UserAbout({ params }) {
     );
 }
 
-/* ✅ Component for Profile Detail Items */
+
 const ProfileDetail = ({ icon, label, value }) => (
     <div className="col-6">
         <div className="d-flex align-items-center rounded border px-3 py-2 bg-white shadow-sm">
@@ -124,7 +121,7 @@ const ProfileDetail = ({ icon, label, value }) => (
     </div>
 );
 
-/* ✅ Function to Handle Relationship Status */
+
 const getRelationshipStatus = (relation_id) => {
     const statuses = {
         "0": "None",

@@ -1199,6 +1199,7 @@ export default function Savedposts() {
                         postID={postID}
                         posts={posts}
                         setPosts={setPosts}
+                        saveFeed="saveFeed"
                         showSavePostModal={showSavePostModal}
                         setShowSavePostModal={setShowSavePostModal}
                     />

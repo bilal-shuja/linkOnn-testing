@@ -17,9 +17,11 @@ import EnableDisableCommentsModal from "../../Modals/EnableDisableCommentsModal"
 import SavePostModal from "../../Modals/SaveUnsavePost";
 import MakeDonationModal from "../../Modals/MakeDonationModal";
 import SharePostTimelineModal from "../../Modals/SharePostTimelineModal";
+import { useRouter } from "next/navigation";
 
 
 export default function OpenPostInNewTab({ params }) {
+    const router = useRouter();
     const api = createAPI();
     const { openPostInNewTab } = use(params)
     const userId = localStorage.getItem('userid');
@@ -487,33 +489,33 @@ export default function OpenPostInNewTab({ params }) {
                                                         {(post.group || post.page) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
 
                                                         {post.group &&
-                                                            <span
-                                                                style={{
-                                                                    cursor: 'pointer',
-                                                                    color: 'inherit',
-                                                                    transition: 'color 0.3s ease'
-                                                                }}
-                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
-                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                                                                onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
-                                                            >
-                                                                {post.group.group_title}
-                                                            </span>
-                                                        }
+                                                        <span
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/groups/groupTimeline/${post.group_id}`)}
+                                                        >
+                                                            {post.group.group_title}
+                                                        </span>
+                                                    }
 
-                                                        {post.page &&
-                                                            <span
-                                                                style={{
-                                                                    cursor: 'pointer',
-                                                                    color: 'inherit',
-                                                                    transition: 'color 0.3s ease'
-                                                                }}
-                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
-                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                                                                onClick={() => router.push(`/pages/page/myPageTimeline/${post.group_id}`)}
-                                                            >
-                                                                {post.page.page_title}
-                                                            </span>}
+                                                    {post.page &&
+                                                        <span
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/page/myPageTimeline/${post.page_id}`)}
+                                                        >
+                                                            {post.page.page_title}
+                                                        </span>}
                                                     </h6>
                                                     <small className="text-secondary">
                                                         {post.created_human} -
