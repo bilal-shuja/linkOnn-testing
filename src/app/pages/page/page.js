@@ -1,18 +1,18 @@
 "use client";
 
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-   
+
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import Link from "next/link";
 
 export default function Pages() {
-    
+
   const [activeTab, setActiveTab] = useState(0);
   const [suggesPLoading, setSuggesPLoading] = useState(false);
   const [myPLoading, setMyPLoading] = useState(false);
@@ -138,7 +138,7 @@ export default function Pages() {
 
   return (
     <div>
-        
+
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">
@@ -254,9 +254,14 @@ export default function Pages() {
                                     />
 
                                     <div className="card-body">
-                                      <h5 className="card-title mb-1">
+                                      <Link className="card-title mb-1 text-decoration-none"
+
+                                        href={`/pages/page/myPageTimeline/${page.id}`}
+                                        onMouseEnter={(e) => e.target.style.color = '#0D6EFD'}
+                                        onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                      >
                                         {page.page_title}
-                                      </h5>
+                                      </Link>
                                       <p className="text-muted">
                                         {page.page_category}
                                       </p>
@@ -343,8 +348,10 @@ export default function Pages() {
                                   />
 
                                   <div className="card-body">
-                                    <Link className="card-title mb-1"
-                                     href={`/pages/page/myPageTimeline/${page.id}`}
+                                    <Link className="card-title mb-1 text-decoration-none"
+                                      href={`/pages/page/myPageTimeline/${page.id}`}
+                                      onMouseEnter={(e) => e.target.style.color = '#0D6EFD'}
+                                      onMouseLeave={(e) => e.target.style.color = 'inherit'}
                                     >
                                       {page.page_title}
                                     </Link>
@@ -365,7 +372,7 @@ export default function Pages() {
                                       <Link className="btn btn-sm btn-outline-info"
                                         href={`/pages/page/editMyPage/${page.id}`}
                                       >
-                                      <i className="bi bi-pencil"/> &nbsp;
+                                        <i className="bi bi-pencil" /> &nbsp;
                                         Edit
                                       </Link>
                                       &nbsp;
@@ -375,7 +382,7 @@ export default function Pages() {
                                           handleDeletePage(page.id)
                                         }
                                       >
-                                         <i className="bi bi-trash"/>
+                                        <i className="bi bi-trash" />
                                         Delete
                                       </button>
                                     </div>
