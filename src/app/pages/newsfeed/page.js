@@ -444,7 +444,6 @@ export default function Newsfeed() {
 
 
   const uploadPost = async (donationData = {}) => {
-
     try {
       const formData = new FormData();
       const combinedText = donationData.donationTitle
@@ -457,31 +456,24 @@ export default function Newsfeed() {
       if (donationData.donationDescription) {
         formData.append("description", donationData.donationDescription);
       }
-
       if (donationData.donationImage) formData.append("donation_image", donationData.donationImage);
       formData.append("bg_color", color);
       formData.append("post_location", locationText);
       images.forEach((image) => formData.append("images[]", image.file));
       audio.forEach((audioFile) => formData.append("audio", audioFile.file));
       video.forEach((videoFile) => formData.append("video", videoFile.file));
-
       let postType = "post";
       if (donationData.donationAmount) {
         postType = "donation";
       }
-
       formData.append("post_type", postType);
-
       formData.append("privacy", privacy);
-
       setUploadPLoading(true);
-
       const response = await api.post("/api/post/create", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
       if (response.data.code == "200") {
         toast.success(response.data.message)
         setPosts([response.data.data, ...posts]);
@@ -506,7 +498,6 @@ export default function Newsfeed() {
       setUploadPLoading(false);
     }
   };
-
   const handleDropdownChange = (selection) => {
     setDropdownSelection(selection);
 
@@ -575,7 +566,7 @@ export default function Newsfeed() {
       });
 
       if (response.data.status == "200") {
-        
+
         setPosts(prevPosts =>
           prevPosts.map(post => {
             if (post.id === postId) {
@@ -752,33 +743,36 @@ export default function Newsfeed() {
   };
 
 
-  const gradientMap = {
-    'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)': '_2j79',
-    'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)': '_2j80',
-    'linear-gradient(45deg, #5d6374 0%, #16181d 100%)': '_2j81'
+  const colorMap = {
+    '23jo': '#FFFFFF',
+    '23ju': '#C600FF',
+    '_2j78': '#111111',
+    '_2j79': 'linear-gradient(45deg, rgb(255, 0, 71) 0%, rgb(44, 52, 199) 100%)',
+    '_2j80': 'linear-gradient(45deg, rgb(252, 54, 253) 0%, rgb(93, 63, 218) 100%)',
+    '_2j81': 'linear-gradient(45deg, rgb(93, 99, 116) 0%, rgb(22, 24, 29) 100%)',
+    '_2j82': '#00A859',
+    '_2j83': '#0098DA',
+    '_2j84': '#3E4095',
+    '_2j85': '#4B4F56',
+    '_2j86': '#161616',
+    '_2j87': 'url(https://images.socioon.com/assets/images/post/bgpst1.png)',
+    '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
+    '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
+    '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
   };
 
-  const reverseGradientMap = {
-    '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
-    '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
-    '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
-  };
+  const reverseColorMap = Object.fromEntries(
+    Object.entries(colorMap).map(([key, value]) => [value, key])
+  );
 
 
   const handleColorSelect = (colorValue) => {
-    if (colorValue.includes('gradient')) {
-      const shortCode = gradientMap[colorValue] || encodeURIComponent(colorValue);
-      setColor(shortCode);
-    } else {
-      setColor(colorValue);
-    }
+    const code = reverseColorMap[colorValue] || encodeURIComponent(colorValue);
+    setColor(code);
   };
 
-  const getDisplayColor = (color) => {
-    if (color?.startsWith('_')) {
-      return reverseGradientMap[color] || color;
-    }
-    return color;
+  const getDisplayColor = (code) => {
+    return colorMap[code] || code;
   };
 
   return (
@@ -1155,9 +1149,9 @@ export default function Newsfeed() {
                       <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
                         <i className="bi bi-palette-fill"></i>
                       </button>
-                      <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
 
-                        {/* Solid Colors */}
+                      {/* <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
+
                         {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
                           <div
                             key={solidColor}
@@ -1167,7 +1161,6 @@ export default function Newsfeed() {
                           />
                         ))}
 
-                        {/* Gradient Colors */}
                         {Object.keys(gradientMap).map((gradient) => (
                           <div
                             key={gradient}
@@ -1177,7 +1170,19 @@ export default function Newsfeed() {
                           />
                         ))}
 
+                      </div> */}
+
+                      <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
+                        {Object.values(colorMap).map((color) => (
+                          <div
+                            key={color}
+                            className={styles.colorOption}
+                            style={{ background: color }}
+                            onClick={() => handleColorSelect(color)}
+                          />
+                        ))}
                       </div>
+
                     </div>
                   </div>
 
@@ -1514,12 +1519,11 @@ export default function Newsfeed() {
                                 }}
                                 onMouseEnter={(e) => e.target.style.color = 'blue'}
                                 onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                                onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                onClick={() => router.push(`/pages/groups/groupTimeline/${post.group_id}`)}
                               >
                                 {post.group.group_title}
                               </span>
                             }
-
                             {post.page &&
                               <span
                                 style={{
@@ -1529,7 +1533,7 @@ export default function Newsfeed() {
                                 }}
                                 onMouseEnter={(e) => e.target.style.color = 'blue'}
                                 onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                                onClick={() => router.push(`/pages/page/myPageTimeline/${post.group_id}`)}
+                                onClick={() => router.push(`/pages/page/myPageTimeline/${post.page_id}`)}
                               >
                                 {post.page.page_title}
                               </span>}
@@ -1587,9 +1591,17 @@ export default function Newsfeed() {
                                     setPostID(post.id);
                                   }}
                                 >
-                                  <i className="bi bi-bookmark pe-2"></i>
+                                  {post.is_saved === false ?
+                                    <>
+                                      <i className="bi bi-bookmark"></i> Save
+                                      post
+                                    </>
+                                    :
+                                    <>
+                                      <i className="bi bi-bookmark-fill"></i> Unsave
+                                      post
+                                    </>}
 
-                                  {post.is_saved === false ? "Save Post" : "Unsave Post"}
 
                                 </button>
                               </li>
@@ -1607,7 +1619,7 @@ export default function Newsfeed() {
 
                                   }}
                                 >
-                                  <i className="bi bi-flag pe-2"></i> Report Post
+                                  <i className="bi bi-flag"></i> Report Post
                                 </button>
                               </li>
                               <li className="align-items-center d-flex">
@@ -1689,7 +1701,7 @@ export default function Newsfeed() {
                                   href={`/pages/openPostInNewTab/${post.id}`}
                                   target="_blank" rel="noopener noreferrer"
                                   className="text-decoration-none dropdown-item text-secondary">
-                                  <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                  <i className="bi bi-box-arrow-up-right"></i> Open post in new tab
                                 </Link>
                               </li>
                             </ul>
@@ -1702,16 +1714,30 @@ export default function Newsfeed() {
                     <hr className="my-2 post-divider" />
 
                     {
+                      // post.bg_color && (
+                      //   <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                      //     style={{
+                      //       background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
+                      //       padding: "160px 27px"
+                      //     }}
+                      //   >
+                      //     <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>  {post.post_text} </span>
+                      //   </div>
+                      // )
                       post.bg_color && (
-                        <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                        <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                           style={{
-                            background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
-                            padding: "160px 27px"
+                            background: getDisplayColor(post.bg_color),
+                            backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                            backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                            backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                            padding: "220px 27px",
                           }}
                         >
-                          <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>  {post.post_text} </span>
+                          <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
                         </div>
                       )
+
                     }
 
                     {post.post_type !== "donation" && !post.bg_color && (

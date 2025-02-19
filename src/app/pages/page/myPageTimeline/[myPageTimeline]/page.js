@@ -14,8 +14,15 @@ import FundingModal from "@/app/pages/Modals/FundingModal";
 import PostPollModal from "@/app/pages/Modals/PostPollModal";
 // import EditPostModal from "../../Modal/EditPostModal";
 import EditPostModal from "@/app/pages/Modals/EditPostModal";
-import SharedPosts from "../../components/sharedPosts";
+import SavePostModal from "@/app/pages/Modals/SaveUnsavePost";
+import ReportPostModal from "@/app/pages/Modals/ReportPost";
 
+import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
+import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
+
+import SharedPosts from "../../components/sharedPosts";
+import { useRouter } from "next/navigation";
+import Spinner from 'react-bootstrap/Spinner';
 // import MakeDonationModal from "../../Modal/MakeDonationModal";
 import MakeDonationModal from "@/app/pages/Modals/MakeDonationModal";
 import { ReactionBarSelector } from '@charkour/react-reactions';
@@ -30,8 +37,7 @@ import EnableDisableCommentsModal from "@/app/pages/Modals/EnableDisableComments
 
 
 export default function MyPageTimeline({ params }) {
-
-
+    const router = useRouter();
     const api = createAPI();
     const userID = localStorage.getItem('userid');
     const [userdata, setUserData] = useState(null);
@@ -43,6 +49,8 @@ export default function MyPageTimeline({ params }) {
     const [pageTimelineData, setPageTimelineData] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [postText, setPostText] = useState("");
+
+    const [postLoadingState, setPostLoadingState] = useState(false)
 
     const [color, setColor] = useState("");
 
@@ -58,8 +66,6 @@ export default function MyPageTimeline({ params }) {
 
 
     const [location, setLocation] = useState('');
-
-
     const [photoSection, setPhotoSection] = useState(false);
     const [videoSection, setVideoSection] = useState(false);
     const [audioSection, setAudioSection] = useState(false);
@@ -70,6 +76,15 @@ export default function MyPageTimeline({ params }) {
     const [fundingModal, setFundingModal] = useState(false);
     const [donationModal, setDonationModal] = useState(false);
     const [donationID, setDonationID] = useState("");
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
+
+
+    const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+    const [activeGreatJobId, setActiveGreatJobId] = useState(null);
+
+
+
 
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -128,15 +143,47 @@ export default function MyPageTimeline({ params }) {
 
         setPostReactions(updatedReactions);
         setActiveReactionPost(null);
-        localStorage.setItem("postReactions", JSON.stringify(updatedReactions));
     };
 
+    const colorMap = {
+        '23jo': '#FFFFFF',
+        '23ju': '#C600FF',
+        '_2j78': '#111111',
+        '_2j79': 'linear-gradient(45deg, rgb(255, 0, 71) 0%, rgb(44, 52, 199) 100%)',
+        '_2j80': 'linear-gradient(45deg, rgb(252, 54, 253) 0%, rgb(93, 63, 218) 100%)',
+        '_2j81': 'linear-gradient(45deg, rgb(93, 99, 116) 0%, rgb(22, 24, 29) 100%)',
+        '_2j82': '#00A859',
+        '_2j83': '#0098DA',
+        '_2j84': '#3E4095',
+        '_2j85': '#4B4F56',
+        '_2j86': '#161616',
+        '_2j87': 'url(https://images.socioon.com/assets/images/post/bgpst1.png)',
+        '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
+        '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
+        '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
+    };
+
+    const reverseColorMap = Object.fromEntries(
+        Object.entries(colorMap).map(([key, value]) => [value, key])
+    );
 
 
-    useEffect(() => {
-        const storedReactions = JSON.parse(localStorage.getItem("postReactions")) || {};
-        setPostReactions(storedReactions);
-    }, []);
+
+    const handleColorSelect = (colorValue) => {
+        const code = reverseColorMap[colorValue] || encodeURIComponent(colorValue);
+        setColor(code);
+    };
+
+    const getDisplayColor = (code) => {
+        return colorMap[code] || code;
+    };
+
+    // localStorage.setItem("postReactions", JSON.stringify(updatedReactions));
+
+    // useEffect(() => {
+    //     const storedReactions = JSON.parse(localStorage.getItem("postReactions")) || {};
+    //     setPostReactions(storedReactions);
+    // }, []);
 
     const toggleOptionsColorPalette = () => {
         setIsOpenColorPalette(!isOpenColorPalette);
@@ -144,33 +191,21 @@ export default function MyPageTimeline({ params }) {
     };
 
 
-    const gradientMap = {
-        'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)': '_2j79',
-        'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)': '_2j80',
-        'linear-gradient(45deg, #5d6374 0%, #16181d 100%)': '_2j81'
+
+    const openModalCupCoffee = (id) => {
+        setActiveCupCoffeeId(id);
+        setActiveGreatJobId(null);
+    };
+    const closeModalCupCoffee = () => {
+        setActiveCupCoffeeId(null);
     };
 
-    const reverseGradientMap = {
-        '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
-        '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
-        '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
+    const openModalGreatJob = (id) => {
+        setActiveGreatJobId(id);
+        setActiveCupCoffeeId(null);
     };
-
-
-    const handleColorSelect = (colorValue) => {
-        if (colorValue.includes('gradient')) {
-            const shortCode = gradientMap[colorValue] || encodeURIComponent(colorValue);
-            setColor(shortCode);
-        } else {
-            setColor(colorValue);
-        }
-    };
-
-    const getDisplayColor = (color) => {
-        if (color?.startsWith('_')) {
-            return reverseGradientMap[color] || color;
-        }
-        return color;
+    const closeModalGreatJob = () => {
+        setActiveGreatJobId(null);
     };
 
 
@@ -209,11 +244,20 @@ export default function MyPageTimeline({ params }) {
 
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
-        const newVideos = files.map((file) => ({
-            file,
-            url: URL.createObjectURL(file),
-        }));
-        setVideoFiles((prevFiles) => [...prevFiles, ...newVideos]);
+        if (videoFiles.length + files.length > 1) {
+            alert("You can only upload 1 video at a time.");
+            fileVideoRef.current.value = "";
+            return;
+        }
+        else {
+            const newVideos = files.map((file) => ({
+                file,
+                url: URL.createObjectURL(file),
+            }));
+            setVideoFiles((prevFiles) => [...prevFiles, ...newVideos]);
+
+        }
+
     };
 
     const removeVideo = (index) => {
@@ -230,11 +274,23 @@ export default function MyPageTimeline({ params }) {
 
     const handleAudioChange = (event) => {
         const files = Array.from(event.target.files);
-        const newAudio = files.map((file) => ({
-            file,
-            url: URL.createObjectURL(file),
-        }));
-        setAudioFiles((prevFiles) => [...prevFiles, ...newAudio]);
+
+
+        if (audioFiles.length + files.length > 1) {
+            alert("You can only upload 1 audio at a time.");
+            fileAudioRef.current.value = "";
+            return;
+        }
+        else {
+            const newAudio = files.map((file) => ({
+                file,
+                url: URL.createObjectURL(file),
+            }));
+            setAudioFiles((prevFiles) => [...prevFiles, ...newAudio]);
+
+        }
+
+
     };
 
     const removeAudio = (index) => {
@@ -314,8 +370,29 @@ export default function MyPageTimeline({ params }) {
 
                 setPosts((prevPosts) => [...prevPosts, ...newPosts.filter((post) => !prevPosts.some((p) => p.id === post.id))]);
 
+
+                const reactionsMap = {};
+                newPosts.forEach((post) => {
+                    if (post.reaction && post.reaction.reaction_type) {
+                        const reactionType = Number(post.reaction.reaction_type);
+                        const reactionKey = Object.keys(reactionValues).find(
+                            (key) => reactionValues[key] === reactionType
+                        );
+                        if (reactionKey) {
+                            reactionsMap[post.id] = reactionEmojis[reactionKey];
+                        }
+                    }
+                });
+
+                setPostReactions((prevReactions) => ({
+                    ...prevReactions,
+                    ...reactionsMap,
+                }));
+
                 if (isInitialLoad) setPage(1);
-            } else {
+            }
+
+            else {
                 toast.error("Invalid data format received from API.");
             }
         } catch (error) {
@@ -551,6 +628,16 @@ export default function MyPageTimeline({ params }) {
                 );
 
 
+                const reactionKey = Object.keys(reactionValues).find(
+                    key => reactionValues[key] === reactionType
+                );
+
+                if (reactionKey) {
+                    setPostReactions(prevReactions => ({
+                        ...prevReactions,
+                        [postId]: reactionEmojis[reactionKey]
+                    }));
+                }
             }
 
             else {
@@ -702,6 +789,7 @@ export default function MyPageTimeline({ params }) {
     const uploadPost = async (donationData = {}) => {
 
         try {
+            setPostLoadingState(true)
 
             const formData = new FormData();
             const combinedText = donationData.donationTitle
@@ -764,18 +852,25 @@ export default function MyPageTimeline({ params }) {
                 setShowLocationField(false);
 
                 setFundingModal(false);
+                setPostLoadingState(false)
+
             }
             else {
                 toast.error("Error from server: " + response.data.message)
+                setPostLoadingState(false)
+
             }
         }
 
         catch (error) {
             toast.error(error.response.data.message)
+            setPostLoadingState(false)
         }
+
     };
 
 
+    const getUserIdFromPages = posts.map((post) => post.page.user_id);
 
 
     return (
@@ -787,326 +882,339 @@ export default function MyPageTimeline({ params }) {
                         <div className="col-12 col-md-8">
 
                             <TimelineProfileCard pageTimelineID={myPageTimeline} />
+                            {
+                                userID && userID === getUserIdFromPages[0] ?
 
-                            <div className="card shadow-lg border-0 rounded-3 mt-3">
-                                <div className="card-body">
+                                    (
 
-                                    <div className="form-floating mb-4">
-                                        <textarea className={`form-control border border-0 ${styles.pagePostInput} `}
-                                            placeholder="Leave a comment here"
-                                            id="floatingTextarea2"
-                                            style={{
-                                                height: "150px", background: getDisplayColor(color)
-                                            }}
-                                            value={postText}
-                                            onChange={handlePostTextChange}
-                                        />
-                                        <label htmlFor="floatingTextarea2" className="small text-muted ">Share your thoughts....</label>
+                                        <div className="card shadow-lg border-0 rounded-3 mt-3">
+                                            <div className="card-body">
 
-                                        <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "10px", top: "10px" }}>😊</button>
-
-                                        {showEmojiPicker && (
-                                            <div
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: '-100px',
-                                                    left: '600px',
-                                                    zIndex: '1000',
-                                                }}
-                                            >
-                                                <EmojiPicker
-                                                    onEmojiClick={handleEmojiSelect}
-                                                    width="100%"
-                                                    height="400px"
-                                                />
-                                            </div>
-                                        )}
-
-
-                                        <div className={`d-flex ${styles.optionsContainer} mb-2`}>
-                                            <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
-                                                <i className="bi bi-palette-fill"></i>
-                                            </button>
-                                            <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
-
-                                                {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
-                                                    <div
-                                                        key={solidColor}
-                                                        className={styles.colorOption}
-                                                        style={{ background: solidColor }}
-                                                        onClick={() => handleColorSelect(solidColor)}
+                                                <div className="form-floating mb-4">
+                                                    <textarea className={`form-control border border-0 ${styles.pagePostInput} `}
+                                                        placeholder="Leave a comment here"
+                                                        id="floatingTextarea2"
+                                                        style={{
+                                                            height: "150px", background: getDisplayColor(color)
+                                                        }}
+                                                        value={postText}
+                                                        onChange={handlePostTextChange}
                                                     />
-                                                ))}
+                                                    <label htmlFor="floatingTextarea2" className="small text-muted ">Share your thoughts....</label>
 
-                                                {Object.keys(gradientMap).map((gradient) => (
-                                                    <div
-                                                        key={gradient}
-                                                        className={styles.colorOption}
-                                                        style={{ background: gradient }}
-                                                        onClick={() => handleColorSelect(gradient)}
-                                                    />
-                                                ))}
+                                                    <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "10px", top: "10px" }}>😊</button>
 
-                                            </div>
-                                        </div>
-                                        <hr />
-                                        {
-                                            photoSection ?
-                                                <>
-                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
-                                                        {images.map((img, index) => (
-                                                            <div key={index} style={{ position: "relative", display: "inline-block" }}>
+                                                    {showEmojiPicker && (
+                                                        <div
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: '-100px',
+                                                                left: '600px',
+                                                                zIndex: '1000',
+                                                            }}
+                                                        >
+                                                            <EmojiPicker
+                                                                onEmojiClick={handleEmojiSelect}
+                                                                width="100%"
+                                                                height="400px"
+                                                            />
+                                                        </div>
+                                                    )}
 
-                                                                <button
-                                                                    onClick={() => removeImage(index)}
-                                                                    style={{
-                                                                        position: "absolute",
-                                                                        top: "-5px",
-                                                                        right: "-5px",
-                                                                        color: "white",
-                                                                        border: "none",
-                                                                        borderRadius: "50%",
-                                                                        cursor: "pointer",
-                                                                    }}
-                                                                >
-                                                                    <i className="bi bi-trash text-danger" />
-                                                                </button>
 
-                                                                <Image
-                                                                    className="mb-3"
-                                                                    src={img.url}
-                                                                    alt={`Preview ${index}`}
-                                                                    width={50}
-                                                                    height={50}
-                                                                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "5px" }}
+                                                    <div className={`d-flex ${styles.optionsContainer} mb-2`}>
+                                                        <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
+                                                            <i className="bi bi-palette-fill"></i>
+                                                        </button>
+
+                                                        <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
+                                                            {Object.values(colorMap).map((color) => (
+                                                                <div
+                                                                    key={color}
+                                                                    className={styles.colorOption}
+                                                                    style={{ background: color }}
+                                                                    onClick={() => handleColorSelect(color)}
                                                                 />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <hr />
+                                                    {
+                                                        photoSection ?
+                                                            <>
+                                                                <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                                    {images.map((img, index) => (
+                                                                        <div key={index} style={{ position: "relative", display: "inline-block" }}>
+
+                                                                            <button
+                                                                                onClick={() => removeImage(index)}
+                                                                                style={{
+                                                                                    position: "absolute",
+                                                                                    top: "-5px",
+                                                                                    right: "-5px",
+                                                                                    color: "white",
+                                                                                    border: "none",
+                                                                                    borderRadius: "50%",
+                                                                                    cursor: "pointer",
+                                                                                }}
+                                                                            >
+                                                                                <i className="bi bi-trash text-danger" />
+                                                                            </button>
+
+                                                                            <Image
+                                                                                className="mb-3"
+                                                                                src={img.url}
+                                                                                alt={`Preview ${index}`}
+                                                                                width={50}
+                                                                                height={50}
+                                                                                style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "5px" }}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                <div className="col-lg-12 mb-3">
+                                                                    <label className="form-label text-muted"> <i className="bi bi-image-fill"></i> Photos</label>
+                                                                    <input className="form-control form-control-sm"
+                                                                        type="file"
+                                                                        id="formFile"
+                                                                        onChange={handleImageChange}
+                                                                        ref={fileImageRef}
+                                                                        multiple
+                                                                    />
+                                                                </div>
+                                                            </>
+
+                                                            :
+                                                            ""
+
+                                                    }
+
+                                                    {
+                                                        videoSection ?
+                                                            <>
+
+                                                                <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                                    {videoFiles.map((video, index) => (
+                                                                        <div key={index} style={{ position: "relative", display: "inline-block" }}>
+
+                                                                            <button
+
+                                                                                onClick={() => removeVideo(index)}
+                                                                                style={{
+                                                                                    position: "absolute",
+                                                                                    top: "20px",
+                                                                                    right: "-15px",
+                                                                                    color: "white",
+                                                                                    border: "none",
+                                                                                    borderRadius: "50%",
+                                                                                    cursor: "pointer",
+                                                                                }}
+                                                                            >
+                                                                                <i className="bi bi-trash text-danger" />
+                                                                            </button>
+
+                                                                            <video width="150" height="150" controls>
+                                                                                <source src={video.url} type={video.file.type} />
+                                                                                Your browser does not support the video tag.
+                                                                            </video>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                <div className="col-lg-12 mb-3">
+                                                                    <label className="form-label text-muted"> <i className="bi bi-camera-reels-fill"></i> Videos</label>
+                                                                    <input
+                                                                        className="form-control form-control-sm"
+                                                                        type="file"
+                                                                        id="formFile"
+                                                                        accept="video/*"
+                                                                        multiple
+                                                                        onChange={handleFileChange}
+                                                                        ref={fileVideoRef}
+                                                                    />
+
+
+                                                                </div>
+                                                            </>
+                                                            :
+                                                            ""
+                                                    }
+
+
+                                                    {
+                                                        audioSection ?
+                                                            <>
+
+                                                                <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                                    {audioFiles.map((audio, index) => (
+                                                                        <div key={index} style={{ position: "relative" }}>
+
+                                                                            <button
+                                                                                onClick={() => removeAudio(index)}
+                                                                                style={{
+                                                                                    position: "absolute",
+                                                                                    top: "-12px",
+                                                                                    right: "-10px",
+                                                                                    color: "white",
+                                                                                    border: "none",
+                                                                                    borderRadius: "50%",
+                                                                                    cursor: "pointer",
+                                                                                }}
+                                                                            >
+                                                                                <i className="bi bi-trash text-danger" />
+                                                                            </button>
+
+                                                                            <audio width="150" height="120" controls>
+                                                                                <source src={audio.url} type={audio.file.type} />
+                                                                                Your browser does not support the video tag.
+                                                                            </audio>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                <div className="col-lg-12 mb-3">
+                                                                    <label className="form-label text-muted"> <i className="bi bi-music-note-beamed"></i> Audio</label>
+                                                                    <input
+                                                                        className="form-control form-control-sm"
+                                                                        type="file"
+                                                                        id="formFile"
+                                                                        accept="audio/*"
+                                                                        multiple
+                                                                        onChange={handleAudioChange}
+                                                                        ref={fileAudioRef}
+                                                                    />
+
+
+                                                                </div>
+                                                            </>
+                                                            :
+                                                            ""
+                                                    }
+
+
+                                                    {
+                                                        showLocationField ?
+                                                            <div className="col-lg-12 mb-2">
+                                                                <label className="form-label text-muted"> <i className="bi bi-geo-alt-fill"></i> location</label>
+                                                                <input className="form-control" placeholder="Where are you at?" onChange={(e) => setLocation(e.target.value)} />
                                                             </div>
-                                                        ))}
-                                                    </div>
+                                                            :
+                                                            ""
 
-                                                    <div className="col-lg-12 mb-3">
-                                                        <label className="form-label text-muted"> <i className="bi bi-image-fill"></i> Photos</label>
-                                                        <input className="form-control form-control-sm"
-                                                            type="file"
-                                                            id="formFile"
-                                                            onChange={handleImageChange}
-                                                            ref={fileImageRef}
-                                                            multiple
-                                                        />
-                                                    </div>
-                                                </>
-
-                                                :
-                                                ""
-
-                                        }
-
-                                        {
-                                            videoSection ?
-                                                <>
-
-                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
-                                                        {videoFiles.map((video, index) => (
-                                                            <div key={index} style={{ position: "relative", display: "inline-block" }}>
-
-                                                                <button
-
-                                                                    onClick={() => removeVideo(index)}
-                                                                    style={{
-                                                                        position: "absolute",
-                                                                        top: "20px",
-                                                                        right: "-15px",
-                                                                        color: "white",
-                                                                        border: "none",
-                                                                        borderRadius: "50%",
-                                                                        cursor: "pointer",
-                                                                    }}
-                                                                >
-                                                                    <i className="bi bi-trash text-danger" />
-                                                                </button>
-
-                                                                <video width="150" height="150" controls>
-                                                                    <source src={video.url} type={video.file.type} />
-                                                                    Your browser does not support the video tag.
-                                                                </video>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="col-lg-12 mb-3">
-                                                        <label className="form-label text-muted"> <i className="bi bi-camera-reels-fill"></i> Videos</label>
-                                                        <input
-                                                            className="form-control form-control-sm"
-                                                            type="file"
-                                                            id="formFile"
-                                                            accept="video/*"
-                                                            multiple
-                                                            onChange={handleFileChange}
-                                                            ref={fileVideoRef}
-                                                        />
+                                                    }
 
 
-                                                    </div>
-                                                </>
-                                                :
-                                                ""
-                                        }
 
 
-                                        {
-                                            audioSection ?
-                                                <>
-
-                                                    <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
-                                                        {audioFiles.map((audio, index) => (
-                                                            <div key={index} style={{ position: "relative" }}>
-
-                                                                <button
-                                                                    onClick={() => removeAudio(index)}
-                                                                    style={{
-                                                                        position: "absolute",
-                                                                        top: "-12px",
-                                                                        right: "-10px",
-                                                                        color: "white",
-                                                                        border: "none",
-                                                                        borderRadius: "50%",
-                                                                        cursor: "pointer",
-                                                                    }}
-                                                                >
-                                                                    <i className="bi bi-trash text-danger" />
-                                                                </button>
-
-                                                                <audio width="150" height="120" controls>
-                                                                    <source src={audio.url} type={audio.file.type} />
-                                                                    Your browser does not support the video tag.
-                                                                </audio>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="col-lg-12 mb-3">
-                                                        <label className="form-label text-muted"> <i className="bi bi-music-note-beamed"></i> Audio</label>
-                                                        <input
-                                                            className="form-control form-control-sm"
-                                                            type="file"
-                                                            id="formFile"
-                                                            accept="audio/*"
-                                                            multiple
-                                                            onChange={handleAudioChange}
-                                                            ref={fileAudioRef}
-                                                        />
 
 
-                                                    </div>
-                                                </>
-                                                :
-                                                ""
-                                        }
+
+                                                    <ul className={`nav nav-pills nav-stack  fw-normal d-flex justify-content-evenly  `}>
+                                                        <li className="nav-item">
+                                                            <button className="nav-link photos_link bg-light py-1  px-2 mb-0 text-muted"
+                                                                onClick={() => {
+                                                                    setPhotoSection(!photoSection)
+                                                                    setVideoSection(false)
+                                                                    setAudioSection(false)
+                                                                    setShowLocationField(false)
+
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-image-fill text-success pe-2" />
+                                                                Photo
+                                                            </button>
+                                                        </li>
+                                                        <li className="nav-item">
+                                                            <button className="nav-link video_link bg-light py-1 px-2 mb-0 text-muted"
+                                                                onClick={() => {
+                                                                    setVideoSection(!videoSection)
+                                                                    setPhotoSection(false)
+                                                                    setAudioSection(false)
+                                                                    setShowLocationField(false)
+
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-camera-reels-fill text-info pe-2" />
+                                                                Video
+                                                            </button>
+                                                        </li>
+                                                        <li className="nav-item">
+                                                            <button className="nav-link audio_link bg-light py-1 px-2 mb-0 text-muted"
+                                                                onClick={() => {
+                                                                    setAudioSection(!audioSection)
+                                                                    setPhotoSection(false)
+                                                                    setVideoSection(false)
+                                                                    setShowLocationField(false)
+                                                                }}
+
+                                                            >
+                                                                <i className="bi bi-music-note-beamed text-primary pe-2" />
+                                                                Audio
+                                                            </button>
+                                                        </li>
+                                                        <li className="nav-item">
+                                                            <button className="nav-link location_link bg-light py-1 px-2 mb-0 text-muted"
+                                                                onClick={() => {
+                                                                    setShowLocationField(!showLocationField)
+                                                                    setPhotoSection(false)
+                                                                    setVideoSection(false)
+                                                                    setAudioSection(false)
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-geo-alt-fill text-danger pe-2" /> Location
+                                                            </button>
+                                                        </li>
+                                                        <li className="nav-item">
+                                                            <Link href={'/pages/Events/create-event'} className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
+                                                                <i className="bi bi-calendar2-event-fill text-danger pe-2" /> Event
+                                                            </Link>
+                                                        </li>
+                                                        <li className="nav-item">
+                                                            <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={() => setPollModal(!pollModal)}>
+                                                                <i className="fas fa-poll text-info pe-1" /> Poll
+                                                            </button>
+                                                        </li>
+                                                        <li className="nav-item">
+                                                            <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={() => setFundingModal(!fundingModal)}>
+                                                                <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding
+                                                            </button>
+                                                        </li>
+                                                    </ul>
 
 
-                                        {
-                                            showLocationField ?
-                                                <div className="col-lg-12 mb-2">
-                                                    <label className="form-label text-muted"> <i className="bi bi-geo-alt-fill"></i> location</label>
-                                                    <input className="form-control" placeholder="Where are you at?" onChange={(e) => setLocation(e.target.value)} />
+
                                                 </div>
-                                                :
-                                                ""
 
-                                        }
+                                                <div className="d-flex justify-content-between mt-3">
 
+                                                    <button className={`btn w-100 ${styles.btnSuccessPost}`}
+                                                        disabled={postLoadingState}
+                                                        onClick={uploadPost}
 
+                                                    >
+                                                        {!postLoadingState && <i className="bi bi-send me-2"></i>}
+                                                        {postLoadingState ? (
+                                                            <Spinner
+                                                                as="span"
+                                                                animation="border"
+                                                                role="status"
+                                                                aria-hidden="true"
+                                                            />
+                                                        ) : (
+                                                            "Post"
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
 
+                                        </div>
+                                    )
+                                    :
+                                    null
+                            }
 
-
-
-
-                                        <ul className={`nav nav-pills nav-stack  fw-normal d-flex justify-content-evenly  `}>
-                                            <li className="nav-item">
-                                                <button className="nav-link photos_link bg-light py-1  px-2 mb-0 text-muted"
-                                                    onClick={() => {
-                                                        setPhotoSection(!photoSection)
-                                                        setVideoSection(false)
-                                                        setAudioSection(false)
-                                                        setShowLocationField(false)
-
-                                                    }}
-                                                >
-                                                    <i className="bi bi-image-fill text-success pe-2" />
-                                                    Photo
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link video_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => {
-                                                        setVideoSection(!videoSection)
-                                                        setPhotoSection(false)
-                                                        setAudioSection(false)
-                                                        setShowLocationField(false)
-
-                                                    }}
-                                                >
-                                                    <i className="bi bi-camera-reels-fill text-info pe-2" />
-                                                    Video
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link audio_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => {
-                                                        setAudioSection(!audioSection)
-                                                        setPhotoSection(false)
-                                                        setVideoSection(false)
-                                                        setShowLocationField(false)
-                                                    }}
-
-                                                >
-                                                    <i className="bi bi-music-note-beamed text-primary pe-2" />
-                                                    Audio
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link location_link bg-light py-1 px-2 mb-0 text-muted"
-                                                    onClick={() => {
-                                                        setShowLocationField(!showLocationField)
-                                                        setPhotoSection(false)
-                                                        setVideoSection(false)
-                                                        setAudioSection(false)
-                                                    }}
-                                                >
-                                                    <i className="bi bi-geo-alt-fill text-danger pe-2" /> Location
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <Link href={'/pages/Events/create-event'} className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
-                                                    <i className="bi bi-calendar2-event-fill text-danger pe-2" /> Event
-                                                </Link>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={() => setPollModal(!pollModal)}>
-                                                    <i className="fas fa-poll text-info pe-1" /> Poll
-                                                </button>
-                                            </li>
-                                            <li className="nav-item">
-                                                <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={() => setFundingModal(!fundingModal)}>
-                                                    <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding
-                                                </button>
-                                            </li>
-                                        </ul>
-
-
-
-                                    </div>
-
-                                    <div className="d-flex justify-content-between mt-3">
-
-                                        <button className={`btn w-100 ${styles.btnSuccessPost}`} onClick={uploadPost}>
-                                            <i className="bi bi-send"></i>&nbsp;
-                                            Post
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
 
 
 
@@ -1163,7 +1271,9 @@ export default function MyPageTimeline({ params }) {
 
                                                                 <span
                                                                     style={{ cursor: 'pointer' }}
-                                                                // onClick={() => handleClick(post.user.id)}
+                                                                    onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                    onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                    onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
                                                                 >
                                                                     {post?.user.first_name} {post?.user.last_name}  {post?.post_location && post.post_location !== "" && (
                                                                         <span className="text-primary ms-1">
@@ -1178,9 +1288,9 @@ export default function MyPageTimeline({ params }) {
                                                                                 {post.post_location}
                                                                             </a>
                                                                         </span>
-                                                                    )} <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
+                                                                    )}
                                                                 </span>
-
+                                                                <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
 
                                                             </h6>
                                                             <small className="text-secondary">
@@ -1268,23 +1378,41 @@ export default function MyPageTimeline({ params }) {
                                                                     (
                                                                         <>
                                                                             <li className="align-items-center d-flex">
-                                                                                <Link
+                                                                                <button
                                                                                     className="text-decoration-none dropdown-item text-secondary"
-                                                                                    href="#"
+                                                                                    onClick={() => {
+                                                                                        setShowSavePostModal(true);
+                                                                                        setPostID(post.id);
+                                                                                    }}
                                                                                 >
-                                                                                    <i className="bi bi-bookmark pe-2"></i> Save
-                                                                                    post
-                                                                                </Link>
+
+                                                                                    {post.is_saved === false ?
+                                                                                        <>
+                                                                                            <i className="bi bi-bookmark"></i> Save
+                                                                                            post
+                                                                                        </>
+                                                                                        :
+                                                                                        <>
+                                                                                            <i className="bi bi-bookmark-fill"></i> Un save
+                                                                                            post
+                                                                                        </>}
+
+
+                                                                                </button>
                                                                             </li>
                                                                             <li>
                                                                                 <hr className="dropdown-divider" />
                                                                             </li><li className=" align-items-center d-flex">
-                                                                                <Link
+                                                                                <button
                                                                                     className="text-decoration-none dropdown-item text-secondary"
-                                                                                    href="#"
+                                                                                    onClick={() => {
+                                                                                        setShowReportPostModal(true)
+                                                                                        setPostID(post.id)
+
+                                                                                    }}
                                                                                 >
-                                                                                    <i className="bi bi-flag pe-2"></i> Report Post
-                                                                                </Link>
+                                                                                    <i className="bi bi-flag"></i> Report Post
+                                                                                </button>
                                                                             </li>
                                                                         </>
                                                                     )
@@ -1317,7 +1445,7 @@ export default function MyPageTimeline({ params }) {
                                                                     onClick={handlePageTimeline}
                                                                     target="_blank" rel="noopener noreferrer"
                                                                 >
-                                                                    <i className="bi bi-box-arrow-up-right pe-2"></i>
+                                                                    <i className="bi bi-box-arrow-up-right"></i>
                                                                     Open post in new tab
                                                                 </Link>
                                                             </li>
@@ -1343,10 +1471,13 @@ export default function MyPageTimeline({ params }) {
                                                         {/* <hr className="my-2 text-muted" /> */}
                                                         {
                                                             post.bg_color && (
-                                                                <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                                                                <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                                                                     style={{
-                                                                        background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
-                                                                        padding: "160px 27px"
+                                                                        background: getDisplayColor(post.bg_color),
+                                                                        backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                                                        backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                                                        backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                                                        padding: "220px 27px",
                                                                     }}
                                                                 >
                                                                     <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
@@ -1511,6 +1642,7 @@ export default function MyPageTimeline({ params }) {
                                                                             style={{
                                                                                 objectFit: "cover",
                                                                             }}
+                                                                            loader={({ src }) => src}
                                                                         />
 
                                                                         <h5 className="fw-bold mt-2">{post.event.name}</h5>
@@ -1653,7 +1785,13 @@ export default function MyPageTimeline({ params }) {
                                                             }}
                                                         >
                                                             <span style={{ fontSize: "18px", marginRight: "8px" }}>
-                                                                {postReactions[post.id] || "😊"}
+                                                           
+                                                                {postReactions[post.id] || (post.reaction?.reaction_type ?
+                                                                    reactionEmojis[
+                                                                    Object.keys(reactionValues).find(
+                                                                        key => reactionValues[key] === Number(post.reaction.reaction_type)
+                                                                    )
+                                                                    ] : "😊")}
                                                             </span>
                                                             Reaction
                                                         </button>
@@ -1769,7 +1907,7 @@ export default function MyPageTimeline({ params }) {
 
 
                                                 {
-                                                    post?.user?.id === userID ?
+                                                    userID && post?.user?.id === userID ?
                                                         null
                                                         :
 
@@ -1781,12 +1919,23 @@ export default function MyPageTimeline({ params }) {
                                                                     borderRadius: "10px",
                                                                     color: "#fff",
                                                                 }}
+                                                                onClick={() => openModalCupCoffee(post.id)}
                                                             >
                                                                 <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
                                                             </button>
-                                                            <button className="btn btn-danger d-flex align-items-center rounded-1">
+
+                                                            {activeCupCoffeeId === post.id && (
+                                                                <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                                            )}
+
+                                                            <button className="btn btn-danger d-flex align-items-center rounded-1"
+                                                                onClick={() => openModalGreatJob(post.id)}
+                                                            >
                                                                 <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
                                                             </button>
+                                                            {activeGreatJobId === post.id && (
+                                                                <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                                            )}
                                                         </div>
 
 
@@ -1809,6 +1958,7 @@ export default function MyPageTimeline({ params }) {
                                                                                 style={{
                                                                                     objectFit: "cover",
                                                                                 }}
+                                                                                loader={({ src }) => src}
                                                                             />
 
                                                                             <div className="mb-3">
@@ -1884,6 +2034,7 @@ export default function MyPageTimeline({ params }) {
                                                                                                     style={{
                                                                                                         objectFit: "cover",
                                                                                                     }}
+                                                                                                    loader={({ src }) => src}
                                                                                                 />
 
                                                                                                 <div className="mb-3">
@@ -1990,6 +2141,7 @@ export default function MyPageTimeline({ params }) {
                                                                 className="rounded-5"
                                                                 width={40}
                                                                 height={40}
+                                                                loader={({ src }) => src}
                                                             />
                                                             <form className="position-relative w-100 ms-2">
                                                                 <input
@@ -2104,6 +2256,30 @@ export default function MyPageTimeline({ params }) {
 
 
                         }
+
+
+                        {
+                            showSavePostModal && (
+                                <SavePostModal
+                                    postID={postID}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                    showSavePostModal={showSavePostModal}
+                                    setShowSavePostModal={setShowSavePostModal}
+                                />
+                            )}
+
+
+                        {
+                            showReportPostModal && (
+                                <ReportPostModal
+                                    postID={postID}
+                                    posts={posts}
+                                    setPosts={setPosts}
+                                    showReportPostModal={showReportPostModal}
+                                    setShowReportPostModal={setShowReportPostModal}
+                                />
+                            )}
 
                         {
 

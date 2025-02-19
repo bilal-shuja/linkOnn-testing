@@ -3,31 +3,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
+import { useRouter } from "next/navigation";
 
 import React, { useState, useEffect } from "react";
-import EditPostModal from "../Modal/EditPostModal";
 import MakeDonationModal from "../Modal/MakeDonationModal";
-import { ReactionBarSelector } from '@charkour/react-reactions';
-import EnableDisableCommentsModal from "../Modal/EnableDisableCommentsModal";
 import PageImagesLayout from "../myPageTimeline/[myPageTimeline]/pageImagesLayout";
 
-export default function sharedPosts({ sharedPost, userdata, post, posts, setPosts, myPageTimeline }) {
+export default function sharedPosts({ sharedPost,post ,setPosts, myPageTimeline }) {
     if (!sharedPost) return null;
-    const userID = localStorage.getItem('userid');
     const api = createAPI();
 
+    const router = useRouter();
 
-    const [postID, setPostID] = useState('');
-    const [comments, setComments] = useState({});
-    const [showComments, setShowComments] = useState({});
-
-    const [showList, setShowList] = useState(false);
-    const [commentText, setCommentText] = useState({});
-    const [commentreplyText, setCommentreplyText] = useState({});
-    const [showReplies, setShowReplies] = useState({});
-    const [showReplyInput, setShowReplyInput] = useState({});
-    const [repliesData, setRepliesData] = useState({});
-    const [loading, setLoading] = useState(false);
 
     const [pageTimelineData, setPageTimelineData] = useState('');
 
@@ -78,10 +65,25 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
     }, []);
 
 
-    const reverseGradientMap = {
-        '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
-        '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
-        '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
+    const colorMap = {
+        '23jo': '#FFFFFF',
+        '23ju': '#C600FF',
+        '_2j78': '#111111',
+        '_2j79': 'linear-gradient(45deg, rgb(255, 0, 71) 0%, rgb(44, 52, 199) 100%)',
+        '_2j80': 'linear-gradient(45deg, rgb(252, 54, 253) 0%, rgb(93, 63, 218) 100%)',
+        '_2j81': 'linear-gradient(45deg, rgb(93, 99, 116) 0%, rgb(22, 24, 29) 100%)',
+        '_2j82': '#00A859',
+        '_2j83': '#0098DA',
+        '_2j84': '#3E4095',
+        '_2j85': '#4B4F56',
+        '_2j86': '#161616',
+        '_2j87': 'url(https://images.socioon.com/assets/images/post/bgpst1.png)',
+        '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
+        '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
+        '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
+    };
+    const getDisplayColor = (code) => {
+        return colorMap[code] || code;
     };
 
 
@@ -114,6 +116,51 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
     const handlePageTimeline = () => {
         localStorage.setItem('_pageData', JSON.stringify(pageTimelineData));
     }
+
+        const handleVote = async (optionId, pollId, postId) => {
+            try {
+                const response = await api.post("/api/post/poll-vote", {
+                    poll_option_id: optionId,
+                    poll_id: pollId,
+                    post_id: postId,
+                });
+    
+                if (response.data.status == "200") {
+    
+                    setPosts(prevPosts =>
+                        prevPosts.map(sharedPost => {
+                            if (sharedPost.id === postId && sharedPost.shared_post) {
+                                return {
+                                    ...post,
+                                    shared_post: {
+                                        ...post.shared_post,
+                                        poll: {
+                                            ...post.shared_post.poll,
+                                            poll_total_votes: (post.shared_post.poll.poll_total_votes || 0) + 1,
+                                            poll_options: post.shared_post.poll.poll_options.map(option =>
+                                                option.id === optionId
+                                                    ? { ...option, no_of_votes: (option.no_of_votes || 0) + 1 }
+                                                    : option
+                                            )
+                                        }
+                                    }
+                                };
+                            }
+                            return sharedPost;
+                        })
+                    );
+    
+    
+    
+                    toast.success(response.data.message);
+                } 
+                else {
+                    toast.error(response.data.message);
+                }
+            } catch (error) {
+                toast.error("An error occurred while voting. Please try again.");
+            }
+        };
 
 
 
@@ -167,7 +214,9 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
 
                                             <span
                                                 style={{ cursor: 'pointer' }}
-                                            // onClick={() => handleClick(post.user.id)}
+                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                onClick={() => router.push(`/pages/UserProfile/timeline/${sharedPost.user.id}`)}
                                             >
                                                 {sharedPost?.user.first_name} {sharedPost?.user.last_name}  {sharedPost?.post_location && sharedPost.post_location !== "" && (
                                                     <span className="text-primary ms-1">
@@ -182,8 +231,21 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
                                                             {sharedPost.post_location}
                                                         </a>
                                                     </span>
-                                                )} <i className="bi bi-arrow-right"></i> {sharedPost?.page?.page_title}
+                                                )} 
+                                                
+                                           
                                             </span>
+
+                                            {
+                                               (sharedPost.group || sharedPost.page) && 
+                                                (
+
+                                                    <>
+                                                    <i className="bi bi-arrow-right"></i> {sharedPost?.page?.page_title}
+                                                    
+                                                    </>
+                                                )
+                                               } 
 
 
                                         </h6>
@@ -216,11 +278,24 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
                             </div>
                             {/* <hr className="my-2 text-muted" /> */}
                             {
+                                // sharedPost.bg_color && (
+                                //     <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                                //         style={{
+                                //             background: sharedPost?.bg_color?.startsWith('_') ? reverseGradientMap[sharedPost.bg_color] : sharedPost.bg_color,
+                                //             padding: "160px 27px"
+                                //         }}
+                                //     >
+                                //         <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {sharedPost.post_text} </span>
+                                //     </div>
+                                // )
                                 sharedPost.bg_color && (
-                                    <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                                    <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                                         style={{
-                                            background: sharedPost?.bg_color?.startsWith('_') ? reverseGradientMap[sharedPost.bg_color] : sharedPost.bg_color,
-                                            padding: "160px 27px"
+                                            background: getDisplayColor(sharedPost.bg_color),
+                                            backgroundSize: sharedPost.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                            backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                            backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                            padding: "220px 27px",
                                         }}
                                     >
                                         <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {sharedPost.post_text} </span>
@@ -258,31 +333,67 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
                                 </div>
                             )}
 
-                            {sharedPost.poll && (
-                                <div className="poll-section mt-2">
-                                    <h6 className="fw-bold">Poll</h6>
-                                    <ul className="list-unstyled">
-                                        {sharedPost.poll.poll_options.map((option) => {
-                                            const totalVotes = sharedPost.poll.poll_total_votes || 0;
-                                            const percentage = totalVotes > 0 ? Math.round((option.no_of_votes / totalVotes) * 100) : 0;
-                                            return (
-                                                <li key={option.id} className="mb-2">
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <div className="progress flex-grow-1" style={{ height: "30px", cursor: "pointer" }}>
-                                                            <div className="progress-bar" role="progressbar" style={{ width: `${percentage}%`, backgroundColor: "#66b3ff" }}>
-                                                                <span className="progress-text w-100 text-secondary fs-6 fw-bold">
-                                                                    {option.option_text}
-                                                                </span>
-                                                            </div>
+                        
+                    {sharedPost.poll && sharedPost.poll.poll_options && (
+                        <div className="w-100">
+                            <ul className="list-unstyled">
+                                {sharedPost.poll.poll_options.map((option) => {
+                                    const totalVotes = sharedPost.poll.poll_total_votes || 0;
+                                    const percentage =
+                                        totalVotes > 0
+                                            ? Math.round((option.no_of_votes / totalVotes) * 100)
+                                            : 0;
+
+                                    return (
+                                        <li key={option.id} className="mb-4 w-100">
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <div
+                                                    className="progress flex-grow-1"
+                                                    style={{
+                                                        height: "30px",
+                                                        cursor: "pointer",
+                                                    }}
+                                                    onClick={() =>
+                                                        handleVote(
+                                                            option.id,
+                                                            sharedPost.poll.id,
+                                                            sharedPost.id
+                                                        )
+                                                    }
+                                                >
+                                                    <div
+                                                        className="progress-bar"
+                                                        role="progressbar"
+                                                        style={{
+                                                            width: `${percentage}%`,
+                                                            backgroundColor: "#66b3ff",
+                                                        }}
+                                                        aria-valuenow={percentage}
+                                                        aria-valuemin="0"
+                                                        aria-valuemax="100"
+                                                    >
+                                                        <div
+                                                            className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                            style={{
+                                                                position: "absolute",
+                                                                overflow: "hidden",
+                                                                textOverflow: "ellipsis",
+                                                                whiteSpace: "nowrap",
+                                                            }}
+                                                        >
+                                                            {option.option_text}
                                                         </div>
-                                                        <span className="px-3">{percentage}%</span>
                                                     </div>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                </div>
-                            )}
+                                                </div>
+                                                <span className="px-3">{percentage}%</span>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    )}
+
 
                             {sharedPost?.donation && (
                                 <div>
@@ -355,35 +466,6 @@ export default function sharedPosts({ sharedPost, userdata, post, posts, setPost
                      {/*  shared post till here*/}
 
 
-
-
-            {/* {
-                showEnableDisableCommentsModal && (
-                    <EnableDisableCommentsModal
-                        showEnableDisableCommentsModal={showEnableDisableCommentsModal}
-                        setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
-                        postID={postID}
-                        posts={posts}
-                        setPosts={setPosts}
-
-                    />
-                )
-
-
-            }
-
-            {
-
-                showEditPostModal && (
-                    <EditPostModal
-                        showEditPostModal={showEditPostModal}
-                        setShowEditPostModal={setShowEditPostModal}
-                        posts={posts}
-                        setPosts={setPosts}
-                        postID={postID}
-                    />
-                )
-            } */}
 
 
 

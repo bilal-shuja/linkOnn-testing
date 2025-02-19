@@ -53,6 +53,8 @@ export default function TimelineProfileCard({pageTimelineID}) {
                                         width={800}
                                         height={400}
                                         style={{ objectFit: 'cover', height: '200px' }}
+                                        loader={({ src }) => src}
+
                                     />
                                     <div
                                         className="position-absolute start-0 translate-middle-y ms-4"
@@ -71,6 +73,7 @@ export default function TimelineProfileCard({pageTimelineID}) {
                                                 console.error('Image load error:', e);
                                                 e.target.src = '/assets/images/placeholder-image.png';
                                             }}
+                                            loader={({ src }) => src}
                                         />
                                     </div>
                                 </div>
