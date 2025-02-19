@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import moment from 'moment';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
@@ -47,6 +47,7 @@ const Profilecard = ({ user_id }) => {
     const [user, setUser] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [modalImage, setModalImage] = useState({ url: '', alt: '' });
+    const router = useRouter();
 
     const handleImageClick = (imageUrl, imageAlt) => {
         setModalImage({ url: imageUrl, alt: imageAlt });
@@ -80,7 +81,7 @@ const Profilecard = ({ user_id }) => {
 
     if (!user || !userdata) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center">
                 <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>
@@ -104,13 +105,19 @@ const Profilecard = ({ user_id }) => {
         }
     };
 
+
     const handleAddFriend = async (personId) => {
         try {
-            const response = await api.post("/api/make-friend", { friend_two: personId })
+            const response = await api.post("/api/make-friend", { friend_two: personId });
             if (response.data.code == "200") {
-                toast.success(response.data.message)
+                toast.success(response.data.message);
+                setUser((prevUser) => ({
+                    ...prevUser,
+                    isFriend: "0",
+                    isPending: "1"
+                }));
             } else {
-                toast.error(response.data.message)
+                toast.error(response.data.message);
             }
         } catch (error) {
             toast.error("Error updating friend request.");
@@ -119,11 +126,16 @@ const Profilecard = ({ user_id }) => {
 
     const handleUnFriend = async (personId) => {
         try {
-            const response = await api.post("/api/unfriend", { user_id: personId })
+            const response = await api.post("/api/unfriend", { user_id: personId });
             if (response.data.code == "200") {
-                toast.success(response.data.message)
+                toast.success(response.data.message);
+                setUser((prevUser) => ({
+                    ...prevUser,
+                    isFriend: "0",
+                    isPending: "0"
+                }));
             } else {
-                toast.error(response.data.message)
+                toast.error(response.data.message);
             }
         } catch (error) {
             toast.error("Error in Unfriend");
@@ -132,16 +144,21 @@ const Profilecard = ({ user_id }) => {
 
     const handleCancelRequest = async (personId) => {
         try {
-            const response = await api.post("/api/make-friend", { friend_two: personId })
+            const response = await api.post("/api/make-friend", { friend_two: personId });
             if (response.data.code == "200") {
-                toast.success("Friend Request Cancelled")
+                toast.success("Friend Request Cancelled");
+                setUser((prevUser) => ({
+                    ...prevUser,
+                    isPending: "0"
+                }));
             } else {
-                toast.error(response.data.message)
+                toast.error(response.data.message);
             }
         } catch (error) {
             toast.error("Error updating friend request.");
         }
     };
+
 
     const getBasePath = () => {
         const segments = pathname.split('/');
@@ -222,7 +239,7 @@ const Profilecard = ({ user_id }) => {
                                             </li>
                                         )}
 
-                                        {userdata.data.id !== user_id && user.isFriend === "1" && (
+                                        {userdata.data.id !== user_id && (
                                             <li>
                                                 <button
                                                     className="dropdown-item d-flex align-items-center"

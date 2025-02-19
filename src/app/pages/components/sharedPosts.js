@@ -1,18 +1,77 @@
 import Link from "next/link";
 import Image from "next/image";
 import React, { useState } from "react";
-import MakeDonationModal from "../Modals/MakeDonationModal";
 import UserImagesLayout from "./userImagesLayout";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import Spinner from "react-bootstrap/Spinner";
 
 export default function SharedPosts({ sharedPost, posts, setPosts }) {
 
     const [donationModal, setDonationModal] = useState(false);
     const [donationID, setDonationID] = useState("");
     const router = useRouter();
+    const [pollData, setPollData] = useState(sharedPost.poll);
     const api = createAPI();
+    const [donate, setDonate] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [localDonation, setLocalDonation] = useState(sharedPost.donation);
+
+
+    const donateAmount = (e) => {
+        setDonate(e.target.value);
+    };
+
+    const handleDonationSend = async () => {
+        setLoading(true);
+
+        try {
+            const response = await api.post("/api/donate", {
+                fund_id: donationID,
+                amount: donate,
+            });
+
+            if (response.data.code == "200") {
+                const donationAmount = parseFloat(donate);
+
+                setLocalDonation(prev => ({
+                    ...prev,
+                    collected_amount: (parseFloat(prev.collected_amount) + donationAmount).toString()
+                }));
+
+                if (setPosts && posts) {
+                    setPosts(prevPosts => {
+                        return prevPosts.map(post => {
+                            if (post.id === sharedPost.id && post.donation) {
+                                return {
+                                    ...post,
+                                    donation: {
+                                        ...post.donation,
+                                        collected_amount: (parseFloat(post.donation.collected_amount) + donationAmount).toString()
+                                    }
+                                };
+                            }
+                            return post;
+                        });
+                    });
+                }
+
+                toast.success(response.data.message);
+                setDonationModal(false);
+                setDonate("");
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            toast.error("Error while donating Fund.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const handleVote = async (optionId, pollId, postId) => {
         try {
@@ -23,32 +82,22 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
             });
 
             if (response.data.status == "200") {
+                setPollData((prevPoll) => {
+                    if (!prevPoll) return prevPoll;
 
-                setPosts(prevPosts =>
-                    prevPosts.map(sharedPost => {
-                        if (sharedPost.id === postId && sharedPost.shared_post) {
-                            return {
-                                ...sharedPost,
-                                shared_post: {
-                                    ...sharedPost.shared_post,
-                                    poll: {
-                                        ...sharedPost.shared_post.poll,
-                                        poll_total_votes: (sharedPost.shared_post.poll.poll_total_votes || 0) + 1,
-                                        poll_options: sharedPost.shared_post.poll.poll_options.map(option =>
-                                            option.id === optionId
-                                                ? { ...option, no_of_votes: (option.no_of_votes || 0) + 1 }
-                                                : option
-                                        )
-                                    }
-                                }
-                            };
+                    const updatedOptions = prevPoll.poll_options.map((option) => {
+                        if (option.id === optionId) {
+                            return { ...option, no_of_votes: option.no_of_votes + 1 };
                         }
-                        return sharedPost;
-                    })
-                );
+                        return option;
+                    });
 
-
-
+                    return {
+                        ...prevPoll,
+                        poll_options: updatedOptions,
+                        poll_total_votes: prevPoll.poll_total_votes + 1,
+                    };
+                });
                 toast.success(response.data.message);
             } else {
                 toast.error(response.data.message);
@@ -138,7 +187,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                                         }}
                                         onMouseEnter={(e) => e.target.style.color = 'blue'}
                                         onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                                        onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                        onClick={() => router.push(`/pages/groups/groupTimeline/${sharedPost.group.id}`)}
                                     >
                                         {sharedPost.group.group_title}
                                     </span>
@@ -153,7 +202,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                                         }}
                                         onMouseEnter={(e) => e.target.style.color = 'blue'}
                                         onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                                        onClick={() => router.push(`/pages/page/myPageTimeline/${post.group_id}`)}
+                                        onClick={() => router.push(`/pages/page/myPageTimeline/${sharedPost.page.id}`)}
                                     >
                                         {sharedPost.page.page_title}
                                     </span>}
@@ -220,15 +269,12 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                     )}
 
 
-                    {sharedPost.poll && sharedPost.poll.poll_options && (
+                    {pollData && pollData.poll_options && (
                         <div className="w-100">
                             <ul className="list-unstyled">
-                                {sharedPost.poll.poll_options.map((option) => {
-                                    const totalVotes = sharedPost.poll.poll_total_votes || 0;
-                                    const percentage =
-                                        totalVotes > 0
-                                            ? Math.round((option.no_of_votes / totalVotes) * 100)
-                                            : 0;
+                                {pollData.poll_options.map((option) => {
+                                    const totalVotes = pollData.poll_total_votes || 0;
+                                    const percentage = totalVotes > 0 ? Math.round((option.no_of_votes / totalVotes) * 100) : 0;
 
                                     return (
                                         <li key={option.id} className="mb-4 w-100">
@@ -239,13 +285,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                                                         height: "30px",
                                                         cursor: "pointer",
                                                     }}
-                                                    onClick={() =>
-                                                        handleVote(
-                                                            option.id,
-                                                            sharedPost.poll.id,
-                                                            sharedPost.id
-                                                        )
-                                                    }
+                                                    onClick={() => handleVote(option.id, pollData.id, sharedPost.id)}
                                                 >
                                                     <div
                                                         className="progress-bar"
@@ -280,13 +320,11 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                         </div>
                     )}
 
-
-
-                    {sharedPost?.donation && (
+                    {localDonation && (
                         <div>
                             <Image
-                                src={sharedPost?.donation?.image}
-                                alt={sharedPost.donation.title}
+                                src={localDonation.image}
+                                alt={localDonation.title}
                                 className="img-fluid d-block mx-auto"
                                 width={400}
                                 height={200}
@@ -298,48 +336,40 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
 
                             <div className="card-body text-center">
                                 <h5 className="card-title">
-                                    {sharedPost.donation.title}
+                                    {localDonation.title}
                                 </h5>
                                 <p className="card-text">
-                                    {sharedPost.donation.description}
+                                    {localDonation.description}
                                 </p>
                                 <div className="progress mb-3">
                                     <div
                                         className="progress-bar"
                                         role="progressbar"
                                         style={{
-                                            width: `${(sharedPost.donation.collected_amount /
-                                                sharedPost.donation.amount) *
-                                                100
-                                                }%`,
+                                            width: `${(parseFloat(localDonation.collected_amount) /
+                                                parseFloat(localDonation.amount)) *
+                                                100}%`,
                                         }}
-                                        aria-valuenow={sharedPost.donation.collected_amount}
+                                        aria-valuenow={localDonation.collected_amount}
                                         aria-valuemin="0"
-                                        aria-valuemax={sharedPost.donation.amount}
+                                        aria-valuemax={localDonation.amount}
                                     ></div>
                                 </div>
                                 <div className="d-flex align-items-center justify-content-between">
                                     <p className="text-muted">
-                                        {sharedPost.donation.collected_amount} Collected
+                                        {localDonation.collected_amount} Collected
                                     </p>
-                                    <p className="text-dark"> Required: <span className="fw-bold"> {sharedPost.donation.amount} </span> </p>
-                                    {
-                                        sharedPost.donation.collected_amount < sharedPost.donation.amount &&
-                                        (
-                                            <button
-                                                className="btn btn-primary btn-sm"
-                                                onClick={() => {
-                                                    setDonationModal(!donationModal)
+                                    <p className="text-dark"> Required: <span className="fw-bold"> {localDonation.amount} </span> </p>
 
-                                                    setDonationID(sharedPost.donation.id)
-                                                }}
-                                            >
-                                                Donate
-                                            </button>
-                                        )
-
-                                    }
-
+                                    <button
+                                        className="btn btn-primary btn-sm"
+                                        onClick={() => {
+                                            setDonationModal(!donationModal)
+                                            setDonationID(localDonation.id)
+                                        }}
+                                    >
+                                        Donate
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -347,17 +377,36 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                 </div>
             </div>
 
-            {
-                donationModal && (
-                    <MakeDonationModal
-                        donationID={donationID}
-                        donationModal={donationModal}
-                        setDonationModal={setDonationModal}
-                        posts={posts}
-                        setPosts={setPosts}
+            <Modal show={donationModal} backdrop="static" keyboard={false}>
+                <Modal.Header>
+                    <Modal.Title>Donate</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <label className="form-label">Amount</label>
+                    <input
+                        type="number"
+                        className="form-control"
+                        value={donate}
+                        onChange={donateAmount}
+                        disabled={loading}
                     />
-                )
-            }
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={handleDonationSend} disabled={loading}>
+                        {loading ? (
+                            <>
+                                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                            </>
+                        ) : (
+                            "Donate"
+                        )}
+                    </Button>
+                    <Button className="bg-dark border border-0" onClick={() => setDonationModal(false)} disabled={loading}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
         </>
     );
 }

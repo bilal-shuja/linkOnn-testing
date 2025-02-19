@@ -489,10 +489,13 @@ export default function Newsfeed() {
         setError("");
         setImages([]);
         setColor("");
+        setShowimg(false);
         setFundingModal(false);
+        setShowaudio(false);
+        setShowvideo(false);
         setaudio([]);
         setvideo([]);
-        setlocationText("");
+        setShowLocation(false);
       } else {
         toast.error("Error from server: " + response.data.message)
         setSuccess("");

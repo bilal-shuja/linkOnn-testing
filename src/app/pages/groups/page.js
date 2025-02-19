@@ -1,18 +1,18 @@
 "use client";
 
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-   
+import { Modal, Spinner } from 'react-bootstrap';
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import Link from "next/link";
 
 export default function Groups() {
-    
+
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState({ suggested: false, myGroups: false });
   const [groups, setGroups] = useState([]);
@@ -24,6 +24,9 @@ export default function Groups() {
   const itemsPerPage = 6;
   const router = useRouter();
   const api = createAPI();
+  const [groupToJoin, setGroupToJoin] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [loadingJoin, setLoadingJoin] = useState(false);
 
   const fetchSuggestedGroups = async (page) => {
     const offset = (page - 1) * itemsPerPage;
@@ -124,12 +127,42 @@ export default function Groups() {
     cancelText: 'Cancel',
   });
 
+  const handleJoinGroup = async (groupId) => {
+    setGroupToJoin(groupId);
+    setShowModal(true);
+  };
+
+  const handleConfirmJoinGroup = async () => {
+    setLoadingJoin(true);
+    try {
+      const response = await api.post("/api/join-group", {
+        group_id: groupToJoin,
+      });
+
+      if (response.data.code === "200") {
+        toast.success(response.data.message);
+      } else {
+        toast.error(`Error: ${response.data.message}`);
+      }
+    } catch (error) {
+      toast.error("Error while Joining group");
+    } finally {
+      setLoadingJoin(false);
+      setShowModal(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+
   const suggestedTotalPages = totalSuggested ? Math.ceil(totalSuggested / itemsPerPage) : 0;
   const myGroupsTotalPages = totalMyGroups ? Math.ceil(totalMyGroups / itemsPerPage) : 0;
 
   return (
     <div>
-        
+
       <div className="container-fluid bg-light">
         <div className="container pt-5">
           <div className="row">
@@ -258,7 +291,10 @@ export default function Groups() {
                                     )}
 
                                     <div className="card-body">
-                                      <h5 className="card-title mb-1">{group.group_title}</h5>
+                                      <h5 className="card-title mb-1"
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => router.push(`/pages/groups/groupTimeline/${group.id}`)}
+                                      >{group.group_title}</h5>
                                       <p className="text-muted align-items-center">
                                         <i className="bi bi-globe pe-2"></i>
                                         {group.category}
@@ -269,10 +305,15 @@ export default function Groups() {
                                           <p className="mb-1">Members</p>
                                         </div>
                                       </div>
-                                      <button className="btn btn-outline-success mt-3">
-                                        <i className="bi bi-check-circle-fill pe-2"></i>
-                                        {group.is_joined === 1 ? "Joined" : "Join"}
-                                      </button>
+                                      {group.is_joined === "1" ? (
+                                        <button className="btn btn-success btn-sm">
+                                          <i className="bi bi-check-circle-fill pe-1"> </i>
+                                          Joined</button>
+                                      ) : (
+                                        <button className="btn btn-primary btn-sm"
+                                          onClick={() => handleJoinGroup(group.id)}
+                                        >+ Join Group</button>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -362,7 +403,7 @@ export default function Groups() {
                                       className="d-block mx-auto mt-1 rounded-circle"
                                       width={150}
                                       height={150}
-                                      // style={{ objectFit: "cover" }}
+                                    // style={{ objectFit: "cover" }}
                                     />
                                   ) : (
                                     <div
@@ -385,7 +426,10 @@ export default function Groups() {
                                   )}
 
                                   <div className="card-body">
-                                    <h5 className="card-title mb-1">{group.group_title}</h5>
+                                    <h5 className="card-title mb-1"
+                                      style={{ cursor: 'pointer' }}
+                                      onClick={() => router.push(`/pages/groups/groupTimeline/${group.id}`)}
+                                    >{group.group_title}</h5>
                                     <div className="text-muted align-items-center fs-6">
                                       <i className="bi bi-globe pe-2 fs-6"></i>
                                       {group.category}
@@ -397,12 +441,12 @@ export default function Groups() {
                                       </div>
                                     </div>
                                     <div className="d-flex justify-content-center mt-3">
-                                      <Link 
-                                          href={`/pages/groups/editGroup/${group.id}`}
+                                      <Link
+                                        href={`/pages/groups/editGroup/${group.id}`}
                                         className="btn btn-sm btn-outline-info me-2">
-                                      <i className="bi bi-pencil"></i>&nbsp;
+                                        <i className="bi bi-pencil"></i>&nbsp;
                                         Edit
-                                        </Link>
+                                      </Link>
                                       <button
                                         className="btn btn-sm btn-outline-danger"
                                         onClick={() => handleDeleteGroup(group.id)}
@@ -439,6 +483,24 @@ export default function Groups() {
           </div>
         </div>
       </div>
+      <Modal show={showModal} centered onHide={handleCloseModal}>
+        <Modal.Body className="text-center">
+          <i className="bi bi-exclamation-circle text-danger pe-2"></i>
+          Are you sure you want to join this group?
+        </Modal.Body>
+        <Modal.Footer>
+          <button className="btn btn-sm btn-primary ps-4 pe-4" onClick={handleConfirmJoinGroup} disabled={loadingJoin}>
+            {loadingJoin ? (
+              <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+            ) : (
+              "Yes, Join"
+            )}
+          </button>
+          <button className="btn btn-sm btn-secondary ps-4 pe-4" onClick={handleCloseModal} disabled={loadingJoin}>
+            Cancel
+          </button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

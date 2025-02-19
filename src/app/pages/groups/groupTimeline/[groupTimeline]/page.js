@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import createAPI from "@/app/lib/axios";
-import RightNavbar from "../../components/right-navbar";
 import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
 import EmojiPicker from 'emoji-picker-react';
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import Profilecard from "../../components/profile-card";
 import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
 import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
 import styles from '../../css/page.module.css';
@@ -25,11 +23,13 @@ import FundingModal from "@/app/pages/Modals/FundingModal";
 import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
 import Spinner from 'react-bootstrap/Spinner';
 import SharedPosts from "@/app/pages/components/sharedPosts";
+import GroupProfilecard from "../../components/group-card";
+import RightNavbar from "../../components/right-navbar";
 
 
-export default function UserProfileCard({ params }) {
+export default function GroupTimeline({ params }) {
 
-    const { profileId } = use(params);
+    const { groupTimeline } = use(params);
     const api = createAPI();
     const router = useRouter();
     const [userId, setUserId] = useState(null);
@@ -39,12 +39,11 @@ export default function UserProfileCard({ params }) {
     const [userdata, setUserData] = useState(null);
     const [lastPostId, setLastPostId] = useState(0);
     const [noMorePosts, setNoMorePosts] = useState(false);
-    const [user, setUser] = useState(null);
+    const [group, setGroup] = useState(null);
     const [uploadPloading, setUploadPLoading] = useState(false)
     const [loading, setLoading] = useState(false);
     const [posts, setPosts] = useState([]);
     const [error, setError] = useState(null);
-    const [dropdownSelection, setDropdownSelection] = useState("PUBLIC");
     const [success, setSuccess] = useState("");
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showLocation, setShowLocation] = useState(false);
@@ -78,13 +77,11 @@ export default function UserProfileCard({ params }) {
     const [pollModal, setPollModal] = useState(false);
     const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
 
-
     const fileImageRef = useRef(null);
 
     const fileVideoRef = useRef(null);
 
     const fileAudioRef = useRef(null);
-
 
     const handleDelete = useCallback(async (values) => {
         const postId = values[0];
@@ -117,24 +114,22 @@ export default function UserProfileCard({ params }) {
     });
 
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            if (!profileId) return;
+        const fetchGroupProfile = async () => {
+            if (!groupTimeline) return;
             try {
-                const response = await api.get(`/api/get-user-profile?user_id=${profileId}`);
+                const response = await api.post(`/api/get-group-data?group_id=${groupTimeline}`);
                 if (response.data.code === "200") {
-                    setUser(response.data.data);
+                    setGroup(response.data.data);
                 } else {
-                    toast.error("Failed to fetch user profile.");
-                    setError("Could not load user profile");
+                    toast.error("Failed to fetch group profile.");
                 }
             } catch (error) {
-                toast.error("Error fetching user profile");
-                setError("Error fetching user profile");
+                toast.error("Error fetching group profile.");
             }
         };
 
-        fetchUserProfile();
-    }, [profileId]);
+        fetchGroupProfile();
+    }, [groupTimeline]);
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -159,7 +154,7 @@ export default function UserProfileCard({ params }) {
             const response = await api.post("/api/post/newsfeed", {
                 limit,
                 last_post_id: lastPostId,
-                user_id: profileId,
+                group_id: groupTimeline,
             });
 
             if (response.data && Array.isArray(response.data.data)) {
@@ -207,7 +202,7 @@ export default function UserProfileCard({ params }) {
         };
     }, [loading, noMorePosts]);
 
-    if (!user || !userdata) {
+    if (!group || !userdata) {
         return (
             <div className="d-flex justify-content-center align-items-center vh-100">
                 <div className="spinner-border text-primary" role="status">
@@ -219,47 +214,6 @@ export default function UserProfileCard({ params }) {
 
     const handlePostDelete = (postId) => {
         showConfirmationToast([postId]);
-    };
-    const handleDropdownChange = (selection) => {
-        setDropdownSelection(selection);
-
-        switch (selection) {
-            case "PUBLIC":
-                setPrivacy(1);
-                break;
-            case "Friends":
-                setPrivacy(2);
-                break;
-            case "Family":
-                setPrivacy(4);
-                break;
-            case "Business":
-                setPrivacy(5);
-                break;
-            case "Only me":
-                setPrivacy(3);
-                break;
-            default:
-                setPrivacy(1);
-                break;
-        }
-    };
-
-    const getDropdownIcon = (selection) => {
-        switch (selection) {
-            case "PUBLIC":
-                return <i className="bi bi-globe-asia-australia"></i>;
-            case "Friends":
-                return <i className="bi bi-people-fill"></i>;
-            case "Family":
-                return <i className="bi bi-people"></i>;
-            case "Business":
-                return <i className="bi bi-briefcase"></i>;
-            case "Only me":
-                return <i className="bi bi-lock-fill"></i>;
-            default:
-                return <i className="bi bi-globe-asia-australia"></i>;
-        }
     };
 
     const toggleLocation = () => {
@@ -382,7 +336,7 @@ export default function UserProfileCard({ params }) {
 
             formData.append("post_type", postType);
 
-            formData.append("privacy", privacy);
+            formData.append("group_id", groupTimeline);
 
             setUploadPLoading(true);
 
@@ -689,19 +643,19 @@ export default function UserProfileCard({ params }) {
         toast.success("Link copied successfully!");
     };
 
-    // Function to open/close Cup of Coffee modal
+
     const openModalCupCoffee = (id) => {
         setActiveCupCoffeeId(id);
-        setActiveGreatJobId(null); // Ensure other modal closes
+        setActiveGreatJobId(null);
     };
     const closeModalCupCoffee = () => {
         setActiveCupCoffeeId(null);
     };
 
-    // Function to open/close Great Job modal
+
     const openModalGreatJob = (id) => {
         setActiveGreatJobId(id);
-        setActiveCupCoffeeId(null); // Ensure other modal closes
+        setActiveCupCoffeeId(null);
     };
     const closeModalGreatJob = () => {
         setActiveGreatJobId(null);
@@ -743,6 +697,8 @@ export default function UserProfileCard({ params }) {
     };
 
 
+
+
     return (
         <>
 
@@ -751,89 +707,11 @@ export default function UserProfileCard({ params }) {
 
                     <div className="col-12 col-md-8">
 
-                        <Profilecard user_id={profileId} />
+                        <GroupProfilecard group_id={groupTimeline} setGroupData={setGroup} />
 
-                        {userdata.data.id === profileId && (
+                        {(group.is_group_owner || group.is_joined === "1") && (
                             <div className="card mb-3 shadow-lg border-0 mt-3">
-                                {error && <p className="text-center text-danger">{error}</p>}
-
-                                {success && (
-                                    <div className="alert alert-success mt-2">{success}</div>
-                                )}
-
                                 <div className="card-body">
-                                    <div className="d-flex align-items-center mb-3">
-                                        <Image
-                                            src={userdata.data.avatar}
-                                            alt="User Avatar"
-                                            className="rounded-circle"
-                                            height={50}
-                                            width={50}
-                                            style={{ cursor: 'pointer' }}
-                                            onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
-                                        />
-                                        <div className="mx-2 flex-grow-1">
-                                            <span className="fw-semibold"
-                                                style={{ cursor: 'pointer' }}
-                                                onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
-                                            >
-                                                {userdata.data.first_name} {userdata.data.last_name}
-                                            </span>
-
-                                            <div className="dropdown">
-                                                <button
-                                                    className="btn border-0 dropdown-toggle text-muted btn-sm"
-                                                    type="button"
-                                                    id="dropdownMenuLink"
-                                                    data-bs-toggle="dropdown"
-                                                    aria-expanded="false"
-                                                >
-                                                    {getDropdownIcon(dropdownSelection)}{" "}
-                                                    {dropdownSelection} {""}
-                                                </button>
-                                                <ul
-                                                    className="dropdown-menu p-3"
-                                                    aria-labelledby="dropdownMenuLink"
-                                                >
-                                                    <li
-                                                        className="dropdown-item text-primary"
-                                                        onClick={() => handleDropdownChange("PUBLIC")}
-                                                    >
-                                                        <i className="bi bi-globe-asia-australia pe-2"></i>{" "}
-                                                        Public
-                                                    </li>
-                                                    <hr className="mb-0 mt-0 text-muted" />
-                                                    <li
-                                                        className="dropdown-item text-primary"
-                                                        onClick={() => handleDropdownChange("Friends")}
-                                                    >
-                                                        <i className="bi bi-people-fill pe-2"></i> Friends
-                                                    </li>
-                                                    <hr className="mb-0 mt-0 text-muted" />
-                                                    <li
-                                                        className="dropdown-item text-primary"
-                                                        onClick={() => handleDropdownChange("Family")}
-                                                    >
-                                                        <i className="bi bi-people pe-2"></i> Family
-                                                    </li>
-                                                    <hr className="mb-0 mt-0 text-muted" />
-                                                    <li
-                                                        className="dropdown-item text-primary"
-                                                        onClick={() => handleDropdownChange("Business")}
-                                                    >
-                                                        <i className="bi bi-briefcase pe-2"></i> Business
-                                                    </li>
-                                                    <hr className="mb-0 mt-0 text-muted" />
-                                                    <li
-                                                        className="dropdown-item text-primary"
-                                                        onClick={() => handleDropdownChange("Only me")}
-                                                    >
-                                                        <i className="bi bi-lock-fill pe-2"></i> Only me
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
 
                                     <div>
                                         <textarea
@@ -1217,7 +1095,8 @@ export default function UserProfileCard({ params }) {
                                                             <small className="text-dark"> is in </small> {post.post_location}
                                                         </span>
                                                     )}
-                                                    {(post.group || post.page) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
+
+                                                    {(post.group) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
 
                                                     {post.group &&
                                                         <span
@@ -1233,20 +1112,6 @@ export default function UserProfileCard({ params }) {
                                                             {post.group.group_title}
                                                         </span>
                                                     }
-
-                                                    {post.page &&
-                                                        <span
-                                                            style={{
-                                                                cursor: 'pointer',
-                                                                color: 'inherit',
-                                                                transition: 'color 0.3s ease'
-                                                            }}
-                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
-                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
-                                                            onClick={() => router.push(`/pages/page/myPageTimeline/${post.page_id}`)}
-                                                        >
-                                                            {post.page.page_title}
-                                                        </span>}
                                                 </h6>
 
                                                 <small className="text-secondary">
@@ -2064,11 +1929,10 @@ export default function UserProfileCard({ params }) {
 
                     </div>
 
-                    <RightNavbar user={user} />
+                    <RightNavbar group_id={groupTimeline} />
 
                 </div>
             </div>
-
             {
                 showEditPostModal && (
                     <EditPostModal
@@ -2130,7 +1994,6 @@ export default function UserProfileCard({ params }) {
                 )
 
             }
-
 
             {
                 pollModal &&

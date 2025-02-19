@@ -3,10 +3,10 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import Modal from "react-bootstrap/Modal";
-import Spinner from "react-bootstrap/Spinner"; // Import Bootstrap Spinner
+import Spinner from "react-bootstrap/Spinner";
 
-export default function SavePostModal({ postID, setPosts, showSavePostModal, setShowSavePostModal }) {
-    const [loading, setLoading] = useState(false); // Loading state
+export default function SavePostModal({ postID, setPosts, showSavePostModal, setShowSavePostModal, saveFeed }) {
+    const [loading, setLoading] = useState(false);
     const api = createAPI();
 
     const handleClose = () => {
@@ -14,7 +14,7 @@ export default function SavePostModal({ postID, setPosts, showSavePostModal, set
     };
 
     const savePost = async () => {
-        setLoading(true); // Start loading
+        setLoading(true);
 
         try {
             const response = await api.post("/api/post/action", {
@@ -26,12 +26,16 @@ export default function SavePostModal({ postID, setPosts, showSavePostModal, set
 
                 setPosts(prevPosts =>
                     prevPosts.map(post =>
-                        post.id === postID ? { 
+                        post.id === postID ? {
                             ...post,
                             is_saved: post.is_saved === false ? true : false
                         } : post
                     )
                 );
+
+                if (saveFeed) {
+                    setPosts(prevPosts => prevPosts.filter(post => post.id !== postID));
+                }
 
                 toast.success(response.data.message);
                 handleClose();
@@ -41,7 +45,7 @@ export default function SavePostModal({ postID, setPosts, showSavePostModal, set
         } catch (error) {
             toast.error("Error while saving the post");
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
     };
 
