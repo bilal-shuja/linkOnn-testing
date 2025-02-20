@@ -26,6 +26,7 @@ import PostPollModal from "../Modals/PostPollModal";
 import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
 import Spinner from 'react-bootstrap/Spinner';
 import SharedPosts from "../components/sharedPosts";
+import { ReactionBarSelector } from '@charkour/react-reactions';
 
 export default function Newsfeed() {
 
@@ -80,6 +81,8 @@ export default function Newsfeed() {
   const [fundingModal, setFundingModal] = useState(false);
   const [pollModal, setPollModal] = useState(false);
   const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+  const [postReactions, setPostReactions] = useState({});
+  const [activeReactionPost, setActiveReactionPost] = useState(null);
 
 
   const fileImageRef = useRef(null);
@@ -87,6 +90,38 @@ export default function Newsfeed() {
   const fileVideoRef = useRef(null);
 
   const fileAudioRef = useRef(null);
+
+  const reactionEmojis = {
+    satisfaction: "👍",
+    love: "❤️",
+    happy: "😂",
+    surprise: "😮",
+    sad: "😢",
+    angry: "😡"
+  };
+
+  const reactionValues = {
+    satisfaction: 1,
+    love: 2,
+    happy: 3,
+    surprise: 4,
+    sad: 5,
+    angry: 6
+  };
+
+
+  const handleReactionSelect = (reaction, postId) => {
+    const updatedReactions = {
+      ...postReactions,
+      [postId]: reactionEmojis[reaction] || "😊"
+    };
+
+    LikePost(postId, reactionValues[reaction] || 0);
+
+    setPostReactions(updatedReactions);
+    setActiveReactionPost(null);
+  };
+
 
 
   const handlePostDelete = (postId) => {
@@ -683,23 +718,58 @@ export default function Newsfeed() {
     }
   };
 
-  const LikePost = async (postId) => {
+  const LikePost = async (postId, reactionType) => {
+
     try {
       const response = await api.post("/api/post/action", {
         post_id: postId,
         action: "reaction",
-        reaction_type: 1,
+        reaction_type: reactionType,
       });
-      if (response.data.code == "200") {
-        toast.success(response.data.message);
-      } else {
+
+
+      if (response.data.code === "200") {
+        setPosts(prevPosts =>
+          prevPosts.map(post => {
+            if (post.id === postId) {
+              return {
+                ...post,
+                reaction: {
+                  is_reacted: true,
+                  reaction_type: reactionType,
+                  count: post.reaction?.is_reacted
+                    ? post.reaction.count
+                    : (post.reaction?.count || 0) + 1,
+                  image: post.reaction?.image || "",
+                  color: post.reaction?.color || "",
+                  text: post.reaction?.text || ""
+                }
+              };
+            }
+            return post;
+          })
+        );
+
+
+        const reactionKey = Object.keys(reactionValues).find(
+          key => reactionValues[key] === reactionType
+        );
+
+        if (reactionKey) {
+          setPostReactions(prevReactions => ({
+            ...prevReactions,
+            [postId]: reactionEmojis[reactionKey]
+          }));
+        }
+      }
+
+      else {
         toast.error(response.data.message);
       }
     } catch (error) {
       toast.error("Error while reacting to the Post");
     }
   };
-
 
   const handleEmojiButtonClick = () => {
     setShowEmojiPicker((prev) => !prev);
@@ -719,7 +789,7 @@ export default function Newsfeed() {
     toast.success("Link copied successfully!");
   };
 
-  // Function to open/close Cup of Coffee modal
+
   const openModalCupCoffee = (id) => {
     setActiveCupCoffeeId(id);
     setActiveGreatJobId(null); // Ensure other modal closes
@@ -728,7 +798,7 @@ export default function Newsfeed() {
     setActiveCupCoffeeId(null);
   };
 
-  // Function to open/close Great Job modal
+
   const openModalGreatJob = (id) => {
     setActiveGreatJobId(id);
     setActiveCupCoffeeId(null); // Ensure other modal closes
@@ -1982,8 +2052,19 @@ export default function Newsfeed() {
 
                     }
 
+
+                    {post.parent_id !== "0" && !post.shared_post && (
+                      <div className="alert alert-warning" role="alert">
+                        <strong>This content is not available</strong>
+                        <p className="mb-0" style={{ fontSize: "14px" }}>
+                          This content isn't available right now. When this happens, it's usually because the owner
+                          only shared it with a small group of people, changed who can see it, or it's been deleted.
+                        </p>
+                      </div>
+                    )}
+
                     <div className="post-card-info">
-                      {/* Reaction Section */}
+
                       <div className="post-card-reactions">
                         <span className="post-card-reaction-count">
                           {post.reaction ? post.reaction.count || 0 : 0}
@@ -1991,7 +2072,7 @@ export default function Newsfeed() {
                         <i className="bi bi-hand-thumbs-up post-card-icon reaction-icon"></i>
                       </div>
 
-                      {/* Post Engagement Stats */}
+
                       <div className="post-card-stats">
                         <span className="post-card-stat">
                           <i className="bi bi-eye post-card-icon"></i>
@@ -2012,12 +2093,47 @@ export default function Newsfeed() {
                     <hr className="post-divider" />
 
                     <div className="post-actions">
-                      <button
-                        className="post-action-btn"
-                        onClick={() => LikePost(post.id)}
-                      >
-                        <i className="bi bi-emoji-smile"></i> Reaction
-                      </button>
+
+                      <div style={{ position: "relative", display: "inline-block" }}>
+                        <button
+                          className="post-action-btn"
+                          onMouseEnter={() => setActiveReactionPost(post.id)}
+                          onMouseLeave={() => setActiveReactionPost(null)}
+                          onClick={() => {
+                            setActiveReactionPost(activeReactionPost === post.id ? null : post.id);
+                          }}
+                        >
+                          <span style={{ fontSize: "18px", marginRight: "8px" }}>
+
+                            {postReactions[post.id] || (post.reaction?.reaction_type ?
+                              reactionEmojis[
+                              Object.keys(reactionValues).find(
+                                key => reactionValues[key] === Number(post.reaction.reaction_type)
+                              )
+                              ] : "😊")}
+                          </span>
+                          Reaction
+                        </button>
+
+                        {activeReactionPost === post.id && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              bottom: "100%",
+                              left: "0",
+                              zIndex: 1000,
+                              backgroundColor: "white",
+                              borderRadius: "5px",
+                            }}
+                            onMouseEnter={() => setActiveReactionPost(post.id)}
+                            onMouseLeave={() => setActiveReactionPost(null)}
+                          >
+                            <ReactionBarSelector
+                              onSelect={(reaction) => handleReactionSelect(reaction, post.id)}
+                            />
+                          </div>
+                        )}
+                      </div>
 
                       <button
                         className="post-action-btn"
@@ -2030,7 +2146,7 @@ export default function Newsfeed() {
                         <button
                           className="post-action-btn dropdown-toggle"
                           type="button"
-                          id={`dropdownMenuButton-${post.id}`} // UNIQUE ID
+                          id={`dropdownMenuButton-${post.id}`}
                           data-bs-toggle="dropdown"
                           aria-expanded="false"
                         >

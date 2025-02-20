@@ -13,6 +13,8 @@
     "@files-ui/react": "^1.2.4",
     "@fortawesome/fontawesome-free": "^6.7.1",
     "@react-icons/all-files": "^4.1.0",
+    "@stripe/react-stripe-js": "^3.1.1",
+    "@stripe/stripe-js": "^5.6.0",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
@@ -35,6 +37,7 @@
     "react-select": "^5.9.0",
     "react-toastify": "^11.0.3",
     "socket.io-client": "^4.8.1",
+    "stripe": "^17.6.0",
     "styled-components": "^6.1.14"
   },
   "devDependencies": {
