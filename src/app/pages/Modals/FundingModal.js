@@ -18,23 +18,23 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!donationAmount) {
-            toast.warning("Donation Amount is required");
-            return;
+        if (!donationTitle || !donationAmount || donationImage === null || !donationDescription) {
+            toast.warning("All fields are required");
+            return; 
         }
-
+    
         setIsLoading(true);
-
+    
         const donationData = {
             donationTitle,
             donationAmount,
             donationDescription,
             donationImage,
         };
-
+    
         try {
             await uploadPost(donationData);
-            toast.success("Fund created successfully!");
+            // toast.success("Fund created successfully!");
             setFundingModal(false);
             setDonationTitle("");
             setDonationAmount("");
@@ -46,6 +46,7 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
         } finally {
             setIsLoading(false);
         }
+
     };
 
     return (
@@ -56,11 +57,11 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
             <Modal.Body>
                 <div>
                     <label className="form-label text-muted">Donation Title</label>
-                    <input type="text" className="form-control" value={donationTitle} onChange={handleDonationTitle} />
+                    <input type="text" className="form-control" value={donationTitle} onChange={handleDonationTitle} required/>
                 </div>
                 <div>
                     <label className="form-label text-muted">Donation Image</label>
-                    <input className="form-control" type="file" onChange={(e) => setDonationImage(e.target.files[0])} accept="image/*" />
+                    <input className="form-control" type="file" onChange={(e) => setDonationImage(e.target.files[0])} accept="image/*"  required/>
                 </div>
                 <div>
                     <label className="form-label text-muted">Donation Amount</label>
@@ -68,7 +69,7 @@ export default function FundingModal({ fundingModal, setFundingModal, uploadPost
                 </div>
                 <div>
                     <label className="form-label text-muted">Donation Description</label>
-                    <textarea type="text" className="form-control" rows="2" value={donationDescription} onChange={handleDonationDescription} />
+                    <textarea type="text" className="form-control" rows="2" value={donationDescription} onChange={handleDonationDescription} required/>
                 </div>
             </Modal.Body>
             <Modal.Footer>

@@ -26,6 +26,8 @@ import Spinner from 'react-bootstrap/Spinner';
 // import MakeDonationModal from "../../Modal/MakeDonationModal";
 import MakeDonationModal from "@/app/pages/Modals/MakeDonationModal";
 import { ReactionBarSelector } from '@charkour/react-reactions';
+
+import { FacebookCounter } from "@charkour/react-reactions";
 import UserImagesLayout from "@/app/pages/components/userImagesLayout";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import TimelineProfileCard from "../../components/timelineProfileCard";
@@ -137,7 +139,21 @@ export default function MyPageTimeline({ params }) {
         const updatedReactions = {
             ...postReactions,
             [postId]: reactionEmojis[reaction] || "😊"
+            // [postId]: [{ emoji: reactionEmojis[reaction] || "😊", label: reaction }]
         };
+
+        // const updatedReactions = {
+        //     ...postReactions,
+        //     [postId]: [
+        //         ...(postReactions[postId] || []), 
+        //         {
+        //             emoji: reactionEmojis[reaction],
+        //             label: reaction,
+        //             by: "You" 
+        //         }
+        //     ]
+        // };
+
 
         LikePost(postId, reactionValues[reaction] || 0);
 
@@ -863,6 +879,7 @@ export default function MyPageTimeline({ params }) {
         }
 
         catch (error) {
+
             toast.error(error.response.data.message)
             setPostLoadingState(false)
         }
@@ -1464,11 +1481,23 @@ export default function MyPageTimeline({ params }) {
                                                     />
                                                 )}
 
-                                                {/* shared post from From here  */}
+
+
+                                                {/* shared post check from here..  */}
+                                                {post.parent_id !== "0" && !post.shared_post && (
+                                                    <div className="alert alert-warning" role="alert">
+                                                        <strong>This content is not available</strong>
+                                                        <div className="mb-0" style={{ fontSize: "14px" }}>
+                                                            This content isn't available right now. When this happens, it's usually because the owner
+                                                            only shared it with a small group of people, changed who can see it, or it's been deleted.
+                                                        </div>
+                                                    </div>
+                                                )}
+
+
 
                                                 {post.shared_post === null ?
                                                     <>
-                                                        {/* <hr className="my-2 text-muted" /> */}
                                                         {
                                                             post.bg_color && (
                                                                 <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
@@ -1485,12 +1514,6 @@ export default function MyPageTimeline({ params }) {
                                                             )
                                                         }
 
-                                                        {/* 
-                                                    {post?.post_type !== "donation" && !post.bg_color &&  (
-                                                    <span
-                                                        dangerouslySetInnerHTML={{ __html: post.post_text }}
-                                                    />
-                                                )} */}
 
                                                         <div className="d-flex justify-content-center flex-wrap mb-1">
                                                             {post?.poll && post?.poll.poll_options && (
@@ -1627,9 +1650,11 @@ export default function MyPageTimeline({ params }) {
 
                                                         <div className="d-flex justify-content-center flex-wrap">
 
-
-                                                            <UserImagesLayout key={`${post.id}-${index}`} post={post} />
-
+                                                            {
+                                                                post?.images && post?.images.length > 0 && (
+                                                                    <UserImagesLayout key={`${post.id}-${index}`} post={post} />
+                                                                )
+                                                            }
                                                             {
                                                                 post.event && post.event.cover && (
                                                                     <div>
@@ -1736,12 +1761,12 @@ export default function MyPageTimeline({ params }) {
 
                                                     :
 
-                                                    post.shared_post && <SharedPosts sharedPost={post.shared_post} userdata={userdata} post={post} posts={posts} setPosts={setPosts} myPageTimeline={myPageTimeline} />
+                                                    post.shared_post && <SharedPosts sharedPost={post.shared_post} userdata={userdata} post={post} posts={posts} setPosts={setPosts} />
 
                                                 }
 
 
-                                                <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
+                                                <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-2 px-3">
                                                     <div className="d-flex align-items-center mb-2 mb-md-0">
                                                         <span className="me-2">
                                                             {post?.reaction ? post.reaction.count || 0 : 0}
@@ -1785,7 +1810,7 @@ export default function MyPageTimeline({ params }) {
                                                             }}
                                                         >
                                                             <span style={{ fontSize: "18px", marginRight: "8px" }}>
-                                                           
+
                                                                 {postReactions[post.id] || (post.reaction?.reaction_type ?
                                                                     reactionEmojis[
                                                                     Object.keys(reactionValues).find(
@@ -1815,6 +1840,10 @@ export default function MyPageTimeline({ params }) {
                                                                 />
                                                             </div>
                                                         )}
+                                                        {/* {postReactions[post.id] && postReactions[post.id].length > 0 && (
+                                                            <FacebookCounter counters={postReactions[post.id]} user="You" />
+                                                        )} */}
+
                                                     </div>
 
                                                     <button

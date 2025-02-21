@@ -14,7 +14,9 @@ import ReportPostModal from "@/app/pages/Modals/ReportPost";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
 import EnableDisableCommentsModal from '../../Modal/EnableDisableCommentsModal';
-import PageImagesLayout from "../../myPageTimeline/[myPageTimeline]/pageImagesLayout";
+// import PageImagesLayout from "../../myPageTimeline/[myPageTimeline]/pageImagesLayout";
+import SharedPosts from "../../components/sharedPosts";
+import UserImagesLayout from "@/app/pages/components/userImagesLayout";
 import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
 import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
 import { useRouter } from "next/navigation";
@@ -99,7 +101,7 @@ export default function OpenPostInNewTab({ params }) {
         setActiveReactionPost(null);
     };
 
-    
+
     // localStorage.setItem("postReactions", JSON.stringify(updatedReactions));
 
     const colorMap = {
@@ -135,10 +137,10 @@ export default function OpenPostInNewTab({ params }) {
     const openModalGreatJob = (id) => {
         setActiveGreatJobId(id);
         setActiveCupCoffeeId(null); // Ensure other modal closes
-      };
-      const closeModalGreatJob = () => {
+    };
+    const closeModalGreatJob = () => {
         setActiveGreatJobId(null);
-      };
+    };
 
 
 
@@ -168,7 +170,7 @@ export default function OpenPostInNewTab({ params }) {
                 setPosts((prevPosts) => [...prevPosts, ...newPosts.filter((post) => !prevPosts.some((p) => p.id === post.id))]);
                 setPosts(newPosts)
 
-                
+
                 const reactionsMap = {};
                 newPosts.forEach((post) => {
                     if (post.reaction && post.reaction.reaction_type) {
@@ -354,7 +356,7 @@ export default function OpenPostInNewTab({ params }) {
                 action: "reaction",
                 reaction_type: reactionType,
             });
-         
+
             if (response.data.code === "200") {
                 setPosts(prevPosts =>
                     prevPosts.map(post => {
@@ -772,279 +774,298 @@ export default function OpenPostInNewTab({ params }) {
                                             </div>
 
                                             <hr className="my-2 text-muted" />
-                                            {post.post_type !== "donation" && !post.bg_color && (
+
+                                            {post?.post_type !== "donation" && !post.bg_color && (
                                                 <span
                                                     dangerouslySetInnerHTML={{ __html: post.post_text }}
                                                 />
                                             )}
 
 
-                                            {
-                                                post?.images && post?.images.length > 0 && (
-                                                    <PageImagesLayout key={`${post.id}-${index}`} post={post} />
-                                                )
-                                            }
-
-                                            {
-                                                // post.bg_color && (
-                                                //     <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
-                                                //         style={{
-                                                //             background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
-                                                //             padding: "160px 27px"
-                                                //         }}
-                                                //     >
-                                                //         <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
-                                                //     </div>
-                                                // )
-
-                                                post.bg_color && (
-                                                    <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
-                                                        style={{
-                                                            background: getDisplayColor(post.bg_color),
-                                                            backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
-                                                            backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
-                                                            backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
-                                                            padding: "220px 27px",
-                                                        }}
-                                                    >
-                                                        <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
-                                                    </div>
-                                                )
-                                            }
-
-
-
-
-                                            {post.poll && post.poll.poll_options && (
-                                                <div className="d-flex justify-content-center flex-wrap mb-1">
-
-                                                    <div className="w-100">
-                                                        <ul className="list-unstyled">
-                                                            {post.poll.poll_options.map((option) => {
-                                                                const totalVotes =
-                                                                    post.poll.poll_total_votes || 0;
-                                                                const percentage =
-                                                                    totalVotes > 0
-                                                                        ? Math.round(
-                                                                            (option.no_of_votes / totalVotes) * 100
-                                                                        )
-                                                                        : 0;
-
-                                                                return (
-                                                                    <li key={option.id} className="mb-3 w-100">
-                                                                        <div className="d-flex align-items-center justify-content-between">
-                                                                            <div
-                                                                                className="progress flex-grow-1"
-                                                                                style={{
-                                                                                    height: "30px",
-                                                                                    cursor: "pointer",
-                                                                                }}
-                                                                                onClick={() =>
-                                                                                    handleVote(
-                                                                                        option.id,
-                                                                                        post.poll.id,
-                                                                                        post.id
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <div
-                                                                                    className="progress-bar"
-                                                                                    role="progressbar"
-                                                                                    style={{
-                                                                                        width: `${percentage}%`,
-                                                                                        backgroundColor: "#66b3ff",
-                                                                                    }}
-                                                                                    aria-valuenow={percentage}
-                                                                                    aria-valuemin="0"
-                                                                                    aria-valuemax="100"
-                                                                                >
-                                                                                    <div
-                                                                                        className="progress-text w-100 text-secondary fs-6 fw-bold"
-                                                                                        style={{
-                                                                                            position: "absolute",
-                                                                                            overflow: "hidden",
-                                                                                            textOverflow: "ellipsis",
-                                                                                            whiteSpace: "nowrap",
-                                                                                        }}
-                                                                                    >
-                                                                                        {option.option_text}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <span className="px-3">{percentage}%</span>
-                                                                        </div>
-                                                                    </li>
-                                                                );
-                                                            })}
-                                                        </ul>
-                                                    </div>
-
-                                                </div>
-                                            )}
-
-                                            {post?.donation && (
-                                                <div>
-                                                    <Image
-                                                        src={post?.donation?.image}
-                                                        alt={post.donation.title}
-                                                        className="img-fluid d-block mx-auto"
-                                                        width={400}
-                                                        height={200}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                        loader={({ src }) => src}
-                                                    />
-
-                                                    <div className="card-body text-center">
-                                                        <h5 className="card-title">
-                                                            {post.donation.title}
-                                                        </h5>
-                                                        <p className="card-text">
-                                                            {post.donation.description}
-                                                        </p>
-                                                        <div className="progress mb-3">
-                                                            <div
-                                                                className="progress-bar"
-                                                                role="progressbar"
-                                                                style={{
-                                                                    width: `${(post.donation.collected_amount /
-                                                                        post.donation.amount) *
-                                                                        100
-                                                                        }%`,
-                                                                }}
-                                                                aria-valuenow={post.donation.collected_amount}
-                                                                aria-valuemin="0"
-                                                                aria-valuemax={post.donation.amount}
-                                                            ></div>
+                                            {/* shared post check from here..  */}
+                                            {post.parent_id !== "0" && !post.shared_post && (
+                                                    <div className="alert alert-warning" role="alert">
+                                                        <strong>This content is not available</strong>
+                                                        <div className="mb-0" style={{ fontSize: "14px" }}>
+                                                            This content isn't available right now. When this happens, it's usually because the owner
+                                                            only shared it with a small group of people, changed who can see it, or it's been deleted.
                                                         </div>
-                                                        <div className="d-flex align-items-center justify-content-between">
-                                                            <p className="text-muted">
-                                                                {post.donation.collected_amount} Collected
-                                                            </p>
-                                                            <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
-                                                            {
-                                                                post.donation.collected_amount < post.donation.amount &&
-                                                                (
-                                                                    <button
-                                                                        className="btn btn-primary btn-sm"
-                                                                        onClick={() => {
-                                                                            setDonationModal(!donationModal)
-
-                                                                            setDonationID(post.donation.id)
-                                                                        }}
-                                                                    >
-                                                                        Donate
-                                                                    </button>
-                                                                )
-
-                                                            }
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-
-
-                                            {
-                                                post.event && post.event.cover && (
-                                                    <div>
-                                                        <Image
-                                                            src={post.event.cover}
-                                                            alt="Event Cover"
-                                                            className="img-fluid mt-1"
-                                                            width={500}
-                                                            height={300}
-                                                            style={{
-                                                                objectFit: "cover",
-                                                            }}
-                                                        />
-
-                                                        <h5 className="fw-bold mt-2">{post.event.name}</h5>
-                                                        <button className="badge btn-primary rounded-pill mt-3">
-                                                            {post.event.start_date}
-                                                        </button>
                                                     </div>
                                                 )}
 
-                                            {post.product && (
-                                                <div>
-                                                    <Image
-                                                        src={post.product.images[0].image}
-                                                        alt="Product"
-                                                        className="img-fluid"
-                                                        width={600}
-                                                        height={400}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
-                                                    <div className="row mt-3">
-                                                        <div className="col-md-9">
-                                                            <h6><b>{post.product.product_name}</b></h6>
-                                                            <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
-                                                            <br />
-                                                            <span><b>Category: </b>{post.product.category}</span>
-                                                            <br />
-                                                            <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
+
+                                            {post.shared_post === null ?
+                                                <>
+
+                                                    {
+
+                                                        post.bg_color && (
+                                                            <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
+                                                                style={{
+                                                                    background: getDisplayColor(post.bg_color),
+                                                                    backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                                                    backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                                                    backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                                                    padding: "220px 27px",
+                                                                }}
+                                                            >
+                                                                <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
+                                                            </div>
+                                                        )
+                                                    }
+
+
+                                                    {
+                                                        post?.images && post?.images.length > 0 && (
+                                                            <UserImagesLayout key={`${post.id}-${index}`} post={post} />
+                                                        )
+                                                    }
+
+
+
+
+                                                    {post.poll && post.poll.poll_options && (
+                                                        <div className="d-flex justify-content-center flex-wrap mb-1">
+
+                                                            <div className="w-100">
+                                                                <ul className="list-unstyled">
+                                                                    {post.poll.poll_options.map((option) => {
+                                                                        const totalVotes =
+                                                                            post.poll.poll_total_votes || 0;
+                                                                        const percentage =
+                                                                            totalVotes > 0
+                                                                                ? Math.round(
+                                                                                    (option.no_of_votes / totalVotes) * 100
+                                                                                )
+                                                                                : 0;
+
+                                                                        return (
+                                                                            <li key={option.id} className="mb-3 w-100">
+                                                                                <div className="d-flex align-items-center justify-content-between">
+                                                                                    <div
+                                                                                        className="progress flex-grow-1"
+                                                                                        style={{
+                                                                                            height: "30px",
+                                                                                            cursor: "pointer",
+                                                                                        }}
+                                                                                        onClick={() =>
+                                                                                            handleVote(
+                                                                                                option.id,
+                                                                                                post.poll.id,
+                                                                                                post.id
+                                                                                            )
+                                                                                        }
+                                                                                    >
+                                                                                        <div
+                                                                                            className="progress-bar"
+                                                                                            role="progressbar"
+                                                                                            style={{
+                                                                                                width: `${percentage}%`,
+                                                                                                backgroundColor: "#66b3ff",
+                                                                                            }}
+                                                                                            aria-valuenow={percentage}
+                                                                                            aria-valuemin="0"
+                                                                                            aria-valuemax="100"
+                                                                                        >
+                                                                                            <div
+                                                                                                className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                                                                style={{
+                                                                                                    position: "absolute",
+                                                                                                    overflow: "hidden",
+                                                                                                    textOverflow: "ellipsis",
+                                                                                                    whiteSpace: "nowrap",
+                                                                                                }}
+                                                                                            >
+                                                                                                {option.option_text}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <span className="px-3">{percentage}%</span>
+                                                                                </div>
+                                                                            </li>
+                                                                        );
+                                                                    })}
+                                                                </ul>
+                                                            </div>
+
                                                         </div>
-                                                        <div className="col-md-3 mt-4">
-                                                            <Link href="#" >
-                                                                <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
-                                                            </Link>
+                                                    )}
+
+                                                    {post?.donation && (
+                                                        <div>
+                                                            <Image
+                                                                src={post?.donation?.image}
+                                                                alt={post.donation.title}
+                                                                className="img-fluid d-block mx-auto"
+                                                                width={400}
+                                                                height={200}
+                                                                style={{
+                                                                    objectFit: "cover",
+                                                                }}
+                                                                loader={({ src }) => src}
+                                                            />
+
+                                                            <div className="card-body text-center">
+                                                                <h5 className="card-title">
+                                                                    {post.donation.title}
+                                                                </h5>
+                                                                <p className="card-text">
+                                                                    {post.donation.description}
+                                                                </p>
+                                                                <div className="progress mb-3">
+                                                                    <div
+                                                                        className="progress-bar"
+                                                                        role="progressbar"
+                                                                        style={{
+                                                                            width: `${(post.donation.collected_amount /
+                                                                                post.donation.amount) *
+                                                                                100
+                                                                                }%`,
+                                                                        }}
+                                                                        aria-valuenow={post.donation.collected_amount}
+                                                                        aria-valuemin="0"
+                                                                        aria-valuemax={post.donation.amount}
+                                                                    ></div>
+                                                                </div>
+                                                                <div className="d-flex align-items-center justify-content-between">
+                                                                    <p className="text-muted">
+                                                                        {post.donation.collected_amount} Collected
+                                                                    </p>
+                                                                    <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+                                                                    {
+                                                                        post.donation.collected_amount < post.donation.amount &&
+                                                                        (
+                                                                            <button
+                                                                                className="btn btn-primary btn-sm"
+                                                                                onClick={() => {
+                                                                                    setDonationModal(!donationModal)
+
+                                                                                    setDonationID(post.donation.id)
+                                                                                }}
+                                                                            >
+                                                                                Donate
+                                                                            </button>
+                                                                        )
+
+                                                                    }
+
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {post?.video && (
-                                                <div
-                                                    className="media-container mt-1"
-                                                    style={{ width: "100%", height: "auto" }}
-                                                >
-                                                    <video
-                                                        controls
-                                                        style={{
-                                                            objectFit: "cover",
-                                                            width: "100%",
-                                                            height: "auto",
-                                                        }}
-                                                    >
-                                                        <source
-                                                            src={post.video.media_path}
-                                                            type="video/mp4"
-                                                        />
-                                                        Your browser does not support the video tag.
-                                                    </video>
-                                                </div>
-                                            )}
+                                                    )}
 
 
 
-                                            {post?.audio && (
-                                                <div className="media-container w-100">
-                                                    <audio controls className="w-100">
-                                                        <source src={post.audio.media_path} />
-                                                        Your browser does not support the audio tag.
-                                                    </audio>
-                                                </div>
-                                            )}
+                                                    {
+                                                        post.event && post.event.cover && (
+                                                            <div>
+                                                                <Image
+                                                                    src={post.event.cover}
+                                                                    alt="Event Cover"
+                                                                    className="img-fluid mt-1"
+                                                                    width={500}
+                                                                    height={300}
+                                                                    style={{
+                                                                        objectFit: "cover",
+                                                                    }}
+                                                                />
+
+                                                                <h5 className="fw-bold mt-2">{post.event.name}</h5>
+                                                                <button className="badge btn-primary rounded-pill mt-3">
+                                                                    {post.event.start_date}
+                                                                </button>
+                                                            </div>
+                                                        )}
+
+                                                    {post.product && (
+                                                        <div>
+                                                            <Image
+                                                                src={post.product.images[0].image}
+                                                                alt="Product"
+                                                                className="img-fluid"
+                                                                width={600}
+                                                                height={400}
+                                                                style={{
+                                                                    objectFit: "cover",
+                                                                }}
+                                                            />
+                                                            <div className="row mt-3">
+                                                                <div className="col-md-9">
+                                                                    <h6><b>{post.product.product_name}</b></h6>
+                                                                    <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
+                                                                    <br />
+                                                                    <span><b>Category: </b>{post.product.category}</span>
+                                                                    <br />
+                                                                    <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
+                                                                </div>
+                                                                <div className="col-md-3 mt-4">
+                                                                    <Link href="#" >
+                                                                        <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
+                                                                    </Link>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {post?.video && (
+                                                        <div
+                                                            className="media-container mt-1"
+                                                            style={{ width: "100%", height: "auto" }}
+                                                        >
+                                                            <video
+                                                                controls
+                                                                style={{
+                                                                    objectFit: "cover",
+                                                                    width: "100%",
+                                                                    height: "auto",
+                                                                }}
+                                                            >
+                                                                <source
+                                                                    src={post.video.media_path}
+                                                                    type="video/mp4"
+                                                                />
+                                                                Your browser does not support the video tag.
+                                                            </video>
+                                                        </div>
+                                                    )}
 
 
-                                            {
-                                                post?.post_location && (
-                                                    <div className="media-container text-center w-100 mt-3">
-                                                        <span className="text-muted">
-                                                            <i className="bi bi-geo-alt-fill"></i> {post.post_location}
-                                                        </span>
-                                                    </div>
-                                                )
+
+                                                    {post?.audio && (
+                                                        <div className="media-container w-100">
+                                                            <audio controls className="w-100">
+                                                                <source src={post.audio.media_path} />
+                                                                Your browser does not support the audio tag.
+                                                            </audio>
+                                                        </div>
+                                                    )}
+
+
+                                                    {
+                                                        post?.post_location && (
+                                                            <div className="media-container text-center w-100 mt-3">
+                                                                <span className="text-muted">
+                                                                    <i className="bi bi-geo-alt-fill"></i> {post.post_location}
+                                                                </span>
+                                                            </div>
+                                                        )
+
+                                                    }
+
+                                                    {/*  shared post till here*/}
+
+                                                </>
+
+
+                                                :
+
+                                                post.shared_post && <SharedPosts sharedPost={post.shared_post} userdata={userdata} post={post} posts={posts} setPosts={setPosts}  />
 
                                             }
 
 
-                                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
+
+                                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-2 px-3">
                                                 <div className="d-flex align-items-center mb-2 mb-md-0">
                                                     <span className="me-2">
                                                         {post.reaction ? post.reaction.count || 0 : 0}
@@ -1087,15 +1108,15 @@ export default function OpenPostInNewTab({ params }) {
                                                             setActiveReactionPost(activeReactionPost === post.id ? null : post.id);
                                                         }}
                                                     >
-                                                          <span style={{ fontSize: "18px", marginRight: "8px" }}>
-                                                           
-                                                           {postReactions[post.id] || (post.reaction?.reaction_type ?
-                                                               reactionEmojis[
-                                                               Object.keys(reactionValues).find(
-                                                                   key => reactionValues[key] === Number(post.reaction.reaction_type)
-                                                               )
-                                                               ] : "😊")}
-                                                       </span>
+                                                        <span style={{ fontSize: "18px", marginRight: "8px" }}>
+
+                                                            {postReactions[post.id] || (post.reaction?.reaction_type ?
+                                                                reactionEmojis[
+                                                                Object.keys(reactionValues).find(
+                                                                    key => reactionValues[key] === Number(post.reaction.reaction_type)
+                                                                )
+                                                                ] : "😊")}
+                                                        </span>
                                                         Reaction
                                                     </button>
 
@@ -1231,7 +1252,7 @@ export default function OpenPostInNewTab({ params }) {
                                                         )}
 
                                                         <button className="btn btn-danger d-flex align-items-center rounded-1"
-                                                          onClick={() => openModalGreatJob(post.id)}
+                                                            onClick={() => openModalGreatJob(post.id)}
                                                         >
                                                             <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
                                                         </button>
@@ -1240,8 +1261,8 @@ export default function OpenPostInNewTab({ params }) {
                                                         )}
                                                     </div>
 
-                                           } 
-                                           
+                                            }
+
 
 
                                             {

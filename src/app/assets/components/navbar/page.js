@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Cookies from 'js-cookie';
 import { toast } from "react-toastify";
+import ChatWindow from "@/app/pages/Chat/ChatWindow/ChatWindow";
 
 
 export default function Navbar() {
@@ -19,6 +20,8 @@ export default function Navbar() {
   const [loadingChats, setLoadingChats] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [error, setError] = useState(null);
+
+  const [selectedChat, setSelectedChat] = useState(null);
 
   const router = useRouter();
 
@@ -81,7 +84,13 @@ export default function Navbar() {
     }
   };
 
+
   const toggleOffcanvas = () => {
+    setIsOffcanvasOpen(!isOffcanvasOpen);
+  };
+
+  const toggleChatWindow = (chat) => {
+    setSelectedChat(chat);
     setIsOffcanvasOpen(!isOffcanvasOpen);
   };
 
@@ -100,6 +109,8 @@ export default function Navbar() {
       setError("Error occurred while marking notifications as read");
     }
   };
+
+
 
   return (
     <>
@@ -378,37 +389,60 @@ export default function Navbar() {
           )}
 
           {chats.length > 0 ? (
-            chats.map((chat) => (
+            chats?.map((chat) => (
+
+
               <div
                 key={chat.id}
                 className="d-flex align-items-center p-2 bg-light rounded-3 mb-2"
+                style={{ cursor: "pointer" }}
+                onClick={() => toggleChatWindow(chat)}
               >
                 <Image
-                  src={chat.avatar}
-                  alt={`${chat.first_name} ${chat.last_name} Avatar`}
-                  className="rounded-circle me-3"
+                  className="img-fluid p-1 me-3 rounded-circle"
+                  src={!chat?.avatar || chat?.avatar.trim() === ""
+                    ? '/assets/images/placeholder-image.png'
+                    : chat?.avatar}
+                  alt="avatar"
                   width={40}
                   height={40}
-                  unoptimized={true}
+                  style={{ 
+                    objectFit: 'cover', 
+                    borderRadius: '50%',  
+                    width: '40px', 
+                    height: '40px', 
+                    flexShrink: "0 !important"
+                  }}
+                  loader={({ src }) => src}
                 />
-                <div className="d-flex justify-content-between w-100">
-                  <div className="flex-grow-1">
-                    <h6>
-                      {chat.first_name} {chat.last_name}
-                    </h6>
-                    <p>{chat.last_message}</p>
+
+                <div className="d-flex justify-content-between w-100 overflow-hidden">
+
+                  <div className="flex-grow-1" style={{ minWidth: "0" }}>
+                    <h6 className="mb-0">{chat?.first_name}</h6>
+                    <p
+                      className="text-truncate mb-0"
+                      style={{ maxWidth: "75%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}
+                    >
+                      {chat?.last_message}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-muted">{chat.last_time}</p>
-                  </div>
+                  <span className="text-muted ms-2 text-nowrap" style={{fontSize:"13px",  minWidth: "fit-content" }}>
+                    {chat?.time_ago}
+                  </span>
                 </div>
               </div>
             ))
-          ) : (
-            <div>No chats available.</div>
-          )}
+          )
+            :
+            (
+              <div>No chats available.</div>
+            )}
         </div>
       </div>
+      {selectedChat && (
+        <ChatWindow chat={selectedChat} onClose={() => setSelectedChat(null)} />
+      )}
     </>
   );
 }
