@@ -7,7 +7,6 @@ import moment from "moment";
 import Image from "next/image";
 
 export default function Blogs() {
-
   const [error, setError] = useState(null);
   const [blogs, setBlogs] = useState([]);
   const [recentBlogs, setRecentBlogs] = useState([]);
@@ -65,104 +64,90 @@ export default function Blogs() {
   }, []);
 
   return (
-    <div>
-      <div className="container mt-5">
-        {error && <div className="alert alert-danger">{error}</div>}
-        <div className="row">
-          <div className="col-md-8 mt-5">
-            <div className="card shadow-lg border-0 p-3">
-              <div className="card-body">
-                <h3 className="mb-4 fw-bold text-center">Blogs</h3>
-                {blogs.map((blog) => (
-                  <div key={blog.id} className="col-md-12 mb-4">
-                    <div className="border-0 d-flex mb-3">
-                      <div>
-                        <Image
-                          src={blog.thumbnail}
-                          alt={blog.title}
-                          className="card-img-top"
-                          width={250}
-                          height={300}
-                          style={{ objectFit: "cover" }}
-                        />
-
-                      </div>
-                      <div className="mx-4">
-                        <span
-                          className="badge bg-danger text-white mb-2"
-                          style={{
-                            fontSize: "12px",
-                            padding: "5px 10px",
-                          }}
-                        >
-                          {blog.category}
-                        </span>
-                        <h5 className="card-title">{blog.title}</h5>
-                        <Link
-                          href={`/pages/blogs/blogdetails/${blog.id}`}
-                          className="text-primary text-decoration-none"
-                        >
-                          Read more...
-                        </Link>
-                        <div className="text-dark fw-semibold mt-2">
-                          <small>
-                            <i className="bi bi-calendar-event pe-2"></i>
-                            {moment(blog.created_at).format("MMM DD, YYYY")}
-                          </small>
-                        </div>
-                      </div>
+    <div className="container mt-5">
+      {error && <div className="alert alert-danger">{error}</div>}
+      <div className="row">
+        {/* Main Blog Section */}
+        <div className="col-md-8 mt-5">
+          <div className="card shadow-lg border-0 p-4">
+            <div className="card-body">
+              <h3 className="mb-4 fw-bold text-center text-primary">Latest Blogs</h3>
+              {blogs.map((blog) => (
+                <div key={blog.id} className="col-md-12 mb-4">
+                  <div className="d-flex align-items-start shadow-sm p-3 rounded bg-light">
+                    <div>
+                      <Image
+                        src={blog.thumbnail}
+                        alt={blog.title}
+                        className="rounded"
+                        width={200}
+                        height={150}
+                        style={{ objectFit: "cover" }}
+                      />
                     </div>
-                    <hr className="text-muted m-0" />
+                    <div className="ms-3">
+                      <span className="badge bg-danger text-white mb-2">{blog.category}</span>
+                      <h5 className="fw-bold">{blog.title}</h5>
+                      <p className="text-muted mb-2">
+                        <i className="bi bi-calendar-event pe-2"></i>
+                        {moment(blog.created_at).format("MMM DD, YYYY")}
+                      </p>
+                      <Link href={`/pages/blogs/blogdetails/${blog.id}`} className="text-decoration-none fw-semibold text-primary">
+                        Read more →
+                      </Link>
+                    </div>
                   </div>
-                ))}
-
-                <div className="d-flex justify-content-center mt-4">
-                  <nav>
-                    <ul className="pagination">
-                      <li className="page-item">
-                        <Link href="#" className="page-link">
-                          1
-                        </Link>
-                      </li>
-                    </ul>
-                  </nav>
+                  <hr className="text-muted" />
                 </div>
+              ))}
+              {/* Pagination */}
+              <div className="d-flex justify-content-center mt-4">
+                <nav>
+                  <ul className="pagination pagination-sm">
+                    <li className="page-item">
+                      <Link href="#" className="page-link">
+                        1
+                      </Link>
+                    </li>
+                  </ul>
+                </nav>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="col-md-4 mt-5">
-            <div className="card shadow-lg border-0 p-3">
-              <div className="card-body">
-                <div className="card-title bg-white fw-bold">Recent Posts</div>
-                <ul className="list-group list-group-flush">
-                  {recentBlogs.map((blog) => (
-                    <div key={blog.id}>
-                      <Link
-                        href={`/pages/blogs/blogdetails/${blog.id}`}
-                        className="text-decoration-none text-primary"
-                      >
-                        {blog.title}
-                      </Link>
-                      <br />
-                      <small className="text-muted">
-                        {blog.created_at}
-                      </small>
-                      <hr />
-                    </div>
-                  ))}
-                </ul>
-              </div>
+        {/* Sidebar Section */}
+        <div className="col-md-4 mt-5">
+          {/* Recent Posts */}
+          <div className="card shadow-lg border-0 p-3">
+            <div className="card-body">
+              <h5 className="fw-bold text-dark">Recent Posts</h5>
+              <ul className="list-group list-group-flush">
+                {recentBlogs.map((blog) => (
+                  <li key={blog.id} className="list-group-item">
+                    <Link href={`/pages/blogs/blogdetails/${blog.id}`} className="text-decoration-none text-dark fw-semibold">
+                      {blog.title}
+                    </Link>
+                    <br />
+                    <small className="text-muted">
+                      {moment(blog.created_at).format("MMM DD, YYYY")}
+                    </small>
+                  </li>
+                ))}
+              </ul>
             </div>
+          </div>
 
-            <div className="card shadow-lg border-0 mt-5 p-3">
-              <div className="card-body">
-                <div className="card-title bg-white fw-bold">Tags</div>
+          {/* Tags Section */}
+          <div className="card shadow-lg border-0 mt-4 p-3">
+            <div className="card-body">
+              <h5 className="fw-bold text-dark">Popular Tags</h5>
+              <div className="d-flex flex-wrap">
                 {recentTags.map((tag, index) => (
                   <Link
                     key={index}
                     href={`/pages/blogs/blogtags/${tag.id}`}
-                    className="btn btn-light btn-sm me-2 mb-2 border"
+                    className="btn btn-outline-primary btn-sm me-2 mb-2"
                   >
                     {tag.name}
                   </Link>
@@ -170,6 +155,7 @@ export default function Blogs() {
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>

@@ -40,7 +40,7 @@ export default function StripeDeposit() {
         }
 
         try {
-            const response = await fetch("/api/checkout", {
+            const response = await fetch("/payment-methods-api/Stripe-api/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ amount: Number(amount) }),

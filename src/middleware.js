@@ -12,7 +12,8 @@ export function middleware(request) {
 
     const publicRoutes = [
         '/pages/Wallet/success',  // ✅ Allow access after Stripe payment
-        '/pages/Wallet/deposit-amount'    // ✅ Allow access if payment was canceled
+        '/pages/Wallet/deposit-amount',    // ✅ Allow access if payment was canceled
+        '/pages/Wallet/paystack-success'
     ];
 
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
@@ -46,7 +47,8 @@ export const config = {
         '/pages/:path*',
         '/auth/:path*',
         '/',
-        '/pages/Wallet/success',  // ✅ Exclude success page
-        '/pages/Wallet/deposit-amount'    // ✅ Exclude cancel page
+        '/pages/Wallet/success',
+        '/pages/Wallet/deposit-amount',
+        '/pages/Wallet/paystack-success',
     ]
 };

@@ -4,53 +4,66 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './payment-success.css';
-
-export default function PaymentSuccess() {
+import '../payment-success.css';
+ 
+export default function PaystackSuccess() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const sessionId = searchParams.get("session_id");
+    const reference = searchParams.get("reference");
     const [loading, setLoading] = useState(true);
     const [success, setSuccess] = useState(false);
     const api = createAPI();
 
     useEffect(() => {
-        if (sessionId) {
-            const verifyPayment = async () => {
-                try {
-                    const stripeResponse = await fetch(`/api/retrieve-payment?session_id=${sessionId}`);
-                    const stripeData = await stripeResponse.json();
-
-                    if (!stripeResponse.ok) {
-                        throw new Error(stripeData.error || "Failed to retrieve payment information");
-                    }
-
-                    const paymentId = stripeData.paymentIntentId || stripeData.chargeId;
-
-                    const response = await api.post('/api/deposite/add-fund', {
-                        gateway_id: '2',
-                        transaction_id: paymentId,
-                    });
-
-                    if (response.data.status == '200') {
-                        setSuccess(true);
-                        setTimeout(() => {
-                            router.push("/pages/Wallet");
-                        }, 5000);
-                    } else {
-                        setSuccess(false);
-                    }
-                } catch (error) {
-                    console.error("Error verifying payment:", error);
-                    setSuccess(false);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            verifyPayment();
+        if (!reference) {
+            setLoading(false);
+            setSuccess(false);
+            return;
         }
-    }, [sessionId, router]);
+
+        const verifyPaystackPayment = async () => {
+            try {
+                // Step 1: Verify transaction with Paystack
+                const paystackResponse = await fetch(`/payment-methods-api/Paystack-api/verify-transaction`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reference }),
+                });
+
+                const paystackData = await paystackResponse.json();
+
+                if (!paystackResponse.ok || !paystackData.success) {
+                    throw new Error(paystackData.message || "Failed to verify Paystack payment");
+                }
+
+                // Step 2: Get Paystack transaction ID
+                const transactionId = paystackData.data.reference;
+
+                // Step 3: Call backend API to update wallet
+                const response = await api.post('/api/deposite/add-fund', {
+                    gateway_id: '3',
+                    transaction_id: transactionId,
+                    amount: paystackData.data.amount
+                });
+
+                if (response.data.status === '200') {
+                    setSuccess(true);
+                    setTimeout(() => {
+                        router.push("/pages/Wallet");
+                    }, 3000);
+                } else {
+                    setSuccess(false);
+                }
+            } catch (error) {
+                console.error("Error verifying Paystack payment:", error);
+                setSuccess(false);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        verifyPaystackPayment();
+    }, [reference, router]);
 
     return (
         <div className="container payment-result-container">
