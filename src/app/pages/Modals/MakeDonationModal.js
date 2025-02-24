@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner"; // Import Bootstrap Spinner
 
-export default function MakeDonationModal({ postID, donationID, donationModal, setDonationModal, setPosts }) {
+export default function MakeDonationModal({ donationID, donationModal, setDonationModal, setPosts }) {
     const api = createAPI();
     const [donate, setDonate] = useState("");
     const [loading, setLoading] = useState(false); // Loading state
@@ -15,7 +15,7 @@ export default function MakeDonationModal({ postID, donationID, donationModal, s
     };
 
     const handleDonationSend = async () => {
-        setLoading(true); // Start loading
+        setLoading(true); 
 
         try {
             const response = await api.post("/api/donate", {

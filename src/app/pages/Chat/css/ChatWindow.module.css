@@ -52,7 +52,7 @@ body {
 }
 
 .bgWhite {
-  border: 1px solid #e7e7e9;
+  /* border: 1px solid #e7e7e9; */
   font-size: 12px;
   border-radius: 20px;
   max-width: 75%;
