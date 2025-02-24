@@ -550,16 +550,16 @@ export default function OpenPostInNewTab({ params }) {
                                                     <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                                         onClick={() => handleClick(post.user.id)} >
 
-                                                        <Link href="#">
+                                                       
                                                             <Image
                                                                 className="avatar-img rounded-circle"
-                                                                src={post.user.avatar}
+                                                                src={post.user.avatar || "/assets/images/userplaceholder.png"}
                                                                 alt="User Avatar"
                                                                 width={50}
                                                                 height={50}
                                                                 style={{ objectFit: 'cover' }}
                                                             />
-                                                        </Link>
+                                                      
 
                                                         {post.user.is_verified === '1' && (
                                                             <div
@@ -885,7 +885,7 @@ export default function OpenPostInNewTab({ params }) {
                                             {post?.donation && (
                                                 <div>
                                                     <Image
-                                                        src={post?.donation?.image}
+                                                        src={post?.donation?.image || "/assets/images/placeholder-image.png"}
                                                         alt={post.donation.title}
                                                         className="img-fluid d-block mx-auto"
                                                         width={400}
@@ -951,7 +951,7 @@ export default function OpenPostInNewTab({ params }) {
                                                 post.event && post.event.cover && (
                                                     <div>
                                                         <Image
-                                                            src={post.event.cover}
+                                                            src={post.event.cover || "/assets/images/placeholder-image.png"}
                                                             alt="Event Cover"
                                                             className="img-fluid mt-1"
                                                             width={500}
@@ -971,7 +971,7 @@ export default function OpenPostInNewTab({ params }) {
                                             {post.product && (
                                                 <div>
                                                     <Image
-                                                        src={post.product.images[0].image}
+                                                        src={post.product.images[0].image || "/assets/images/placeholder-image.png"}
                                                         alt="Product"
                                                         className="img-fluid"
                                                         width={600}
@@ -1254,7 +1254,7 @@ export default function OpenPostInNewTab({ params }) {
                                                                 <div key={comment.id} className="mb-3">
                                                                     <div className="d-flex">
                                                                         <Image
-                                                                            src={comment.avatar}
+                                                                            src={comment.avatar || "/assets/images/userplaceholder.png"}
                                                                             alt="Profile"
                                                                             className="rounded-circle me-1 mt-2"
                                                                             width={40}
@@ -1329,7 +1329,7 @@ export default function OpenPostInNewTab({ params }) {
                                                                                             className="d-flex mb-2 mx-5"
                                                                                         >
                                                                                             <Image
-                                                                                                src={reply.avatar}
+                                                                                                src={reply.avatar || "/assets/images/userplaceholder.png"}
                                                                                                 alt="Profile"
                                                                                                 className="rounded-circle me-1 mt-2"
                                                                                                 width={40}
@@ -1442,7 +1442,7 @@ export default function OpenPostInNewTab({ params }) {
                                                 post?.comments_status === "1" && (
                                                     <div className="d-flex align-items-center mt-3">
                                                         <Image
-                                                            src={userdata.data.avatar}
+                                                            src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                                                             alt="User Avatar"
                                                             className="rounded-5"
                                                             width={40}

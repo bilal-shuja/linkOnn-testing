@@ -36,6 +36,8 @@ export default function GamesPage() {
         fetchGames();
     }, []);
 
+    if (!settings) return <div>Loading...</div>;
+
     return (
         <div>
 
@@ -66,7 +68,7 @@ export default function GamesPage() {
                                                 <div key={game.id} className="col-md-4 mb-4">
                                                     <div className="card h-100 d-flex">
                                                         <Image
-                                                            src={game.image}
+                                                            src={game.image || "/assets/images/placeholder-image.png"}
                                                             alt={game.name}
                                                             className="card-img-top"
                                                             width={300}

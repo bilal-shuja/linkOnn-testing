@@ -948,7 +948,7 @@ export default function Newsfeed() {
                                   </video>
                                 ) : (
                                   <Image
-                                    src={story.media}
+                                    src={story.media || "/assets/images/placeholder-image.png"}
                                     className="card-img-top rounded-3"
                                     alt="Story Background"
                                     width={144}
@@ -1034,7 +1034,7 @@ export default function Newsfeed() {
                                       </video>
                                     ) : (
                                       <Image
-                                        src={story.media}
+                                        src={story.media || "/assets/images/placeholder-image.png"}
                                         className="d-block"
                                         alt="Story Background"
                                         width={1200}
@@ -1113,7 +1113,7 @@ export default function Newsfeed() {
                 <div className="card-body">
                   <div className="d-flex align-items-center mb-4">
                     <Image
-                      src={userdata.data.avatar}
+                      src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                       alt="User Avatar"
                       className="rounded-circle"
                       height={50}
@@ -1528,16 +1528,16 @@ export default function Newsfeed() {
                           onClick={() => handleClick(post.user.id)}
                         >
 
-                          <Link href="#">
+                  
                             <Image
                               className="avatar-img rounded-circle"
-                              src={post.user.avatar}
+                              src={post.user.avatar || "/assets/images/userplaceholder.png"}
                               alt="User Avatar"
                               width={50}
                               height={50}
                               style={{ objectFit: 'cover' }}
                             />
-                          </Link>
+                     
 
                           {post.user.is_verified === '1' && (
                             <div
@@ -1889,7 +1889,7 @@ export default function Newsfeed() {
                           {post.donation && (
                             <div>
                               <Image
-                                src={post.donation.image}
+                                src={post.donation.image || "/assets/images/placeholder-image.png"}
                                 alt={post.donation.title}
                                 width={500}
                                 height={300}
@@ -1956,7 +1956,7 @@ export default function Newsfeed() {
                           {post.event && post.event.cover && (
                             <div className="w-100 text-center mt-2">
                               <Image
-                                src={post.event.cover}
+                                src={post.event.cover || "/assets/images/placeholder-image.png"}
                                 alt="Event Cover"
                                 width={500}
                                 height={300}
@@ -1986,7 +1986,7 @@ export default function Newsfeed() {
                               {/* Product Image */}
                               <div className="text-center">
                                 <Image
-                                  src={post.product.images[0].image}
+                                  src={post.product.images[0].image || "/assets/images/placeholder-image.png"}
                                   alt={post.product.product_name}
                                   width={600}
                                   height={400}
@@ -2268,7 +2268,7 @@ export default function Newsfeed() {
                             <div key={comment.id} className="mb-3">
                               <div className="d-flex">
                                 <Image
-                                  src={comment.avatar}
+                                  src={comment.avatar || "/assets/images/userplaceholder.png"}
                                   alt="Profile"
                                   className="rounded-circle me-1 mt-2"
                                   width={40}
@@ -2343,7 +2343,7 @@ export default function Newsfeed() {
                                           className="d-flex mb-2 mx-5"
                                         >
                                           <Image
-                                            src={reply.avatar}
+                                            src={reply.avatar || "/assets/images/userplaceholder.png"}
                                             alt="Profile"
                                             className="rounded-circle me-1 mt-2"
                                             width={40}
@@ -2452,7 +2452,7 @@ export default function Newsfeed() {
                       post?.comments_status === "1" && (
                         <div className="d-flex align-items-center mt-3">
                           <Image
-                            src={userdata.data.avatar}
+                            src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                             alt="User Avatar"
                             className="rounded-5"
                             width={40}

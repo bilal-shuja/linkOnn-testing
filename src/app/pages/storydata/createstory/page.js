@@ -28,7 +28,7 @@ export default function Storycreate() {
             <Link href="/pages/storydata">
                 <div className="position-relative">
                     <Image
-                        src={userdata.data.avatar}
+                        src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                         alt="Story Background"
                         className="card-img-top rounded-4"
                         style={{ objectFit: "cover" }}

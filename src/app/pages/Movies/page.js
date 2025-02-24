@@ -152,7 +152,7 @@ export default function MoviesPage() {
                         <div key={movie.id} className="col-md-4 col-sm-6 col-12 mb-4">
                           <div className="card shadow-lg border-0" style={{ height: '100%' }}>
                             <Image
-                              src={movie.cover_pic}
+                              src={movie.cover_pic || "/assets/images/placeholder-image.png"}
                               alt={movie.movie_name}
                               className="card-img-top"
                               width={300}

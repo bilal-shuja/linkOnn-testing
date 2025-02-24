@@ -243,7 +243,7 @@ export default function Pages() {
                                 <div key={page.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
                                     <Image
-                                      src={page.avatar || "https://via.placeholder.com/150"}
+                                      src={page.avatar || "/assets/images/placeholder-image.png"}
                                       alt="Profile"
                                       className="card-img-top mx-auto mt-3"
                                       width={80}
@@ -337,7 +337,7 @@ export default function Pages() {
                               <div key={page.id} className="col-md-4 mb-4">
                                 <div className="card text-center">
                                   <Image
-                                    src={page.avatar || "https://via.placeholder.com/150"}
+                                    src={page.avatar || "/assets/images/placeholder-image.png"}
                                     alt="Page Image"
                                     className="card-img-top mx-auto mt-3"
                                     width={80}

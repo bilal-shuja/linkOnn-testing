@@ -835,7 +835,7 @@ export default function UserProfileCard({ params }) {
                                 <div className="card-body">
                                     <div className="d-flex align-items-center mb-3">
                                         <Image
-                                            src={userdata.data.avatar}
+                                            src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                                             alt="User Avatar"
                                             className="rounded-circle"
                                             height={50}
@@ -1238,16 +1238,16 @@ export default function UserProfileCard({ params }) {
                                                 onClick={() => handleClick(post.user.id)}
                                             >
 
-                                                <Link href="#">
+                                              
                                                     <Image
                                                         className="avatar-img rounded-circle"
-                                                        src={post.user.avatar}
+                                                        src={post.user.avatar || "/assets/images/userplaceholder.png"}
                                                         alt="User Avatar"
                                                         width={50}
                                                         height={50}
                                                         style={{ objectFit: 'cover' }}
                                                     />
-                                                </Link>
+                                            
 
                                                 {post.user.is_verified === '1' && (
                                                     <div
@@ -1578,7 +1578,7 @@ export default function UserProfileCard({ params }) {
                                                 {post.donation && (
                                                     <div>
                                                         <Image
-                                                            src={post.donation.image}
+                                                            src={post.donation.image || "/assets/images/placeholder-image.png"}
                                                             alt={post.donation.title}
                                                             width={500}
                                                             height={300}
@@ -1645,7 +1645,7 @@ export default function UserProfileCard({ params }) {
                                                 {post.event && post.event.cover && (
                                                     <div className="w-100 text-center mt-2">
                                                         <Image
-                                                            src={post.event.cover}
+                                                            src={post.event.cover || "/assets/images/placeholder-image.png"}
                                                             alt="Event Cover"
                                                             width={500}
                                                             height={300}
@@ -1675,7 +1675,7 @@ export default function UserProfileCard({ params }) {
                                                         {/* Product Image */}
                                                         <div className="text-center">
                                                             <Image
-                                                                src={post.product.images[0].image}
+                                                                src={post.product.images[0].image || "/assets/images/placeholder-image.png"}
                                                                 alt={post.product.product_name}
                                                                 width={600}
                                                                 height={400}
@@ -1957,7 +1957,7 @@ export default function UserProfileCard({ params }) {
                                                     <div key={comment.id} className="mb-3">
                                                         <div className="d-flex">
                                                             <Image
-                                                                src={comment.avatar}
+                                                                src={comment.avatar || "/assets/images/userplaceholder.png"}
                                                                 alt="Profile"
                                                                 className="rounded-circle me-1 mt-2"
                                                                 width={40}
@@ -2032,7 +2032,7 @@ export default function UserProfileCard({ params }) {
                                                                                 className="d-flex mb-2 mx-5"
                                                                             >
                                                                                 <Image
-                                                                                    src={reply.avatar}
+                                                                                    src={reply.avatar || "/assets/images/userplaceholder.png"}
                                                                                     alt="Profile"
                                                                                     className="rounded-circle me-1 mt-2"
                                                                                     width={40}
@@ -2141,7 +2141,7 @@ export default function UserProfileCard({ params }) {
                                         post?.comments_status === "1" && (
                                             <div className="d-flex align-items-center mt-3">
                                                 <Image
-                                                    src={userdata.data.avatar}
+                                                    src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                                                     alt="User Avatar"
                                                     className="rounded-5"
                                                     width={40}

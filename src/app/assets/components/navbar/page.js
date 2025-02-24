@@ -204,10 +204,10 @@ export default function Navbar() {
                       <li key={notification.id} className={`dropdown-item ${notifications.length > 0 ? 'bg-light' : ''}`} style={{ width: "350px" }}>
                         <div className="d-flex align-items-center">
                           <Image
-                            src={notification.notifier.avatar}
+                            src={notification.notifier.avatar || "/assets/images/userplaceholder.png"}
                             alt={notification.notifier.first_name}
-                            width={50}
-                            height={50}
+                            width={40}
+                            height={40}
                             className="rounded-circle me-2"
                             unoptimized={true}
                           />
@@ -262,7 +262,7 @@ export default function Navbar() {
               <div className="dropdown position-relative mx-3">
                 {/* Profile Avatar Dropdown Toggle */}
                 <Image
-                  src={userdata.data.avatar}
+                  src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                   alt="Profile"
                   className="rounded-circle profile-avatar shadow-sm"
                   height={40}
@@ -279,7 +279,7 @@ export default function Navbar() {
                   {/* User Info Section */}
                   <li className="d-flex align-items-center mt-2 mx-3 mb-3">
                     <Image
-                      src={userdata.data.avatar}
+                      src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                       alt="User Avatar"
                       className="rounded-circle border border-2 border-light shadow-sm"
                       width={50}
@@ -384,7 +384,7 @@ export default function Navbar() {
                 className="d-flex align-items-center p-2 bg-light rounded-3 mb-2"
               >
                 <Image
-                  src={chat.avatar}
+                  src={chat.avatar || "/assets/images/userplaceholder.png"}
                   alt={`${chat.first_name} ${chat.last_name} Avatar`}
                   className="rounded-circle me-3"
                   width={40}

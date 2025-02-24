@@ -325,7 +325,7 @@ export default function FriendsPage() {
                           <div key={friend.id} className="d-flex justify-content-between align-items-center mb-3">
                             <div className="d-flex align-items-center">
                               <Image
-                                src={friend.avatar}
+                                src={friend.avatar || "/assets/images/userplaceholder.png"}
                                 alt={`${friend.first_name} ${friend.last_name}`}
                                 className="rounded-circle"
                                 width={50}
@@ -370,7 +370,7 @@ export default function FriendsPage() {
                           <div key={friend.id} className="d-flex justify-content-between align-items-center mb-3">
                             <div className="d-flex align-items-center">
                               <Image
-                                src={friend.avatar}
+                                src={friend.avatar || "/assets/images/userplaceholder.png"}
                                 alt={`${friend.first_name} ${friend.last_name}`}
                                 className="rounded-circle"
                                 width={50}
@@ -435,7 +435,7 @@ export default function FriendsPage() {
                           <div key={friend.id} className="d-flex justify-content-between align-items-center mb-3">
                             <div className="d-flex align-items-center">
                               <Image
-                                src={friend.avatar}
+                                src={friend.avatar || "/assets/images/userplaceholder.png"}
                                 alt={`${friend.first_name} ${friend.last_name}`}
                                 className="rounded-circle"
                                 width={50}
@@ -493,7 +493,7 @@ export default function FriendsPage() {
                           >
                             <div className="d-flex align-items-center">
                               <Image
-                                src={person.avatar}
+                                src={person.avatar || "/assets/images/userplaceholder.png"}
                                 alt="User Avatar"
                                 className="rounded-circle"
                                 width={40}
@@ -526,7 +526,7 @@ export default function FriendsPage() {
                           >
                             <div className="d-flex align-items-center">
                               <Image
-                                src={person.avatar}
+                                src={person.avatar || "/assets/images/userplaceholder.png"}
                                 alt="User Avatar"
                                 className="rounded-circle"
                                 width={40}
@@ -583,7 +583,7 @@ export default function FriendsPage() {
                           <div key={request.id} className="d-flex justify-content-between align-items-center mb-3">
                             <div className="d-flex align-items-center">
                               <Image
-                                src={request.avatar}
+                                src={request.avatar || "/assets/images/userplaceholder.png"}
                                 alt={`${request.first_name} ${request.last_name}`}
                                 className="rounded-circle"
                                 width={50}

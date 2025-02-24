@@ -129,7 +129,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                             <Link href="#">
                                 <Image
                                     className="avatar-img rounded-circle"
-                                    src={sharedPost.user.avatar}
+                                    src={sharedPost.user.avatar || "/assets/images/userplaceholder.png"}
                                     alt="User Avatar"
                                     width={50}
                                     height={50}
@@ -323,7 +323,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                     {localDonation && (
                         <div>
                             <Image
-                                src={localDonation.image}
+                                src={localDonation.image || "/assets/images/placeholder-image.png"}
                                 alt={localDonation.title}
                                 className="img-fluid d-block mx-auto"
                                 width={400}

@@ -222,7 +222,7 @@ export default function Events() {
                                 <div key={event.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
                                     <Image
-                                      src={event.cover || "https://via.placeholder.com/150"}
+                                      src={event.cover || "/assets/images/placeholder-image.png"}
                                       alt="Event Image"
                                       className="card-img-top mx-auto mt-3"
                                       width={80}
@@ -343,7 +343,7 @@ export default function Events() {
                                 <div className="row g-3">
                                   <div className="card">
                                     <Image
-                                      src={event.cover || "https://via.placeholder.com/150"}
+                                      src={event.cover || "/assets/images/placeholder-image.png"}
                                       alt="Event Image"
                                       className="card-img-top mx-auto mt-3"
                                       width={80}

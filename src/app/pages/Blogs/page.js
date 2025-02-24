@@ -77,7 +77,7 @@ export default function Blogs() {
                   <div className="d-flex align-items-start shadow-sm p-3 rounded bg-light">
                     <div>
                       <Image
-                        src={blog.thumbnail}
+                        src={blog.thumbnail || "/assets/images/placeholder-image.png"}
                         alt={blog.title}
                         className="rounded"
                         width={200}

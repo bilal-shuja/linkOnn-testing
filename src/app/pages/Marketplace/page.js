@@ -74,7 +74,7 @@ export default function MarketPlace() {
                                 <div className="col-lg-3 col-md-4 col-sm-6 d-flex justify-content-center mb-4" key={product.id}>
                                     <div className="card border-0 shadow-sm p-3 rounded-4 text-center w-100">
                                         <Image
-                                            src={product.images?.[0]?.image || "/default-image.jpg"}
+                                            src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
                                             alt={product.product_name}
                                             className="img-fluid rounded"
                                             width={500}
@@ -128,7 +128,7 @@ export default function MarketPlace() {
                                     style={{ transition: "transform 0.3s ease-in-out" }}
                                 >
                                     <Image
-                                        src={product.images?.[0]?.image || "/default-image.jpg"}
+                                        src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
                                         alt={product.product_name}
                                         className="card-img-top"
                                         width={400}

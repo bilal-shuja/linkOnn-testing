@@ -506,16 +506,16 @@ export default function VideoFeed() {
                                         <div className="d-flex align-items-center justify-content-between">
                                             <div className="d-flex align-items-center">
                                                 <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Link href="#">
+                                                 
                                                         <Image
                                                             className="avatar-img rounded-circle"
-                                                            src={post.user.avatar}
+                                                            src={post.user.avatar || "/assets/images/placeholder-image.png"}
                                                             alt="User Avatar"
                                                             width={50}
                                                             height={50}
                                                             style={{ objectFit: 'cover' }}
                                                         />
-                                                    </Link>
+                                                  
 
                                                     {post.user.is_verified === '1' && (
                                                         <div
@@ -952,7 +952,7 @@ export default function VideoFeed() {
                                                         <div key={comment.id} className="mb-3">
                                                             <div className="d-flex">
                                                                 <Image
-                                                                    src={comment.avatar}
+                                                                    src={comment.avatar || "/assets/images/userplaceholder.png"}
                                                                     alt="Profile"
                                                                     className="rounded-circle me-1 mt-2"
                                                                     width={40}
@@ -1027,7 +1027,7 @@ export default function VideoFeed() {
                                                                                     className="d-flex mb-2 mx-5"
                                                                                 >
                                                                                     <Image
-                                                                                        src={reply.avatar}
+                                                                                        src={reply.avatar || "/assets/images/userplaceholder.png"}
                                                                                         alt="Profile"
                                                                                         className="rounded-circle me-1 mt-2"
                                                                                         width={40}
@@ -1136,7 +1136,7 @@ export default function VideoFeed() {
                                             post?.comments_status === "1" && (
                                                 <div className="d-flex align-items-center mt-3">
                                                     <Image
-                                                        src={userdata.data.avatar}
+                                                        src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                                                         alt="User Avatar"
                                                         className="rounded-5"
                                                         width={40}

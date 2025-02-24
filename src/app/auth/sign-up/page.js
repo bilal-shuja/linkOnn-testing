@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/auth/axios";
 import { toast } from "react-toastify";
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 export default function SignUp() {
   const [password, setPassword] = useState("");
@@ -18,6 +19,7 @@ export default function SignUp() {
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState("");
   const [username, setUserName] = useState("");
+  const settings = useSiteSettings();
 
   const router = useRouter();
 
@@ -38,7 +40,7 @@ export default function SignUp() {
   const handleArrowKeyPress = (e, currentRef, nextRef, prevRef) => {
     if (e.key === "ArrowDown") {
       if (nextRef?.current) {
-        nextRef.current.focus(); 
+        nextRef.current.focus();
       }
     } else if (e.key === "ArrowUp") {
       if (prevRef?.current) {
@@ -105,18 +107,17 @@ export default function SignUp() {
     }
   };
 
+  if (!settings) return
+  <div> </div>;
+
   return (
     <div className="min-vh-100 d-flex">
       {/* Left Side */}
       <div className="d-none d-lg-block col-lg-6 bg-gradient-left">
         <div className="h-100 d-flex flex-column justify-content-center align-items-center text-white">
-          <h2>Welcome to linkOn</h2>
+          <h2>{settings.login_page_title}</h2>
           <p className="text-center mx-5 my-3">
-            LinkOn is a versatile social network template designed to bring
-            people together. Utilize this template for a variety of social
-            activities, including job networking, dating, posting, blogging, and
-            much more. Join now to connect and make amazing friends from all
-            corners of the world!
+          {settings.login_page_text}
           </p>
         </div>
       </div>

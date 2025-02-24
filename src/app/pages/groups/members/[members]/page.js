@@ -64,7 +64,7 @@ export default function GroupMembers({ params }) {
                                                 className="list-group-item shadow-sm d-flex align-items-center my-2"
                                             >
                                                 <Image
-                                                    src={member.avatar}
+                                                    src={member.avatar || "/assets/images/userplaceholder.png"}
                                                     alt={member.username}
                                                     width={50}
                                                     height={50}

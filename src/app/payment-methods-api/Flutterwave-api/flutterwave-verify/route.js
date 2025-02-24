@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
+import { getSiteSettings } from "@/app/lib/getSiteSettings"; // Import server-side settings function
 
 export async function POST(req) {
     try {
         const { transaction_id } = await req.json();
-        const secretKey = process.env.FLUTTERWAVE_SECRET_KEY;
 
         if (!transaction_id) {
             return NextResponse.json({ success: false, message: "Transaction ID is required" }, { status: 400 });
         }
 
+        // ✅ Fetch site settings dynamically (server-side)
+        const settings = await getSiteSettings();
+        if (!settings || !settings.flutterwave_secret_key) {
+            return NextResponse.json({ success: false, message: "Flutterwave secret key not found in settings" }, { status: 500 });
+        }
+
+        const secretKey = settings.flutterwave_secret_key; // ✅ Extract key properly
+
+        // ✅ Use the secret key dynamically
         const response = await axios.get(
             `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`,
             {

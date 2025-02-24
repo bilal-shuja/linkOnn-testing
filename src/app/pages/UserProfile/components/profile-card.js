@@ -23,7 +23,7 @@ const ImagePreviewModal = ({ show, onHide, imageUrl, imageAlt }) => {
                         </div>
                         <div className="modal-body p-0">
                             <Image
-                                src={imageUrl || '/default-image.jpg'}
+                                src={imageUrl || "/assets/images/placeholder-image.png"}
                                 alt={imageAlt}
                                 width={800}
                                 height={600}
@@ -175,7 +175,7 @@ const Profilecard = ({ user_id }) => {
             <div className="card shadow-lg border-0 rounded-3 mb-3">
                 <div className="position-relative">
                     <Image
-                        src={user.cover || '/default-cover.jpg'}
+                        src={user.cover || "/assets/images/placeholder-image.png"}
                         className="card-img-top rounded-top img-fluid"
                         alt="cover"
                         width={800}
@@ -189,7 +189,7 @@ const Profilecard = ({ user_id }) => {
                     >
                         <Image
                             className="rounded-circle border border-white border-3 shadow-sm"
-                            src={user.avatar || '/default-avatar.jpg'}
+                            src={user.avatar || "/assets/images/userplaceholder.png"}
                             alt="avatar"
                             width={125}
                             height={125}

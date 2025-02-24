@@ -304,7 +304,7 @@ export default function Storyform() {
 
                                                                         ) : (
                                                                             <Image
-                                                                                src={story.media}
+                                                                                src={story.media || "/assets/images/placeholder-image.png"}
                                                                                 alt="Story media"
                                                                                 className="img-thumbnail"
                                                                                 width={75}
