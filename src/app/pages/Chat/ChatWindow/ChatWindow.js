@@ -1,8 +1,11 @@
+"use client"
+
 import Image from "next/image";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import styles from "../css/ChatWindow.module.css";
-import React, { useState, useEffect, useRef } from "react";
+import { OverlayTrigger, Popover } from "react-bootstrap";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import MessageDeleteModal from "@/app/pages/Modals/MessageDeleteModal";
 
 const ChatWindow = ({ chat, onClose }) => {
@@ -14,107 +17,308 @@ const ChatWindow = ({ chat, onClose }) => {
     const [textMessage, setTextMessage] = useState('');
     const [showMessageModal, setShowMessageModal] = useState(false);
     const [userChat, setUserChat] = useState([]);
-    const [loading, setLoading] = useState(true);
+
+    const [loading, setLoading] = useState(false);
+
     const [sendTextLoading, setSendTextLoading] = useState(false)
     const [hoveredMessage, setHoveredMessage] = useState(null);
     const [chatMessageID, setChatMessageID] = useState('');
+
+    const [lastMessageTimestamp, setLastMessageTimestamp] = useState(null)
+
+    const [pollingLoading, setPollingLoading] = useState(false);
 
     const messagesEndRef = useRef(null);
     const chatContainerRef = useRef(null);
     const [isUserAtBottom, setIsUserAtBottom] = useState(true);
 
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [chatImg, setChatImg] = useState(null);
 
-    const [msg , setMsg] = useState([])
-    const [page, setPage] = useState(1);
+
+    const [mediaType, setMediaType] = useState('')
+
+
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
 
-    const getUserChat = async (pageNum = 1, append = false) => {
 
-        const chatID = chat?.id;
-        if (!chatID) return;
-        if (!chatID || (!hasMore && pageNum > 1)) return;
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+
+            if (file.size > 100 * 1024 * 1024) {
+                alert("File size should not exceed 100MB!");
+                return; // Stop further execution
+            }
+            setMediaType(1)
+            setChatImg(file)
+
+            // Create a preview URL
+            const imageUrl = URL.createObjectURL(file);
+            setSelectedImage(imageUrl);
+        }
+    };
+
+    // Remove selected image
+    const removeImage = () => {
+        setSelectedImage(null);
+    };
+
+    const popoverTop = (
+        <Popover id="popover-positioned-top">
+            <Popover.Body>
+                <div className="chat-img" style={{ cursor: "pointer" }}>
+                    <input type="file" id="fileInput" style={{ display: "none" }}
+
+                        onChange={handleFileChange}
+                    />
+
+                    <label htmlFor="fileInput" style={{ cursor: "pointer" }}>
+                        <i className="bi bi-file-earmark-image text-primary fs-5" />
+                        <span className="fw-bold">Attach a file up to 100 MB</span>
+                    </label>
+                </div>
+
+            </Popover.Body>
+
+        </Popover>
+    )
+
+
+
+    // Initialize last message timestamp when chat loads
+    useEffect(() => {
+        if (userChat.length > 0) {
+            const timestamps = userChat.map((msg) => new Date(msg.created_at).getTime())
+            setLastMessageTimestamp(Math.max(...timestamps))
+        }
+    }, [userChat])
+
+    //   const fetchNewMessages = useCallback(async () => {
+    //     if (!chat?.id || !lastMessageTimestamp) return
+
+    //     try {
+    //       const formdata = new FormData()
+    //       formdata.append("to_id", chat.id)
+
+    //       const response = await api.post("/api/chat/get-user-chat", formdata, {
+    //         headers: {
+    //           "Content-Type": "multipart/form-data",
+    //         },
+    //       })
+
+    //       if (response.data.status === "success") {
+    //         const allMessages = response.data.data;
+    //         const newMessages = allMessages.filter(msg => 
+    //             new Date(msg.created_at).getTime() > lastMessageTimestamp
+    //         );
+
+    //         if (newMessages.length > 0) {
+    //           setUserChat((prev) => {
+    //             const updatedChat = [...prev]
+
+    //             const existingIds = new Set(prev.map((msg) => msg.id))
+    //             newMessages.forEach((msg) => {
+    //               if (!existingIds.has(msg.id)) {
+    //                 updatedChat.push(msg)
+    //               }
+    //             })
+
+    //             updatedChat.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+
+    //             const timestamps = updatedChat.map((msg) => new Date(msg.created_at).getTime())
+    //             setLastMessageTimestamp(Math.max(...timestamps))
+
+    //             const hasNewMessagesFromOthers = newMessages.some((msg) => Number(msg.from_id) !== userID)
+    //             if (hasNewMessagesFromOthers && isUserAtBottom) {
+    //               setTimeout(() => scrollToBottom(true), 100)
+    //             }
+
+    //             return updatedChat
+    //           })
+    //         }
+    //       }
+    //     } catch (error) {
+    //       console.error("Error fetching new messages:", error)
+    //     }
+    //   }, [api, chat?.id, lastMessageTimestamp, userID, isUserAtBottom])
+
+
+    // const getUserChat = async () => {
+
+    //     const chatID = chat?.id;
+    //     if (!chatID) return;
+
+    //     try {
+    //        setLoading(true);
+    //         setLoadingMore(true);
+
+    //         const formdata = new FormData();
+    //         formdata.append("to_id", chatID);
+    //         formdata.append("limit", limit);
+
+
+
+    //         const response = await api.post("/api/chat/get-user-chat", formdata, {
+    //             headers: {
+    //                 "Content-Type": "multipart/form-data",
+    //             }
+    //         })
+    //         if (response.data.status === "success") {
+
+    //             setUserChat(response.data.data);
+
+    //             const newMessages = response.data.data;
+    //             if (newMessages.length < limit) {
+    //                 setHasMore(false);
+    //                 setLoadingMore(false)
+    //             }
+
+
+    //             else if(newMessages.length !== userChat.length) {
+    //                 setUserChat(newMessages);
+    //                 scrollToBottom(true);
+    //             }
+
+    //             else {
+    //                 setUserChat(newMessages);
+    //                 scrollToBottom(true);
+    //             }
+    //         } 
+
+
+    //         else {
+    //             toast.error("Failed to load chats.");
+    //         }
+    //     } catch (err) {
+    //         toast.error("Error fetching chats. Please try again in a while.");
+    //     } finally {
+    //        setLoading(false);
+    //      setLoadingMore(false);
+    //     }
+    // };
+
+
+    // useEffect(() => {
+    //     if (chat?.id) {
+    //         getUserChat();
+    //     }
+    // }, [chat?.id]);
+
+    const fetchNewMessages = useCallback(async () => {
+        if (!chat?.id || !lastMessageTimestamp) return;
+
         try {
-            if (pageNum === 1) setLoading(true);
-            else setLoadingMore(true);
-
+            // Don't set the main loading state here
+            setPollingLoading(true);
             const formdata = new FormData();
-            formdata.append("to_id", chatID);
-            formdata.append("limit", limit);
-            formdata.append("page", pageNum);
-
-
-            const prevScrollHeight = chatContainerRef.current?.scrollHeight || 0;
+            formdata.append("to_id", chat.id);
 
             const response = await api.post("/api/chat/get-user-chat", formdata, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 }
-            })
-            console.log("API Response:", response);
-            // if (response.data.status === "success") {
+            });
 
-            //     setUserChat(response.data.data);
-
-            //     const newMessages = response.data.data;
-            //     if (newMessages.length < limit) {
-            //         setHasMore(false);
-            //     }
-
-            //     if (append) {
-            //         setUserChat(prev => [...newMessages, ...prev]);
-            //     } else {
-            //         setUserChat(newMessages);
-            //         scrollToBottom(true);
-            //     }
-            //     if (newMessages.length !== userChat.length) {
-            //         setUserChat(newMessages);
-            //         scrollToBottom(true);
-            //     }
-            // } 
-            
             if (response.data.status === "success") {
-                const newMessages = response.data.data;
-    
-                if (newMessages.length < limit) setHasMore(false);
-    
-                if (append) {
-                    setUserChat(prev => {
-                        const existingIds = new Set(prev.map(msg => msg.id));
-                        return [...newMessages.filter(msg => !existingIds.has(msg.id)), ...prev];
-                    });
-    
-                    setTimeout(() => {
-                        if (chatContainerRef.current) {
-                            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight - prevScrollHeight;
-                        }
-                    }, 100);
-                } else {
-                    setUserChat(newMessages);
-                    scrollToBottom();
-                }
+                const allMessages = response.data.data;
+                const newMessages = allMessages.filter(msg =>
+                    new Date(msg.created_at).getTime() > lastMessageTimestamp
+                );
 
-                setMsg((prevMessages) => [...newMessages, ...prevMessages]);
+                if (newMessages.length > 0) {
+                    setUserChat(prev => {
+                        const updatedChat = [...prev];
+                        const existingIds = new Set(prev.map(msg => msg.id));
+
+                        newMessages.forEach(msg => {
+                            if (!existingIds.has(msg.id)) {
+                                updatedChat.push(msg);
+                            }
+                        });
+
+                        // Don't trigger scroll here
+                        return updatedChat;
+                    });
+                }
             }
-            else {
-                toast.error("Failed to load chats.");
-            }
-        } catch (err) {
-            toast.error("Error fetching chats. Please try again in a while.");
+        } catch (error) {
+            console.error("Error fetching new messages:", error);
         } finally {
-            if (pageNum === 1) setLoading(false);
-            else setLoadingMore(false);
+            setPollingLoading(false);
         }
-    };
+    }, [chat?.id, lastMessageTimestamp]);
 
 
     useEffect(() => {
-        if (chat?.id) {
-            setPage(1);
-            setHasMore(true);
-            getUserChat(1, false);
+        if (!chat?.id) return;
 
-        }
+        let currentInterval = null;
+
+        const startPolling = () => {
+            fetchNewMessages();
+            currentInterval = setInterval(fetchNewMessages, 5000);
+            return currentInterval;
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                if (currentInterval) {
+                    clearInterval(currentInterval);
+                    currentInterval = null;
+                }
+            } else {
+                if (!currentInterval) {
+                    currentInterval = startPolling();
+                }
+            }
+        };
+
+        currentInterval = startPolling();
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            if (currentInterval) clearInterval(currentInterval);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, [chat?.id, fetchNewMessages]);
+
+
+
+    useEffect(() => {
+        if (!chat?.id) return;
+
+        // Initial messages fetch
+        const getUserChat = async () => {
+            try {
+                setLoading(true);
+                const formdata = new FormData();
+                formdata.append("to_id", chat.id);
+                formdata.append("limit", limit);
+
+                const response = await api.post("/api/chat/get-user-chat", formdata, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    }
+                });
+
+                if (response.data.status === "success") {
+                    setUserChat(response.data.data);
+                    setHasMore(response.data.data.length >= limit);
+                    scrollToBottom(true);
+                } else {
+                    toast.error("Failed to load chats.");
+                }
+            } catch (err) {
+                toast.error("Error fetching chats. Please try again in a while.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        getUserChat();
     }, [chat?.id]);
 
 
@@ -125,78 +329,84 @@ const ChatWindow = ({ chat, onClose }) => {
     };
 
 
-    // const handleScroll = () => {
-    //     if (chatContainerRef.current) {
-    //         const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-    //         setIsUserAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
-
-    //         if (scrollTop === 0 && hasMore && !loadingMore && !loading) {
-    //             setPage(prev => prev + 1);
-    //             getUserChat(page + 1, true);
-    //         }
-    //     }
-    // };
-
     const handleScroll = () => {
         if (!chatContainerRef.current) return;
-        
-        const { scrollTop } = chatContainerRef.current;
-        
+        const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+        // Check if user is at bottom (within 10px tolerance)
+        setIsUserAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
+
+        // Your existing code for loading more messages
         if (scrollTop === 0 && hasMore && !loadingMore && !loading) {
-            setLoadingMore(true);
-            setPage(prevPage => prevPage + 1);
+            //   setLoadingMore(true);
         }
     };
-    
-
-    // useEffect(() => {
-    //     if (!loading && isUserAtBottom || userChat.length > 0) {
-    //         scrollToBottom(true);
-    //     }
-    // }, [userChat, userChat.length, loading]);
-
-    // useEffect(() => {
-    //     if ((!loading && isUserAtBottom) || (userChat.length > 0 && page === 1)) {
-    //         scrollToBottom(true);
-    //     }
-    // }, [userChat, userChat.length, loading, page]);
 
 
     useEffect(() => {
-        if (!loading && page === 1) {
+
+        const lastMessage = userChat[userChat.length - 1];
+        const isNewMessageFromCurrentUser = lastMessage && Number(lastMessage.from_id) === userID;
+
+        if (isNewMessageFromCurrentUser || isUserAtBottom) {
             scrollToBottom(true);
         }
-    }, [userChat, loading, page]);
+    }, [userChat.length]);
+
 
     useEffect(() => {
-        if (page > 1) {
-            getUserChat(page, true);
+        const lastMessage = userChat[userChat.length - 1];
+        const isNewMessageFromOther = lastMessage && Number(lastMessage.from_id) !== userID;
+
+        if (isNewMessageFromOther && isUserAtBottom) {
+            scrollToBottom(true);
         }
-    }, [page]);
+    }, [userChat, userID, isUserAtBottom]);
+
+
+
 
     const sendMessage = async () => {
         const chatID = Number(chat?.id);
         setSendTextLoading(true);
 
-        const chatObj = {
-            to_id: chatID,
-            from_id: userID,
-            message: textMessage,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+        // const chatObj = {
+        //     to_id: chatID,
+        //     from_id: userID,
+        //     message: textMessage,
+        //     media_type: mediaType,
+        //     media: chatImg,
+        //     created_at: new Date().toISOString(),
+        //     updated_at: new Date().toISOString(),
+        // }
+
+        console.log("Img", chatImg)
+
+        const formData = new FormData();
+        formData.append("to_id", chatID);
+        formData.append("from_id", userID);
+        formData.append("message", textMessage);
+        formData.append("media_type", mediaType);
+
+        // Append the image file only if it exists
+        if (chatImg) {
+            formData.append("media", chatImg); // Ensure chatImg is a File object
         }
 
 
+
         try {
-            const response = await api.post("/api/chat/send-message", chatObj, {
+            const response = await api.post("/api/chat/send-message", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 }
             });
 
+            console.log(response)
+
             if (response.data.status == "success") {
                 setUserChat(prev => [...prev, response.data.data]);
                 setTextMessage('');
+                setChatImg(null)
             } else {
                 toast.error(response.data.message);
             }
@@ -234,19 +444,18 @@ const ChatWindow = ({ chat, onClose }) => {
 
                 {/* Scrollable Messages Container */}
 
-                <div className={`px-3 py-2 ${styles.messageContainer}`}
-                    style={{ maxHeight: "400px", overflowY: "auto" }}
+                <div className={`px-3 py-2  ${styles.messageContainer}`}
                     ref={chatContainerRef}
                     onScroll={handleScroll}
                 >
-
+                    {/* 
                     {loadingMore && (
                         <div className="text-center p-2">
                             <div className="spinner-border spinner-border-sm text-secondary" role="status">
                                 <span className="visually-hidden">Loading...</span>
                             </div>
                         </div>
-                    )}
+                    )} */}
 
 
                     {loading ? (
@@ -350,14 +559,35 @@ const ChatWindow = ({ chat, onClose }) => {
                                                 />
                                             )}
                                             <div
-                                                className={`p-3 ${isSentByUser ? styles.bgWhite : styles.chat}`}
+                                                className={`p-2  ${isSentByUser ? `${styles.bgWhite} ps-3 text-start ` : `${styles.chat} pe-4`}`}
                                                 style={{
-                                                    borderRadius: "20px",
+                                                    borderRadius: "5px",
                                                     background: isSentByUser ? "#FDF7F4" : "#e2ffe8",
                                                 }}
                                             >
-                                                <span className="text-muted fw-bold">{chatMessage.message}
+                                                <div className="row">
+                                                {
+                                                        chatMessage.media =="" ?
+                                                        null
+                                                        :
+                                                        <Image
+                                                        src={chatMessage?.media}
+                                                        className=" me-1 flex-shrink-0"
+                                                        width={25}
+                                                        height={55}
+                                                        style={{ objectFit:"contain" }}
+                                                        loader={({ src }) => src}
+                                                        alt="chat-img"
+                                                    />
+
+                                                    }
+                                              
+                                                <span className={chatMessage?.media?"text-center text-muted fw-bold":"text-muted fw-bold"}>
+                                                    {chatMessage.message}
                                                 </span>
+
+                                                </div>
+                                                  
 
                                                 <div className={`text-muted small mt-1 text-${isSentByUser ? "end" : "start"}`}>
                                                     {formattedTime}
@@ -374,25 +604,57 @@ const ChatWindow = ({ chat, onClose }) => {
                     <div ref={messagesEndRef}></div>
                 </div>
 
-
                 <div className="d-flex align-items-center">
+                    {
+                        textMessage && (
+                            <OverlayTrigger trigger="click" placement="top" overlay={popoverTop}>
+                                <i className="bi bi-patch-plus-fill text-primary fs-5 ms-2 mb-2" />
+                            </OverlayTrigger>
+                        )
+
+                    }
+
+
                     <div className="w-100">
-                        <div className="form-group px-2">
-                            <input
+                        <div className="form-group px-2 d-flex align-items-center position-relative">
+
+                            {selectedImage && (
+                                <div className="position-relative me-1 mb-2">
+                                    <Image
+                                        src={selectedImage}
+                                        alt="Preview"
+                                        width={50}
+                                        height={50}
+                                        style={{ borderRadius: "8px", objectFit: "cover" }}
+                                    />
+                                    {/* Remove Image Button */}
+                                    <button
+                                        onClick={removeImage}
+                                        className="btn btn-sm btn-light position-absolute small"
+                                        style={{ top: "-8px", right: "-5px", borderRadius: "50%", padding: "0 0" }}
+                                    >
+                                        <i className="bi bi-x" />
+                                    </button>
+                                </div>
+                            )}
+
+                            <textarea
                                 className={`form-control ${styles.formControl}`}
                                 value={textMessage}
                                 onChange={(e) => setTextMessage(e.target.value)}
                                 placeholder="Type your message..."
+                                // draggable="false"
+                                height="200"
 
-                            ></input>
+                            ></textarea>
                         </div>
                     </div>
                     {
                         textMessage && (
-                            <div className="d-flex align-items-center px-2">
+                            <div className="d-flex align-items-center px-2 me-1">
                                 {
-                                    sendTextLoading ? <span className="text-center"> ...... </span> :
-                                        <i onClick={sendMessage} className="bi bi-send-fill text-primary fs-5 me-3 mb-2" style={{ cursor: "pointer" }} />
+                                    sendTextLoading ? <span className="text-center text-primary"> <i className="bi bi-three-dots"></i> </span> :
+                                        <i onClick={sendMessage} className="bi bi-send-fill text-primary fs-5 mb-2" style={{ cursor: "pointer", transform: "rotate(45deg)" }} />
                                 }
                             </div>
 
