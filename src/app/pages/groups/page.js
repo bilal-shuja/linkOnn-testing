@@ -262,33 +262,16 @@ export default function Groups() {
                               {groups.map((group) => (
                                 <div key={group.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
-                                    {group.avatar ? (
+                            
                                       <Image
-                                        src={group.avatar}
+                                        src={group.avatar || "/assets/images/placeholder-image.png"}
                                         alt="Group Image"
                                         className="card-img-top mx-auto mt-3"
                                         width={80}
                                         height={200}
                                         style={{ objectFit: "cover" }}
                                       />
-                                    ) : (
-                                      <div
-                                        style={{
-                                          backgroundColor: "black",
-                                          color: "white",
-                                          width: "200px",
-                                          height: "200px",
-                                          display: "flex",
-                                          justifyContent: "center",
-                                          alignItems: "center",
-                                          fontSize: "12px",
-                                          fontWeight: "bold",
-                                        }}
-                                        className="card-img-top mx-auto mt-3"
-                                      >
-                                        No image
-                                      </div>
-                                    )}
+                              
 
                                     <div className="card-body">
                                       <h5 className="card-title mb-1"
@@ -396,35 +379,15 @@ export default function Groups() {
                             myGroups.map((group) => (
                               <div key={group.id} className="col-md-4 mb-4">
                                 <div className="card text-center">
-                                  {group.avatar ? (
                                     <Image
-                                      src={group.avatar}
+                                      src={group.avatar || "/assets/images/placeholder-image.png"}
                                       alt="Group Image"
                                       className="d-block mx-auto mt-1 rounded-circle"
                                       width={150}
                                       height={150}
                                     // style={{ objectFit: "cover" }}
                                     />
-                                  ) : (
-                                    <div
-                                      style={{
-                                        backgroundColor: "black",
-                                        color: "white",
-                                        width: "150px",
-                                        height: "150px",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        fontSize: "12px",
-                                        fontWeight: "bold",
-                                        textAlign: "center",
-                                      }}
-                                      className="d-flex justify-content-center align-items-center mx-auto mt-1 rounded-circle"
-                                    >
-                                      No image
-                                    </div>
-                                  )}
-
+                               
                                   <div className="card-body">
                                     <h5 className="card-title mb-1"
                                       style={{ cursor: 'pointer' }}

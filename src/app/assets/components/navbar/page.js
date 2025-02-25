@@ -8,6 +8,7 @@ import Image from "next/image";
 import Cookies from 'js-cookie';
 import { toast } from "react-toastify";
 import ChatWindow from "@/app/pages/Chat/ChatWindow/ChatWindow";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 
 export default function Navbar() {
@@ -23,6 +24,7 @@ export default function Navbar() {
 
   const [selectedChat, setSelectedChat] = useState(null);
 
+  const settings = useSiteSettings();
   const router = useRouter();
 
   useEffect(() => {
@@ -111,6 +113,7 @@ export default function Navbar() {
   };
 
 
+  if (!settings) return null;
 
   return (
     <>
@@ -118,10 +121,10 @@ export default function Navbar() {
         <div className="container">
           <Link href="/pages/newsfeed" className="navbar-brand">
             <Image
-              src="/assets/images/linkON.png"
+              src={settings.site_logo || "/assets/images/placeholder-image.png"}
               alt="Logo"
-              width={150}
-              height={40}
+              width={140}
+              height={45}
               unoptimized={true}
             />
           </Link>
@@ -215,10 +218,10 @@ export default function Navbar() {
                       <li key={notification.id} className={`dropdown-item ${notifications.length > 0 ? 'bg-light' : ''}`} style={{ width: "350px" }}>
                         <div className="d-flex align-items-center">
                           <Image
-                            src={notification.notifier.avatar}
+                            src={notification.notifier.avatar || "/assets/images/userplaceholder.png"}
                             alt={notification.notifier.first_name}
-                            width={50}
-                            height={50}
+                            width={40}
+                            height={40}
                             className="rounded-circle me-2"
                             unoptimized={true}
                           />
@@ -273,7 +276,7 @@ export default function Navbar() {
               <div className="dropdown position-relative mx-3">
                 {/* Profile Avatar Dropdown Toggle */}
                 <Image
-                  src={userdata.data.avatar}
+                  src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                   alt="Profile"
                   className="rounded-circle profile-avatar shadow-sm"
                   height={40}
@@ -290,7 +293,7 @@ export default function Navbar() {
                   {/* User Info Section */}
                   <li className="d-flex align-items-center mt-2 mx-3 mb-3">
                     <Image
-                      src={userdata.data.avatar}
+                      src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                       alt="User Avatar"
                       className="rounded-circle border border-2 border-light shadow-sm"
                       width={50}
@@ -398,12 +401,10 @@ export default function Navbar() {
                 style={{ cursor: "pointer" }}
                 onClick={() => toggleChatWindow(chat)}
               >
-                <Image
-                  className="img-fluid p-1 me-3 rounded-circle"
-                  src={!chat?.avatar || chat?.avatar.trim() === ""
-                    ? '/assets/images/placeholder-image.png'
-                    : chat?.avatar}
-                  alt="avatar"
+                <Image    
+                  src={chat.avatar || "/assets/images/userplaceholder.png"}
+                  alt={`${chat.first_name} ${chat.last_name} Avatar`}
+                  className="rounded-circle me-3"
                   width={40}
                   height={40}
                   style={{ 

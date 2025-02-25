@@ -60,7 +60,7 @@ export default function GamesPage() {
                           <td>{index + 1}</td>
                           <td>
                             <Image
-                              src={ad.image}
+                              src={ad.image || "/assets/images/placeholder-image.png"}
                               alt={ad.title}
                               width={50}
                               height={50}

@@ -181,7 +181,7 @@ export default function GeneralSett() {
                                         {avatarPreview ? (
                                             <div className="mt-2">
                                                 <Image
-                                                    src={avatarPreview}
+                                                    src={avatarPreview || "/assets/images/placeholder-image.png"}
                                                     alt="Avatar Preview"
                                                     className="img-thumbnail"
                                                     width={100}
@@ -191,7 +191,7 @@ export default function GeneralSett() {
                                         ) : avatar && (
                                             <div className="mt-2">
                                                 <Image
-                                                    src={avatar}
+                                                    src={avatar || "/assets/images/placeholder-image.png"}
                                                     alt="Avatar"
                                                     className="img-thumbnail"
                                                     width={100}
@@ -207,7 +207,7 @@ export default function GeneralSett() {
                                         {coverPreview ? (
                                             <div className="mt-2">
                                                 <Image
-                                                    src={coverPreview}
+                                                    src={coverPreview || "/assets/images/placeholder-image.png"}
                                                     alt="Cover Preview"
                                                     className="img-thumbnail"
                                                     width={200}
@@ -217,7 +217,7 @@ export default function GeneralSett() {
                                         ) : cover && (
                                             <div className="mt-2">
                                                 <Image
-                                                    src={cover}
+                                                    src={cover || "/assets/images/placeholder-image.png"}
                                                     alt="Cover"
                                                     className="img-thumbnail"
                                                     width={200}

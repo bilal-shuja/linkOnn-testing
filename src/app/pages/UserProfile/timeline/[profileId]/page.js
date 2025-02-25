@@ -25,6 +25,7 @@ import FundingModal from "@/app/pages/Modals/FundingModal";
 import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
 import Spinner from 'react-bootstrap/Spinner';
 import SharedPosts from "@/app/pages/components/sharedPosts";
+import { ReactionBarSelector } from '@charkour/react-reactions';
 
 
 export default function UserProfileCard({ params }) {
@@ -77,6 +78,8 @@ export default function UserProfileCard({ params }) {
     const [fundingModal, setFundingModal] = useState(false);
     const [pollModal, setPollModal] = useState(false);
     const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+    const [postReactions, setPostReactions] = useState({});
+    const [activeReactionPost, setActiveReactionPost] = useState(null);
 
 
     const fileImageRef = useRef(null);
@@ -84,6 +87,37 @@ export default function UserProfileCard({ params }) {
     const fileVideoRef = useRef(null);
 
     const fileAudioRef = useRef(null);
+
+    const reactionEmojis = {
+        satisfaction: "👍",
+        love: "❤️",
+        happy: "😂",
+        surprise: "😮",
+        sad: "😢",
+        angry: "😡"
+    };
+
+    const reactionValues = {
+        satisfaction: 1,
+        love: 2,
+        happy: 3,
+        surprise: 4,
+        sad: 5,
+        angry: 6
+    };
+
+
+    const handleReactionSelect = (reaction, postId) => {
+        const updatedReactions = {
+            ...postReactions,
+            [postId]: reactionEmojis[reaction] || "😊"
+        };
+
+        LikePost(postId, reactionValues[reaction] || 0);
+
+        setPostReactions(updatedReactions);
+        setActiveReactionPost(null);
+    };
 
 
     const handleDelete = useCallback(async (values) => {
@@ -544,22 +578,59 @@ export default function UserProfileCard({ params }) {
         }
     };
 
-    const LikePost = async (postId) => {
+    const LikePost = async (postId, reactionType) => {
+
         try {
             const response = await api.post("/api/post/action", {
                 post_id: postId,
                 action: "reaction",
-                reaction_type: 1,
+                reaction_type: reactionType,
             });
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
+
+            if (response.data.code === "200") {
+                setPosts(prevPosts =>
+                    prevPosts.map(post => {
+                        if (post.id === postId) {
+                            return {
+                                ...post,
+                                reaction: {
+                                    is_reacted: true,
+                                    reaction_type: reactionType,
+                                    count: post.reaction?.is_reacted
+                                        ? post.reaction.count
+                                        : (post.reaction?.count || 0) + 1,
+                                    image: post.reaction?.image || "",
+                                    color: post.reaction?.color || "",
+                                    text: post.reaction?.text || ""
+                                }
+                            };
+                        }
+                        return post;
+                    })
+                );
+
+
+                const reactionKey = Object.keys(reactionValues).find(
+                    key => reactionValues[key] === reactionType
+                );
+
+                if (reactionKey) {
+                    setPostReactions(prevReactions => ({
+                        ...prevReactions,
+                        [postId]: reactionEmojis[reactionKey]
+                    }));
+                }
+            }
+
+            else {
                 toast.error(response.data.message);
             }
         } catch (error) {
             toast.error("Error while reacting to the Post");
         }
     };
+
+
 
     const handleCommentToggle = async (postId) => {
         setShowList(!showList);
@@ -713,34 +784,37 @@ export default function UserProfileCard({ params }) {
     };
 
 
-    const gradientMap = {
-        'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)': '_2j79',
-        'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)': '_2j80',
-        'linear-gradient(45deg, #5d6374 0%, #16181d 100%)': '_2j81'
-    };
-
-    const reverseGradientMap = {
-        '_2j79': 'linear-gradient(45deg, #ff0047 0%, #2c34c7 100%)',
-        '_2j80': 'linear-gradient(45deg, #fc36fd 0%, #5d3fda 100%)',
-        '_2j81': 'linear-gradient(45deg, #5d6374 0%, #16181d 100%)'
-    };
-
-
-    const handleColorSelect = (colorValue) => {
-        if (colorValue.includes('gradient')) {
-            const shortCode = gradientMap[colorValue] || encodeURIComponent(colorValue);
-            setColor(shortCode);
-        } else {
-            setColor(colorValue);
-        }
-    };
-
-    const getDisplayColor = (color) => {
-        if (color?.startsWith('_')) {
-            return reverseGradientMap[color] || color;
-        }
-        return color;
-    };
+    const colorMap = {
+        '23jo': '#FFFFFF',
+        '23ju': '#C600FF',
+        '_2j78': '#111111',
+        '_2j79': 'linear-gradient(45deg, rgb(255, 0, 71) 0%, rgb(44, 52, 199) 100%)',
+        '_2j80': 'linear-gradient(45deg, rgb(252, 54, 253) 0%, rgb(93, 63, 218) 100%)',
+        '_2j81': 'linear-gradient(45deg, rgb(93, 99, 116) 0%, rgb(22, 24, 29) 100%)',
+        '_2j82': '#00A859',
+        '_2j83': '#0098DA',
+        '_2j84': '#3E4095',
+        '_2j85': '#4B4F56',
+        '_2j86': '#161616',
+        '_2j87': 'url(https://images.socioon.com/assets/images/post/bgpst1.png)',
+        '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
+        '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
+        '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
+      };
+    
+      const reverseColorMap = Object.fromEntries(
+        Object.entries(colorMap).map(([key, value]) => [value, key])
+      );
+    
+    
+      const handleColorSelect = (colorValue) => {
+        const code = reverseColorMap[colorValue] || encodeURIComponent(colorValue);
+        setColor(code);
+      };
+    
+      const getDisplayColor = (code) => {
+        return colorMap[code] || code;
+      };
 
 
     return (
@@ -764,7 +838,7 @@ export default function UserProfileCard({ params }) {
                                 <div className="card-body">
                                     <div className="d-flex align-items-center mb-3">
                                         <Image
-                                            src={userdata.data.avatar}
+                                            src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                                             alt="User Avatar"
                                             className="rounded-circle"
                                             height={50}
@@ -865,33 +939,23 @@ export default function UserProfileCard({ params }) {
                                             </div>
                                         )}
 
+
                                         <div className={`d-flex ${styles.optionsContainer} mb-2`}>
                                             <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
                                                 <i className="bi bi-palette-fill"></i>
                                             </button>
+
                                             <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
-
-                                                {/* Solid Colors */}
-                                                {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
+                                                {Object.values(colorMap).map((color) => (
                                                     <div
-                                                        key={solidColor}
+                                                        key={color}
                                                         className={styles.colorOption}
-                                                        style={{ background: solidColor }}
-                                                        onClick={() => handleColorSelect(solidColor)}
+                                                        style={{ background: color }}
+                                                        onClick={() => handleColorSelect(color)}
                                                     />
                                                 ))}
-
-                                                {/* Gradient Colors */}
-                                                {Object.keys(gradientMap).map((gradient) => (
-                                                    <div
-                                                        key={gradient}
-                                                        className={styles.colorOption}
-                                                        style={{ background: gradient }}
-                                                        onClick={() => handleColorSelect(gradient)}
-                                                    />
-                                                ))}
-
                                             </div>
+
                                         </div>
                                     </div>
 
@@ -1167,16 +1231,16 @@ export default function UserProfileCard({ params }) {
                                                 onClick={() => handleClick(post.user.id)}
                                             >
 
-                                                <Link href="#">
-                                                    <Image
-                                                        className="avatar-img rounded-circle"
-                                                        src={post.user.avatar}
-                                                        alt="User Avatar"
-                                                        width={50}
-                                                        height={50}
-                                                        style={{ objectFit: 'cover' }}
-                                                    />
-                                                </Link>
+
+                                                <Image
+                                                    className="avatar-img rounded-circle"
+                                                    src={post.user.avatar || "/assets/images/userplaceholder.png"}
+                                                    alt="User Avatar"
+                                                    width={50}
+                                                    height={50}
+                                                    style={{ objectFit: 'cover' }}
+                                                />
+
 
                                                 {post.user.is_verified === '1' && (
                                                     <div
@@ -1417,15 +1481,19 @@ export default function UserProfileCard({ params }) {
 
                                     {
                                         post.bg_color && (
-                                            <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
+                                            <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                                                 style={{
-                                                    background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
-                                                    padding: "160px 27px"
+                                                    background: getDisplayColor(post.bg_color),
+                                                    backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                                    backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                                    backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                                    padding: "220px 27px",
                                                 }}
                                             >
-                                                <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>  {post.post_text} </span>
+                                                <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
                                             </div>
                                         )
+
                                     }
 
                                     {post.post_type !== "donation" && !post.bg_color && (
@@ -1507,7 +1575,7 @@ export default function UserProfileCard({ params }) {
                                                 {post.donation && (
                                                     <div>
                                                         <Image
-                                                            src={post.donation.image}
+                                                            src={post.donation.image || "/assets/images/placeholder-image.png"}
                                                             alt={post.donation.title}
                                                             width={500}
                                                             height={300}
@@ -1574,7 +1642,7 @@ export default function UserProfileCard({ params }) {
                                                 {post.event && post.event.cover && (
                                                     <div className="w-100 text-center mt-2">
                                                         <Image
-                                                            src={post.event.cover}
+                                                            src={post.event.cover || "/assets/images/placeholder-image.png"}
                                                             alt="Event Cover"
                                                             width={500}
                                                             height={300}
@@ -1604,7 +1672,7 @@ export default function UserProfileCard({ params }) {
                                                         {/* Product Image */}
                                                         <div className="text-center">
                                                             <Image
-                                                                src={post.product.images[0].image}
+                                                                src={post.product.images[0].image || "/assets/images/placeholder-image.png"}
                                                                 alt={post.product.product_name}
                                                                 width={600}
                                                                 height={400}
@@ -1670,6 +1738,17 @@ export default function UserProfileCard({ params }) {
 
                                     }
 
+
+                                    {post.parent_id !== "0" && !post.shared_post && (
+                                        <div className="alert alert-warning" role="alert">
+                                            <strong>This content is not available</strong>
+                                            <p className="mb-0" style={{ fontSize: "14px" }}>
+                                                This content isn't available right now. When this happens, it's usually because the owner
+                                                only shared it with a small group of people, changed who can see it, or it's been deleted.
+                                            </p>
+                                        </div>
+                                    )}
+
                                     <div className="post-card-info">
                                         {/* Reaction Section */}
                                         <div className="post-card-reactions">
@@ -1700,12 +1779,47 @@ export default function UserProfileCard({ params }) {
                                     <hr className="post-divider" />
 
                                     <div className="post-actions">
-                                        <button
-                                            className="post-action-btn"
-                                            onClick={() => LikePost(post.id)}
-                                        >
-                                            <i className="bi bi-emoji-smile"></i> Reaction
-                                        </button>
+
+                                        <div style={{ position: "relative", display: "inline-block" }}>
+                                            <button
+                                                className="post-action-btn"
+                                                onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                onMouseLeave={() => setActiveReactionPost(null)}
+                                                onClick={() => {
+                                                    setActiveReactionPost(activeReactionPost === post.id ? null : post.id);
+                                                }}
+                                            >
+                                                <span style={{ fontSize: "18px", marginRight: "8px" }}>
+
+                                                    {postReactions[post.id] || (post.reaction?.reaction_type ?
+                                                        reactionEmojis[
+                                                        Object.keys(reactionValues).find(
+                                                            key => reactionValues[key] === Number(post.reaction.reaction_type)
+                                                        )
+                                                        ] : "😊")}
+                                                </span>
+                                                Reaction
+                                            </button>
+
+                                            {activeReactionPost === post.id && (
+                                                <div
+                                                    style={{
+                                                        position: "absolute",
+                                                        bottom: "100%",
+                                                        left: "0",
+                                                        zIndex: 1000,
+                                                        backgroundColor: "white",
+                                                        borderRadius: "5px",
+                                                    }}
+                                                    onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                    onMouseLeave={() => setActiveReactionPost(null)}
+                                                >
+                                                    <ReactionBarSelector
+                                                        onSelect={(reaction) => handleReactionSelect(reaction, post.id)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <button
                                             className="post-action-btn"
@@ -1840,7 +1954,7 @@ export default function UserProfileCard({ params }) {
                                                     <div key={comment.id} className="mb-3">
                                                         <div className="d-flex">
                                                             <Image
-                                                                src={comment.avatar}
+                                                                src={comment.avatar || "/assets/images/userplaceholder.png"}
                                                                 alt="Profile"
                                                                 className="rounded-circle me-1 mt-2"
                                                                 width={40}
@@ -1915,7 +2029,7 @@ export default function UserProfileCard({ params }) {
                                                                                 className="d-flex mb-2 mx-5"
                                                                             >
                                                                                 <Image
-                                                                                    src={reply.avatar}
+                                                                                    src={reply.avatar || "/assets/images/userplaceholder.png"}
                                                                                     alt="Profile"
                                                                                     className="rounded-circle me-1 mt-2"
                                                                                     width={40}
@@ -2024,7 +2138,7 @@ export default function UserProfileCard({ params }) {
                                         post?.comments_status === "1" && (
                                             <div className="d-flex align-items-center mt-3">
                                                 <Image
-                                                    src={userdata.data.avatar}
+                                                    src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                                                     alt="User Avatar"
                                                     className="rounded-5"
                                                     width={40}

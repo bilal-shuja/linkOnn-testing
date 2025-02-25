@@ -128,10 +128,12 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
         '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
         '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
         '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
-    };
+
+
     const getDisplayColor = (code) => {
         return colorMap[code] || code;
     };
+
 
     return (
         <>
@@ -145,7 +147,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                             <Link href="#">
                                 <Image
                                     className="avatar-img rounded-circle"
-                                    src={sharedPost.user.avatar}
+                                    src={sharedPost.user.avatar || "/assets/images/userplaceholder.png"}
                                     alt="User Avatar"
                                     width={50}
                                     height={50}
@@ -259,6 +261,8 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                       )
                   }
 
+
+
                 {!sharedPost.bg_color && (
                     <p
                         className="mt-4"
@@ -342,7 +346,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                     {localDonation && (
                         <div>
                             <Image
-                                src={localDonation.image}
+                                src={localDonation.image || "/assets/images/placeholder-image.png"}
                                 alt={localDonation.title}
                                 className="img-fluid d-block mx-auto"
                                 width={400}

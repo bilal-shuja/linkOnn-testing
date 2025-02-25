@@ -1,4 +1,4 @@
-"use client"; // Ensure this is a client-side component
+"use client";
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
@@ -15,7 +15,7 @@ export default function ConfirmForgot() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
   const router = useRouter();
-
+  const [isLoading, setIsLoading] = useState(false);
   const emailRef = useRef(null);
   const resetCodeRef = useRef(null);
   const passwordRef = useRef(null);
@@ -70,6 +70,7 @@ export default function ConfirmForgot() {
     }
 
     try {
+      setIsLoading(true);
       const formData = new FormData();
       formData.append("email", email);
       formData.append("reset_code", reset_code);
@@ -100,6 +101,9 @@ export default function ConfirmForgot() {
       setError(errorMessage);
       setSuccess("");
       toast.error(errorMessage)
+    }
+    finally {
+      setIsLoading(false);
     }
   };
 
@@ -195,8 +199,15 @@ export default function ConfirmForgot() {
               <button
                 type="submit"
                 className="btn btn-lg btn-primary rounded-2"
+                disabled={isLoading}
               >
-                Reset Password
+                {isLoading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2"></span>
+                  </>
+                ) : (
+                  "Reset Password"
+                )}
               </button>
             </div>
 

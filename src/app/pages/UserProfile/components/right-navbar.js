@@ -207,7 +207,7 @@ const RightNavbar = ({ user }) => {
                               className="d-block position-absolute top-0 start-0 w-100 h-100"
                             >
                               <Image
-                                src={img}
+                                src={img || "/assets/images/placeholder-image.png"}
                                 alt={`Post Image ${index + 1}`}
                                 fill
                                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
@@ -262,7 +262,7 @@ const RightNavbar = ({ user }) => {
                         {/* Friend Avatar */}
                         <div className="friend-avatar mx-auto">
                           <Image
-                            src={friend.avatar}
+                            src={friend.avatar || "/assets/images/userplaceholder.png"}
                             alt={`${friend.first_name} ${friend.last_name}`}
                             className="rounded-circle border border-2 border-light shadow"
                             width={60}

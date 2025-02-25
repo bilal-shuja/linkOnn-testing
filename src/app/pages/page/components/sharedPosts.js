@@ -154,6 +154,44 @@ export default function sharedPosts({ sharedPost, post, posts, setPosts }) {
 
             <div className="card shadow-sm border rounded-1 my-2">
 
+                    <div className="card shadow-sm border rounded-1 my-2">
+                                            
+    
+                        <div className="card-body">
+                            <div className="d-flex align-items-center justify-content-between">
+                                <div className="d-flex align-items-center">
+
+                                    <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                                        onClick={() => handleClick(sharedPost.user.id)} >
+
+                             
+                                            <Image
+                                                className="avatar-img rounded-circle"
+                                                src={sharedPost.user.avatar || "/assets/images/userplaceholder.png"}
+                                                alt="User Avatar"
+                                                width={50}
+                                                height={50}
+                                                style={{ objectFit: 'cover' }}
+                                            />
+                                    
+
+                                        {sharedPost.user.is_verified === '1' && (
+                                            <div
+                                                className="bg-light rounded-circle d-flex align-items-center justify-content-center"
+                                                style={{
+                                                    position: 'absolute',
+                                                    bottom: '0',
+                                                    right: '0',
+                                                    width: '20px',
+                                                    height: '20px',
+                                                    fontSize: '1.2rem',
+                                                    padding: '2px',
+                                                }}
+                                            >
+                                                <i className="bi bi-check-circle-fill text-success"></i>
+                                            </div>
+                                        )}
+
 
                 <div className="card-body">
                     <div className="d-flex align-items-center justify-content-between">
@@ -360,7 +398,6 @@ export default function sharedPosts({ sharedPost, post, posts, setPosts }) {
                             </ul>
                         </div>
                     )}
-
                     {localDonation && (
                         <div>
                             <Image
@@ -386,6 +423,15 @@ export default function sharedPosts({ sharedPost, post, posts, setPosts }) {
                                     <div
                                         className="progress-bar"
                                         role="progressbar"
+
+                            {sharedPost?.donation && (
+                                <div>
+                                    <Image
+                                        src={sharedPost?.donation?.image || "/assets/images/placeholder-image.png"}
+                                        alt={sharedPost.donation.title}
+                                        className="img-fluid d-block mx-auto"
+                                        width={400}
+                                        height={200}
                                         style={{
                                             width: `${(parseFloat(localDonation.collected_amount) /
                                                 parseFloat(localDonation.amount)) *

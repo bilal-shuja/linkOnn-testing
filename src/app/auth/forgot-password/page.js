@@ -10,12 +10,12 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
-  const [isClient, setIsClient] = useState(false); // State to track client-side rendering
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  // This effect ensures the code runs only on the client-side
   useEffect(() => {
-    setIsClient(true); // Set to true once the component has mounted
+    setIsClient(true);
   }, []);
 
   const handleSubmit = async (e) => {
@@ -27,6 +27,7 @@ export default function ForgotPassword() {
     }
 
     try {
+      setIsLoading(true);
       const formData = new FormData();
       formData.append("email", email);
 
@@ -53,6 +54,9 @@ export default function ForgotPassword() {
       const errorMessage = err.response?.data?.message || "An error occurred. Please try again.";
       setError(errorMessage);
       toast.error(errorMessage)
+    }
+    finally {
+      setIsLoading(false);
     }
   };
 
@@ -102,8 +106,14 @@ export default function ForgotPassword() {
             </div>
 
             <div className="d-grid mb-3">
-              <button type="submit" className="btn btn-lg btn-primary rounded-2">
-                Reset Password
+              <button type="submit" className="btn btn-lg btn-primary rounded-2" disabled={isLoading} >
+              {isLoading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2"></span>
+                  </>
+                ) : (
+                  "Reset Password"
+                )}
               </button>
             </div>
 
