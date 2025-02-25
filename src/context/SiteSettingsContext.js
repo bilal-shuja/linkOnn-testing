@@ -30,3 +30,4 @@ export function SiteSettingsProvider({ children }) {
 export function useSiteSettings() {
     return useContext(SiteSettingsContext);
 }
+ 

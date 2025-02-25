@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Cookies from 'js-cookie';
 import { toast } from "react-toastify";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 
 export default function Navbar() {
@@ -19,7 +20,7 @@ export default function Navbar() {
   const [loadingChats, setLoadingChats] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [error, setError] = useState(null);
-
+  const settings = useSiteSettings();
   const router = useRouter();
 
   useEffect(() => {
@@ -101,16 +102,18 @@ export default function Navbar() {
     }
   };
 
+  if (!settings) return null;
+
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm py-1">
         <div className="container">
           <Link href="/pages/newsfeed" className="navbar-brand">
             <Image
-              src="/assets/images/linkON.png"
+              src={settings.site_logo || "/assets/images/placeholder-image.png"}
               alt="Logo"
-              width={150}
-              height={40}
+              width={140}
+              height={45}
               unoptimized={true}
             />
           </Link>

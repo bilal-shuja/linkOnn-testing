@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
+import { getSiteSettings } from "@/app/lib/getSiteSettings";
 
 export async function POST(req) {
     try {
         const { email, amount } = await req.json();
-        const secretKey = process.env.FLUTTERWAVE_SECRET_KEY;
 
         if (!email || !amount) {
             return NextResponse.json({ error: "Email and amount are required" }, { status: 400 });
         }
+
+        const settings = await getSiteSettings();
+        if (!settings || !settings.flutterwave_secret_key) {
+            return NextResponse.json({ error: "Flutterwave secret key not found in settings" }, { status: 500 });
+        }
+
+        const secretKey = settings.flutterwave_secret_key;
 
         const response = await axios.post(
             "https://api.flutterwave.com/v3/payments",
@@ -17,7 +24,6 @@ export async function POST(req) {
                 amount: amount,
                 currency: "USD",
                 redirect_url: `http://localhost:3000/pages/Wallet/success/flutterwave-success`,
-                // redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment-success`,
                 customer: { email },
                 customizations: {
                     title: "Wallet Deposit",

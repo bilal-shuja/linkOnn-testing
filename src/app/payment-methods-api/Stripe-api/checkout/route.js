@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import { getSiteSettings } from "@/app/lib/getSiteSettings";
 
 export async function POST(req) {
     try {
@@ -11,10 +10,15 @@ export async function POST(req) {
             return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
         }
 
+        const settings = await getSiteSettings();
+        if (!settings || !settings.stripe_secret_key) {
+            return NextResponse.json({ error: "Stripe secret key not found in settings" }, { status: 500 });
+        }
+
+        const stripe = new Stripe(settings.stripe_secret_key);
 
         const baseUrl = "http://localhost:3000";
-
-        // process.env.NEXT_PUBLIC_BASE_URL || 
+        // process.env.NEXT_PUBLIC_API_BASE_URL || 
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
@@ -30,7 +34,6 @@ export async function POST(req) {
                 },
             ],
             success_url: `${baseUrl}/pages/Wallet/success/Stripe-success?session_id={CHECKOUT_SESSION_ID}`,
-
             cancel_url: `${baseUrl}/pages/Wallet/deposit-amount`,
         });
 

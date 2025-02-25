@@ -807,6 +807,7 @@ export default function Newsfeed() {
     setActiveGreatJobId(null);
   };
 
+
   const toggleOptionsColorPalette = () => {
     setIsOpenColorPalette(!isOpenColorPalette);
 
@@ -854,7 +855,7 @@ export default function Newsfeed() {
               <Rightnav />
             </div>
 
-            <div className="col-md-6 p-3">
+            <div className="col-md-6 p-2">
               <div id="stories"></div>
 
               <div className="d-flex gap-2 mb-n3">
@@ -1219,28 +1220,6 @@ export default function Newsfeed() {
                       <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
                         <i className="bi bi-palette-fill"></i>
                       </button>
-
-                      {/* <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
-
-                        {['#FFFFFF', '#c600ff', '#000000', '#C70039', '#900C3F', '#581845', '#FF5733', '#00a859', '#0098da'].map((solidColor) => (
-                          <div
-                            key={solidColor}
-                            className={styles.colorOption}
-                            style={{ background: solidColor }}
-                            onClick={() => handleColorSelect(solidColor)}
-                          />
-                        ))}
-
-                        {Object.keys(gradientMap).map((gradient) => (
-                          <div
-                            key={gradient}
-                            className={styles.colorOption}
-                            style={{ background: gradient }}
-                            onClick={() => handleColorSelect(gradient)}
-                          />
-                        ))}
-
-                      </div> */}
 
                       <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
                         {Object.values(colorMap).map((color) => (
@@ -1784,16 +1763,6 @@ export default function Newsfeed() {
                     <hr className="my-2 post-divider" />
 
                     {
-                      // post.bg_color && (
-                      //   <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1"
-                      //     style={{
-                      //       background: post?.bg_color?.startsWith('_') ? reverseGradientMap[post.bg_color] : post.bg_color,
-                      //       padding: "160px 27px"
-                      //     }}
-                      //   >
-                      //     <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>  {post.post_text} </span>
-                      //   </div>
-                      // )
                       post.bg_color && (
                         <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                           style={{
