@@ -11,11 +11,11 @@ import Spinner from "react-bootstrap/Spinner";
 
 export default function SharedPosts({ sharedPost, posts, setPosts }) {
 
+    const api = createAPI();
+    const router = useRouter();
     const [donationModal, setDonationModal] = useState(false);
     const [donationID, setDonationID] = useState("");
-    const router = useRouter();
     const [pollData, setPollData] = useState(sharedPost.poll);
-    const api = createAPI();
     const [donate, setDonate] = useState("");
     const [loading, setLoading] = useState(false);
     const [localDonation, setLocalDonation] = useState(sharedPost.donation);
@@ -111,6 +111,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
         router.push(`/pages/UserProfile/timeline/${userId}`);
     };
 
+
     const colorMap = {
         '23jo': '#FFFFFF',
         '23ju': '#C600FF',
@@ -127,7 +128,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
         '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
         '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
         '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
-    };
+
 
     const getDisplayColor = (code) => {
         return colorMap[code] || code;
@@ -243,23 +244,24 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                 </div>
 
                 <hr className="my-2 post-divider" />
-
                 {
-                    sharedPost.bg_color && (
-                        <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
-                            style={{
-                                background: getDisplayColor(sharedPost.bg_color),
-                                backgroundSize: sharedPost.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
-                                backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
-                                backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
-                                padding: "220px 27px",
-                            }}
-                        >
-                            <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {sharedPost.post_text} </span>
-                        </div>
-                    )
+                      
+                      sharedPost.bg_color && (
+                          <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
+                              style={{
+                                  background: getDisplayColor(sharedPost.bg_color),
+                                  backgroundSize: sharedPost.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                  backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                  backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                  padding: "220px 27px",
+                              }}
+                          >
+                              <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {sharedPost.post_text} </span>
+                          </div>
+                      )
+                  }
 
-                }
+
 
                 {!sharedPost.bg_color && (
                     <p
