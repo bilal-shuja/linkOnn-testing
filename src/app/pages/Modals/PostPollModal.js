@@ -28,6 +28,15 @@ export default function PostPollModal({ pollModal, setPollModal, posts, setPosts
     };
 
     const uploadPost = async () => {
+
+        if (!pollText || options.some(option => option.trim() === "")) {
+            toast.warning("All fields are required");
+            return;
+        }
+
+        else{
+
+            
         try {
             setIsLoading(true);
             const formData = new FormData();
@@ -60,12 +69,17 @@ export default function PostPollModal({ pollModal, setPollModal, posts, setPosts
             } else {
                 toast.error("Error from server: " + response.data.message);
             }
-        } catch (error) {
-            console.log(error);
+        }
+
+
+        catch (error) {
             toast.error("Something went wrong!");
         } finally {
             setIsLoading(false);
         }
+
+        }
+
     };
 
     return (

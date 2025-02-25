@@ -19,7 +19,7 @@ export default function RightNav({ pageTimelineData }) {
       .then((res) => {
         if (res.data.code == "200") {
           setSuggestedPages(res.data.data);
-          console.log(res.data.data)
+
         }
 
       })
