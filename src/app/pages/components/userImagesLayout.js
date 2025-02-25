@@ -50,7 +50,7 @@ const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
             }}
           >
             <Image
-              src={image.media_path}
+              src={image.media_path || "/assets/images/placeholder-image.png"}
               alt={`Post image ${index + 1}`}
               className={`image-fluid position-static ${styles.postImage} ${
                 isSingleImage ? styles.singleImage : styles.multipleImage
@@ -90,7 +90,7 @@ const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
               <Carousel.Item key={idx}>
                 <div className={styles.carouselImageWrapper}>
                   <Image
-                    src={image.media_path}
+                    src={image.media_path || "/assets/images/placeholder-image.png"}
                     alt={`Image ${idx + 1}`}
                     fill
                     className={`img-fluid position-absolute ${styles.carouselImage}`}

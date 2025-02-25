@@ -89,10 +89,10 @@ export default function Common({ params }) {
                                             <div key={group.id} className="rounded border p-3 mb-3 bg-light">
                                                 <div className="d-flex align-items-center">
                                                     <div className="avatar me-3">
-                                                        <Link href={`/group/${group.group_name}`}>
+                                                        <Link href={`/pages/groups/groupTimeline/${group.id}`}>
                                                             <Image
                                                                 className="avatar-img rounded-circle border"
-                                                                src={group.avatar}
+                                                                src={group.avatar || "/assets/images/placeholder-image.png"}
                                                                 alt={group.group_title}
                                                                 width={50}
                                                                 height={50}
@@ -102,7 +102,7 @@ export default function Common({ params }) {
                                                     </div>
                                                     <div className="w-100">
                                                         <h6 className="mb-0 fw-semibold">
-                                                            <Link href={`/group/${group.group_name}`} className="text-decoration-none text-dark">
+                                                            <Link href={`/pages/groups/groupTimeline/${group.id}`} className="text-decoration-none text-dark">
                                                                 {group.group_title}
                                                             </Link>
                                                         </h6>
@@ -121,10 +121,10 @@ export default function Common({ params }) {
                                             <div key={page.id} className="rounded border p-3 mb-3 bg-light">
                                                 <div className="d-flex align-items-center">
                                                     <div className="avatar me-3">
-                                                        <Link href={`/page/${page.page_username}`}>
+                                                        <Link href={`/pages/page/myPageTimeline/${page.id}`}>
                                                             <Image
                                                                 className="avatar-img rounded-circle border"
-                                                                src={page.avatar}
+                                                                src={page.avatar || "/assets/images/placeholder-image.png"}
                                                                 alt={page.page_title}
                                                                 width={50}
                                                                 height={50}
@@ -134,7 +134,7 @@ export default function Common({ params }) {
                                                     </div>
                                                     <div className="w-100">
                                                         <h6 className="mb-0 fw-semibold">
-                                                            <Link href={`/page/${page.page_username}`} className="text-decoration-none text-dark">
+                                                            <Link href={`/pages/page/myPageTimeline/${page.id}`} className="text-decoration-none text-dark">
                                                                 {page.page_title}
                                                             </Link>
                                                         </h6>
@@ -156,7 +156,7 @@ export default function Common({ params }) {
                                                         <Link href={`/events/event-details/${event.id}`}>
                                                             <Image
                                                                 className="avatar-img rounded border"
-                                                                src={event.cover}
+                                                                src={event.cover || "/assets/images/placeholder-image.png"}
                                                                 alt={event.name}
                                                                 width={50}
                                                                 height={50}
@@ -166,7 +166,7 @@ export default function Common({ params }) {
                                                     </div>
                                                     <div className="w-100">
                                                         <h6 className="mb-0 fw-semibold">
-                                                            <Link href={`/events/event-details/${event.id}`} className="text-decoration-none text-dark">
+                                                            <Link href={`pages/Events/eventDetails/${event.id}`} className="text-decoration-none text-dark">
                                                                 {event.name}
                                                             </Link>
                                                         </h6>

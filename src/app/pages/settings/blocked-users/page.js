@@ -100,7 +100,7 @@ export default function BlockUsers() {
                                                             <td className="fw-bold">{user.first_name} {user.last_name}</td>
                                                             <td>
                                                                 <Image
-                                                                    src={user.avatar}
+                                                                    src={user.avatar || "/assets/images/userplaceholder.png"}
                                                                     alt={user.username}
                                                                     className="rounded-circle"
                                                                     width={40}

@@ -111,7 +111,7 @@ export default function UserImages({ params }) {
                                                     <div className="ratio ratio-1x1" style={{ width: '100%', height: 200 }}>
                                                         <Link href={img} passHref>
                                                             <Image
-                                                                src={img}
+                                                                src={img || "/assets/images/placeholder-image.png"}
                                                                 alt={`Post Image ${index}`}
                                                                 className="img-fluid rounded-3"
                                                                 width={200}

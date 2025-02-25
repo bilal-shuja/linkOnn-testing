@@ -179,16 +179,16 @@ export default function sharedPosts({ sharedPost,post ,setPosts, myPageTimeline 
                                     <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                         onClick={() => handleClick(sharedPost.user.id)} >
 
-                                        <Link href="#">
+                             
                                             <Image
                                                 className="avatar-img rounded-circle"
-                                                src={sharedPost.user.avatar}
+                                                src={sharedPost.user.avatar || "/assets/images/userplaceholder.png"}
                                                 alt="User Avatar"
                                                 width={50}
                                                 height={50}
                                                 style={{ objectFit: 'cover' }}
                                             />
-                                        </Link>
+                                    
 
                                         {sharedPost.user.is_verified === '1' && (
                                             <div
@@ -398,7 +398,7 @@ export default function sharedPosts({ sharedPost,post ,setPosts, myPageTimeline 
                             {sharedPost?.donation && (
                                 <div>
                                     <Image
-                                        src={sharedPost?.donation?.image}
+                                        src={sharedPost?.donation?.image || "/assets/images/placeholder-image.png"}
                                         alt={sharedPost.donation.title}
                                         className="img-fluid d-block mx-auto"
                                         width={400}

@@ -359,7 +359,7 @@ export default function JobsPage() {
                                   >
                                     {job.image ? (
                                       <Image
-                                        src={job.image}
+                                        src={job.image || "/assets/images/placeholder-image.png"}
                                         alt="job image"
                                         className="card-img-top"
                                         width={300}

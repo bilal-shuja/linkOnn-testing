@@ -186,7 +186,7 @@ const RightNavbar = ({ group_id }) => {
                                     membersList.map((member) => (
                                         <div key={member.id} className="d-flex align-items-center mb-3">
                                             <Image
-                                                src={member.avatar}
+                                                src={member.avatar || "/assets/images/userplaceholder.png"}
                                                 alt={member.username}
                                                 width={50}
                                                 height={50}
@@ -230,7 +230,7 @@ const RightNavbar = ({ group_id }) => {
                             ) : suggessList.length > 0 ? (
                                 suggessList.map((group) => (
                                     <div key={group.id} className="d-flex align-items-center mb-3">
-                                        {group.avatar ? (
+
                                             <Image
                                                 src={group.avatar || "/assets/images/placeholder-image.png"}
                                                 alt={group.group_title}
@@ -238,15 +238,6 @@ const RightNavbar = ({ group_id }) => {
                                                 height={40}
                                                 className="rounded-circle me-3"
                                             />
-                                        ) : (
-                                            <Image
-                                                src={group.cover || "/assets/images/placeholder-image.png"}
-                                                alt={group.group_title}
-                                                width={40}
-                                                height={40}
-                                                className="rounded-circle me-3"
-                                            />
-                                        )}
 
                                         <div className="flex-grow-1">
                                             <h6 className="mb-0 text-truncate" style={{ maxWidth: '150px', cursor: 'pointer' }}

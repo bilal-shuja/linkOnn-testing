@@ -148,7 +148,7 @@ export default function UserFriends({ params }) {
                                                 >
                                                     <div className="d-flex align-items-center">
                                                         <Image
-                                                            src={friend.avatar}
+                                                            src={friend.avatar || "/assets/images/userplaceholder.png"}
                                                             alt={`${friend.first_name} ${friend.last_name}`}
                                                             className="rounded-circle"
                                                             width={50}
