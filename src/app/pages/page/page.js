@@ -196,13 +196,7 @@ export default function Pages() {
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4>All Pages</h4>
                         <div className="d-flex align-items-center">
-                          <select
-                            className="form-select me-2"
-                            style={{ width: "150px" }}
-                          >
-                            <option>Newest</option>
-                            <option>Alphabetical</option>
-                          </select>
+                       
                           <button
                             className="btn btn-primary"
                             onClick={() => router.push("/pages/createPage")}

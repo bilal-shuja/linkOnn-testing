@@ -3,21 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
- 
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 import Rightnav from "@/app/assets/components/rightnav/page";
-   
 import { toast } from "react-toastify";
 
 export default function GroupForm() {
-    
   const router = useRouter();
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
-  const [avatar, setAvatar] = useState(null);  
-  const [cover, setCover] = useState(null);   
+  const [avatar, setAvatar] = useState(null);
+  const [cover, setCover] = useState(null);
   const [category, setCategory] = useState("");
   const [privacy, setPrivacy] = useState("");
-
+  const settings = useSiteSettings();
   const api = createAPI();
 
   const handleGroupNameChange = (e) => setGroupName(e.target.value);
@@ -65,21 +63,23 @@ export default function GroupForm() {
         setCategory("");
         setPrivacy("");
         setDescription("");
-        setAvatar(null); 
-        setCover(null); 
+        setAvatar(null);
+        setCover(null);
         toast.success(response.data.message);
         router.push("/pages/groups");
       } else {
         toast.error("Error from server: " + response.data.message);
       }
     } catch (error) {
-       toast.error("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     }
   };
 
+  if (!settings) return null;
+
+
   return (
     <div>
-        
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">
@@ -121,28 +121,14 @@ export default function GroupForm() {
                         onChange={handleCategoryChange}
                       >
                         <option value="">Select Category</option>
-                        <option value="1">Healthcare</option>
-                        <option value="2">Business & Finance</option>
-                        <option value="3">Education & Learning</option>
-                        <option value="4">Fashion & Beauty</option>
-                        <option value="5">Food & Beverage</option>
-                        <option value="6">Health & Wellness</option>
-                        <option value="7">News & Media</option>
-                        <option value="8">Science & Technology</option>
-                        <option value="9">Sports & Recreation</option>
-                        <option value="10">Travel & Tourism</option>
-                        <option value="11">Home & Garden</option>
-                        <option value="12">Real Estate</option>
-                        <option value="13">Automotive</option>
-                        <option value="14">Pets & Animals</option>
-                        <option value="15">Music & Performing Arts</option>
-                        <option value="16">Photography & Visual Arts</option>
-                        <option value="17">Legal & Government</option>
-                        <option value="18">Environmental & Nature</option>
-                        <option value="19">Hobbies & Crafts</option>
-                        <option value="20">Books & Literature</option>
-                        <option value="21">Religion & Spirituality</option>
-                        <option value="22">Technology & IT</option>
+                        {settings.group_categories &&
+                          Object.entries(settings.group_categories).map(
+                            ([key, value]) => (
+                              <option key={key} value={key}>
+                                {value}
+                              </option>
+                            )
+                          )}
                       </select>
                     </div>
                     <div className="w-50">

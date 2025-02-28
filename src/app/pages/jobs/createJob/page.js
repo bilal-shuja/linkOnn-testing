@@ -1,15 +1,16 @@
 "use client";
 
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState } from "react";
 import createAPI from "@/app/lib/axios";
- 
+import { useEffect } from "react";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { useRouter } from "next/navigation";
-   
+
 
 export default function Createjob() {
-      
+
     const router = useRouter();
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState("");
@@ -26,7 +27,8 @@ export default function Createjob() {
     const [experience, setExperience] = useState("");
     const [urgentHiring, setUrgentHiring] = useState(false);
     const [active, setActive] = useState(false);
-
+    const [jobCategory, setJobCategory] = useState([]);
+    const settings = useSiteSettings();
     const api = createAPI();
 
     const handletitlechange = (e) => setTitle(e.target.value);
@@ -92,9 +94,35 @@ export default function Createjob() {
         }
     };
 
+    function fetchJobCategories() {
+
+        api.get("/api/get-job_categories")
+            .then((res) => {
+                if (res.data.code == "200") {
+                    setJobCategory(res.data.data);
+                }
+                else {
+                    toast.error("Error fetching event details");
+                }
+
+            })
+            .catch((error) => {
+                if (error)
+                    console.log(error)
+                toast.error("Error fetching event details");
+            })
+
+    }
+
+    useEffect(() => {
+        fetchJobCategories();
+    }, []);
+
+    if (!settings) return null;
+
     return (
         <div>
-              
+
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -166,18 +194,14 @@ export default function Createjob() {
                                                     value={currency}
                                                     onChange={handleCurrencyChange}
                                                 >
-                                                    <option value="USD">USD</option>
-                                                    <option value="EUR">EUR</option>
-                                                    <option value="JPY">JPY</option>
-                                                    <option value="TRY">TRY</option>
-                                                    <option value="GBP">GBP</option>
-                                                    <option value="RUB">RUB</option>
-                                                    <option value="PLN">PLN</option>
-                                                    <option value="ILS">ILS</option>
-                                                    <option value="BRL">BRL</option>
-                                                    <option value="INR">INR</option>
-                                                    <option value="PKR">PKR</option>
+                                                    <option value="">Select Currency</option>
+                                                    {settings?.currecy_array?.map((cur, index) => (
+                                                        <option key={index} value={cur}>
+                                                            {cur}
+                                                        </option>
+                                                    ))}
                                                 </select>
+
                                             </div>
                                         </div>
 
@@ -227,39 +251,14 @@ export default function Createjob() {
                                                 value={category}
                                                 onChange={handleCategoryChange}
                                             >
-                                                <option>Select Category</option>
-                                                <option value="1">Healthcares</option>
-                                                <option value="2">Government</option>
-                                                <option value="3">Science and Research</option>
-                                                <option value="4">Information Technology</option>
-                                                <option value="5">Transportation</option>
-                                                <option value="6">Education</option>
-                                                <option value="7">Finance</option>
-                                                <option value="8">Sales</option>
-                                                <option value="9">Engineering</option>
-                                                <option value="10">Hospitality</option>
-                                                <option value="11">Retail</option>
-                                                <option value="12">Human Resources</option>
-                                                <option value="13">Construction</option>
-                                                <option value="14">Marketing</option>
-                                                <option value="15">Legal</option>
-                                                <option value="16">Customer Service</option>
-                                                <option value="17">Design</option>
-                                                <option value="18">Media and Entertainment</option>
-                                                <option value="19">Agriculture and Forestry</option>
-                                                <option value="20">Arts and Culture</option>
-                                                <option value="21">Real Estate</option>
-                                                <option value="22">Manufacturing</option>
-                                                <option value="23">Environmental</option>
-                                                <option value="24">Non-Profit and Social Services</option>
-                                                <option value="25">Telecommunications</option>
-                                                <option value="26">Sports and Recreation</option>
-                                                <option value="27">Travel and Tourism</option>
-                                                <option value="28">Food Services</option>
-                                                <option value="29">Beauty and Wellness</option>
-                                                <option value="30">Security and Law Enforcement</option>
-                                                <option value="31">Writer</option>
+                                                <option value="">Select Category</option>
+                                                {jobCategory.map((cat) => (
+                                                    <option key={cat.id} value={cat.id}>
+                                                        {cat.name}
+                                                    </option>
+                                                ))}
                                             </select>
+
                                         </div>
 
                                         <div className="mt-4">

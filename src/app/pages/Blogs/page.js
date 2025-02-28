@@ -87,12 +87,14 @@ export default function Blogs() {
                     </div>
                     <div className="ms-3">
                       <span className="badge bg-danger text-white mb-2">{blog.category}</span>
+                      <Link href={`/pages/Blogs/details/${blog.id}`} className="text-decoration-none fw-semibold text-primary">
                       <h5 className="fw-bold">{blog.title}</h5>
+                      </Link>
                       <p className="text-muted mb-2">
                         <i className="bi bi-calendar-event pe-2"></i>
                         {moment(blog.created_at).format("MMM DD, YYYY")}
                       </p>
-                      <Link href={`/pages/blogs/blogdetails/${blog.id}`} className="text-decoration-none fw-semibold text-primary">
+                      <Link href={`/pages/Blogs/details/${blog.id}`} className="text-decoration-none fw-semibold text-primary">
                         Read more →
                       </Link>
                     </div>
@@ -100,6 +102,7 @@ export default function Blogs() {
                   <hr className="text-muted" />
                 </div>
               ))}
+
               {/* Pagination */}
               <div className="d-flex justify-content-center mt-4">
                 <nav>
@@ -125,12 +128,12 @@ export default function Blogs() {
               <ul className="list-group list-group-flush">
                 {recentBlogs.map((blog) => (
                   <li key={blog.id} className="list-group-item">
-                    <Link href={`/pages/blogs/blogdetails/${blog.id}`} className="text-decoration-none text-dark fw-semibold">
+                    <Link href={`/pages/Blogs/details/${blog.id}`} className="text-decoration-none text-dark fw-semibold">
                       {blog.title}
                     </Link>
                     <br />
                     <small className="text-muted">
-                      {moment(blog.created_at).format("MMM DD, YYYY")}
+                      {blog.created_at}
                     </small>
                   </li>
                 ))}
@@ -146,7 +149,7 @@ export default function Blogs() {
                 {recentTags.map((tag, index) => (
                   <Link
                     key={index}
-                    href={`/pages/blogs/blogtags/${tag.id}`}
+                    href={`/pages/Blogs/tags/${tag.id}`}
                     className="btn btn-outline-primary btn-sm me-2 mb-2"
                   >
                     {tag.name}

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function MarketPlace() {
     const api = createAPI();
@@ -11,6 +12,8 @@ export default function MarketPlace() {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState("");
+    
+    const settings = useSiteSettings();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -41,11 +44,12 @@ export default function MarketPlace() {
         setSelectedCategory(event.target.value);
     };
 
+    if (!settings) return null;
+
     return error ? (
         <div className="alert alert-danger text-center mt-4">{error}</div>
     ) : (
         <div>
-            {/* Featured Products Section */}
             <div className="bg-light py-5 mt-5">
                 <div className="container">
                     <div className="card shadow-lg border-0 p-5 rounded-4">
@@ -91,7 +95,6 @@ export default function MarketPlace() {
                 </div>
             </div>
 
-            {/* Recent Products Section */}
             <div className="container my-5">
                 <div className="card border-0 shadow-lg p-5 rounded-4">
                     <div className="d-flex justify-content-between align-items-center">
@@ -105,17 +108,13 @@ export default function MarketPlace() {
                                 border: "1px solid #ced4da",
                             }}
                         >
-                            <option>Select Category</option>
-                            <option>Clothing</option>
-                            <option>Home and Furniture</option>
-                            <option>Books and Media</option>
-                            <option>Beauty and Personal Care</option>
-                            <option>Sports and Outdoors</option>
-                            <option>Toys and Games</option>
-                            <option>Automotive</option>
-                            <option>Health and Wellness</option>
-                            <option>Grocery and Food</option>
-                            <option>Electronics</option>
+                            <option value="">Select Category</option>
+                            {settings.product_categories &&
+                                Object.entries(settings.product_categories).map(([id, category]) => (
+                                    <option key={id} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
                         </select>
                     </div>
                     <hr className="text-muted" />
@@ -150,7 +149,6 @@ export default function MarketPlace() {
                 </div>
             </div>
 
-            {/* Custom Styles */}
             <style jsx>{`
                 .card:hover {
                     transform: scale(1.03);

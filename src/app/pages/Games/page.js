@@ -36,7 +36,6 @@ export default function GamesPage() {
         fetchGames();
     }, []);
 
-    if (!settings) return <div>Loading...</div>;
 
     return (
         <div>
