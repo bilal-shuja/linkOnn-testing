@@ -23,6 +23,31 @@ import { useRouter } from "next/navigation";
 
 
 export default function OpenPostInNewTab({ params }) {
+    const [posts, setPosts] = useState([]);
+    const [showEditPostModal, setShowEditPostModal] = useState(false);
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
+    const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+    const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+    const [donationModal, setDonationModal] = useState(false);
+    const [postID, setPostID] = useState(null);
+    const [activeReactionPost, setActiveReactionPost] = useState(null);
+    const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+    const [activeGreatJobId, setActiveGreatJobId] = useState(null);
+    const [showComments, setShowComments] = useState({});
+    const [commentText, setCommentText] = useState({});
+    const [comments, setComments] = useState({});
+    const [showReplies, setShowReplies] = useState({});
+    const [repliesData, setRepliesData] = useState({});
+    const [showReplyInput, setShowReplyInput] = useState({});
+    const [commentreplyText, setCommentreplyText] = useState({});
+    const [postReactions, setPostReactions] = useState({});
+    const [reactionEmojis, setReactionEmojis] = useState({});
+    const [reactionValues, setReactionValues] = useState({});
+    const [userdata, setUserdata] = useState({});
+    const [userID, setUserID] = useState(null);
+    const router = useRouter();
+
     const api = createAPI();
     const router = useRouter();
 
@@ -794,7 +819,7 @@ export default function OpenPostInNewTab({ params }) {
                                                 )}
 
 
-                                            {post.shared_post === null ?
+                                            { post.shared_post === null ?
                                                 <>
 
                                                     {
@@ -994,7 +1019,6 @@ export default function OpenPostInNewTab({ params }) {
                                                         )}
                                             {
                                                 post.event && post.event.cover && (
-                                                    <div>
                                                         <Image
                                                             src={post.event.cover || "/assets/images/placeholder-image.png"}
                                                             alt="Event Cover"
@@ -1005,6 +1029,8 @@ export default function OpenPostInNewTab({ params }) {
                                                                 objectFit: "cover",
                                                             }}
                                                         />
+                                                        )
+                                            }
 
                                                     {post.product && (
                                                         <div>
@@ -1549,17 +1575,16 @@ export default function OpenPostInNewTab({ params }) {
                                     </div>
 
 
-                                )
+                          
 
-
-                            }
-
-                            )}
+                                ))}
 
 
 
-                        </div>
+</div>
 
+</div>
+</div>
 
                         {
                             donationModal && (
@@ -1644,8 +1669,14 @@ export default function OpenPostInNewTab({ params }) {
 
 
                     </div>
-                </div>
-            </div>
-        </>
-    )
-}
+               
+    
+    
+                   
+    
+    
+    
+                </>
+            )
+        }
+        

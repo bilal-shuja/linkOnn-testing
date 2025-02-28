@@ -20,7 +20,7 @@ import ReportPostModal from "@/app/pages/Modals/ReportPost";
 import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
 import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
 
-import SharedPosts from "../../components/sharedPosts";
+import SharedPosts from "@/app/pages/components/sharedPosts";
 import { useRouter } from "next/navigation";
 import Spinner from 'react-bootstrap/Spinner';
 // import MakeDonationModal from "../../Modal/MakeDonationModal";
@@ -1458,7 +1458,7 @@ export default function MyPageTimeline({ params }) {
                                                             <li className=" align-items-center d-flex">
                                                                 <Link
                                                                     className="text-decoration-none dropdown-item text-secondary"
-                                                                    href={`/pages/page/openPostInNewTab/${post.id}`}
+                                                                    href={`/pages/openPostInNewTab/${post.id}`}
                                                                     onClick={handlePageTimeline}
                                                                     target="_blank" rel="noopener noreferrer"
                                                                 >

@@ -5,39 +5,36 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
 
-function MessageDeleteModal({chatMessageID,showMessageModal,setUserChat,setShowMessageModal}) {
+function MessageDeleteModal({chatMessageID,showMessageModal,setUserChat,setShowMessageModal, setIsUserAtBottom}) {
     const api = createAPI();
+    const [isDeleting, setIsDeleting] = useState(false);
     const handleClose = () => setShowMessageModal(!showMessageModal);
 
 
-    function handleDeleteMessage(){
-          try {
-              const formData = new FormData();
-              formData.append("message_id", chatMessageID);
+    async  function handleDeleteMessage(){
+      setIsDeleting(true);
+      setIsUserAtBottom(false);
 
-        
-             api.post("/api/chat/delete-message", formData, {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-              })
-              .then((res)=>{
-                if (res.data.status == 200) {
-                    toast.success(res.data.message);
-                    setUserChat((prevChat) =>
-                        prevChat.filter((chat) => chat.id !== chatMessageID)
-                    )
-                    handleClose();
-                  } else {
-                    toast.error(res.data.message);
-                  }
+      try {
+        const formData = new FormData();
+        formData.append("message_id", chatMessageID);
 
-              })
-        
-             
-            } catch (error) {
-              toast.error("Error deleting message");
-            }
+        const res = await api.post("/api/chat/delete-message", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        if (res.data.status === 200) {
+            toast.success(res.data.message);
+            setUserChat((prevChat) => prevChat.filter((chat) => chat.id !== chatMessageID));
+            handleClose();
+        } else {
+            toast.error(res.data.message);
+        }
+    } catch (error) {
+        toast.error("Error deleting message");
+    } finally {
+        setIsDeleting(false); // Enable button after request finishes
+    }
     }
   return (
     <>
@@ -57,11 +54,14 @@ function MessageDeleteModal({chatMessageID,showMessageModal,setUserChat,setShowM
         </Modal.Body>
         <Modal.Footer>
       
-          <Button variant="primary" onClick={handleDeleteMessage}>Delete it!</Button>
-
+          <button className='btn btn-primary' onClick={handleDeleteMessage} disabled={isDeleting}> {isDeleting ? "Deleting..." : "Delete it!"} </button>
+        {
+          isDeleting ? null :
           <Button variant="danger" onClick={handleClose}>
-            Close
-          </Button>
+          Close
+        </Button>
+        }
+         
         </Modal.Footer>
       </Modal>
 

@@ -129,11 +129,11 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
         '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
         '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
 
+    }
 
     const getDisplayColor = (code) => {
         return colorMap[code] || code;
-    };
-
+    }
 
     return (
         <>
@@ -431,5 +431,5 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
             </Modal>
 
         </>
-    );
+    )
 }
