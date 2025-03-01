@@ -24,6 +24,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
     const [chatMessageID, setChatMessageID] = useState('');
 
     const [lastMessageTimestamp, setLastMessageTimestamp] = useState(null)
+    const [hasNewMessages, setHasNewMessages] = useState(false);
 
     const [pollingLoading, setPollingLoading] = useState(false);
 
@@ -71,6 +72,13 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                 alert("File size should not exceed 100MB!");
                 return;
             }
+
+            const allowedTypes = ["image/jpg", "image/jpeg", "image/png"];
+            if (!allowedTypes.includes(file.type)) {
+                alert("Only image files (JPG/PNG) are allowed!");
+                return;
+            }
+
             setMediaType(1)
             setChatImg(file)
 
@@ -104,8 +112,8 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
 
         if (videoFile) {
 
-            if (videoFile.size > 100 * 1024 * 1024) {
-                alert("Video size should not exceed 100MB!");
+            if (videoFile.size > 45 * 1024 * 1024) {
+                alert("Video size should not exceed 45MB!");
                 return;
             }
             setMediaType(2)
@@ -115,7 +123,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
             setVideoPreviewUrl(videoUrl)
             setShowPopover(false);
         } else {
-            console.log("No file selected")
+            alert("No file selected")
         }
     }
 
@@ -329,7 +337,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
             // Don't set the main loading state here
             setPollingLoading(true);
             const formdata = new FormData();
-            formdata.append("to_id", chat.id);
+            formdata.append("to_id", chatID);
 
             const response = await api.post("/api/chat/get-user-chat", formdata, {
                 headers: {
@@ -352,17 +360,27 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                             }
                         });
 
+
+                        const latestTimestamp = newMessages.length ? new Date(newMessages[newMessages.length - 1].created_at).getTime() : lastMessageTimestamp;
+                        setLastMessageTimestamp(latestTimestamp);
                         // Don't trigger scroll here
+
+                        const hasNewFromOthers = newMessages.some((msg) => Number(msg.from_id) !== userID)
+                        if (!isUserAtBottom && hasNewFromOthers) {
+                            setHasNewMessages(true)
+                        }
+
+
                         return updatedChat;
                     });
                 }
             }
         } catch (error) {
-            console.error("Error fetching new messages:", error);
+            toast.error("Error fetching new messages:", error);
         } finally {
             setPollingLoading(false);
         }
-    }, [chatID, lastMessageTimestamp, api.post]);
+    }, [chatID, lastMessageTimestamp, isUserAtBottom, api.post]);
 
 
 
@@ -499,28 +517,28 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
             } else {
                 setLoading(true);
             }
-    
+
             const formdata = new FormData();
             formdata.append("to_id", chatID);
             formdata.append("limit", limit);
             formdata.append("offset", loadMore ? offset : 0);
-    
+
             console.log("Sending request with params:", {
                 to_id: chatID,
                 limit,
                 offset: loadMore ? offset : 0
             });
-    
+
             const response = await api.post("/api/chat/get-user-chat", formdata, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 }
             });
-    
+
             if (response.data.status === "success") {
                 const newMessages = response.data.data;
                 setHasMore(newMessages.length >= limit);
-    
+
                 if (loadMore) {
                     setUserChat((prev) => {
                         const existingMessages = new Map(prev.map((msg) => [msg.id, msg]));
@@ -537,7 +555,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                         );
                         return updatedMessages;
                     });
-    
+
                     if (newMessages.length > 0) {
                         setOffset((prev) => prev + limit);
                         console.log("Updated offset to:", offset + limit);
@@ -569,6 +587,9 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
         let currentInterval = null;
 
         const startPolling = () => {
+            //     if (isUserAtBottom) {
+
+            // }
             fetchNewMessages();
             currentInterval = setInterval(fetchNewMessages, 5000);
             return currentInterval;
@@ -618,21 +639,6 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
     //         messagesEndRef.current.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
     //     }
     // };
-    const scrollToBottom = useCallback(
-        (smooth = true) => {
-            if (!messagesEndRef.current || isScrolling || loadingMore || isLoadingLock) return
-
-            try {
-                messagesEndRef.current.scrollIntoView({
-                    behavior: smooth ? "smooth" : "auto",
-                    block: "end",
-                })
-            } catch (error) {
-                console.error("Error scrolling to bottom:", error)
-            }
-        },
-        [isScrolling, loadingMore, isLoadingLock],
-    )
 
 
     // const handleScroll = () => {
@@ -673,21 +679,21 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
     //             isLoadingLock
     //         });
 
-           
+
     //         if (isNearTop && hasMore && !loadingMore && !isLoadingLock) {
     //             console.log("Attempting to load more messages");
 
-               
+
     //             setIsLoadingLock(true);
     //             setIsScrolling(true);
 
     //             if (chatContainerRef.current) {
-                   
+
     //                 preserveScrollPosition.current = chatContainerRef.current.scrollHeight;
     //                 console.log("Saved scroll height:", preserveScrollPosition.current);
     //             }
 
-         
+
     //             setTimeout(() => {
     //                 getUserChat(true);
     //             }, 50);
@@ -701,39 +707,58 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
     const handleScroll = useCallback(
         debounce(() => {
             if (!chatContainerRef.current || loading || loadingMore || isLoadingLock) {
-                console.log("Scroll handling skipped due to:", { loading, loadingMore, isLoadingLock });
                 return;
             }
-    
+
             const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-            const isNearTop = scrollTop < 150; // Increased tolerance for "near top"
-            const isNearBottom = scrollTop + clientHeight >= scrollHeight - 5;
-    
-            // Update bottom detection
-            setIsUserAtBottom(isNearBottom);
-    
-            // Only load more if we're near the top, have more to load, and not already loading
+            const isNearTop = scrollTop < 150; // Trigger load when user is near the top
+            const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
+
+            if (isNearBottom && hasNewMessages) {
+                setHasNewMessages(false)
+              }
+        
+
+            setIsUserAtBottom(isNearBottom); // Update if user is at the bottom
+
+            // Load more messages if user is near the top
             if (isNearTop && hasMore && !loadingMore && !isLoadingLock) {
-    
-                // Set scroll lock immediately to prevent multiple calls
                 setIsLoadingLock(true);
                 setIsScrolling(true);
-    
+
                 if (chatContainerRef.current) {
-                    // Important: Save the exact current scroll height before loading more
                     preserveScrollPosition.current = chatContainerRef.current.scrollHeight;
                 }
-    
-                // Small delay before actual loading to ensure UI state is updated
+
                 setTimeout(() => {
-                    getUserChat(true);  // Fetch more messages
+                    getUserChat(true);  // Load more messages
                 }, 50);
             }
-    
+
             lastScrollPosition.current = scrollTop;
-        }, 150), // Increased debounce time
-        [hasMore, loading, loadingMore, isLoadingLock]
+        }, 150), // Adjust the debounce time for smooth scrolling
+        [hasMore, loading, loadingMore, isLoadingLock, hasNewMessages]
     );
+
+
+    const scrollToBottom = useCallback(
+        (smooth = true) => {
+            if (!messagesEndRef.current || isScrolling || loadingMore || isLoadingLock) return
+            // if (!isUserAtBottom) return;
+
+            try {
+                messagesEndRef.current.scrollIntoView({
+                    behavior: smooth ? "smooth" : "auto",
+                    block: "end",
+                })
+                setHasNewMessages(false);
+            } catch (error) {
+                console.error("Error scrolling to bottom:", error)
+            }
+        },
+        [isScrolling, loadingMore, isLoadingLock, isUserAtBottom],
+    )
+
 
     useEffect(() => {
         return () => {
@@ -830,33 +855,38 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
             const { scrollHeight } = chatContainerRef.current
             const previousHeight = preserveScrollPosition.current
             const newPosition = scrollHeight - previousHeight
-    
-            console.log("Adjusting scroll position:", {
-                scrollHeight,
-                previousHeight,
-                newPosition
-            });
-    
+
+
+
+            // if (newPosition > 0) {
+            //     requestAnimationFrame(() => {
+            //         if (chatContainerRef.current) {
+            //             chatContainerRef.current.scrollTop = newPosition;
+
+            //             requestAnimationFrame(() => {
+            //                 if (chatContainerRef.current) {
+            //                     const currentPos = chatContainerRef.current.scrollTop;
+            //                     if (Math.abs(currentPos - newPosition) > 10) {
+            //                         console.log("First adjustment didn't work, trying again");
+            //                         chatContainerRef.current.scrollTop = newPosition;
+            //                     }
+
+            //                     setTimeout(() => {
+            //                         setIsScrolling(false);
+            //                         console.log("Reset scrolling flag");
+            //                     }, 300);
+            //                 }
+            //             });
+            //         }
+            //     });
+            // }
+            // preserveScrollPosition.current = null;
+
+
             if (newPosition > 0) {
-                // Use requestAnimationFrame for more reliable DOM updates
                 requestAnimationFrame(() => {
                     if (chatContainerRef.current) {
                         chatContainerRef.current.scrollTop = newPosition;
-    
-                        requestAnimationFrame(() => {
-                            if (chatContainerRef.current) {
-                                const currentPos = chatContainerRef.current.scrollTop;
-                                if (Math.abs(currentPos - newPosition) > 10) {
-                                    console.log("First adjustment didn't work, trying again");
-                                    chatContainerRef.current.scrollTop = newPosition;
-                                }
-    
-                                setTimeout(() => {
-                                    setIsScrolling(false);
-                                    console.log("Reset scrolling flag");
-                                }, 300);
-                            }
-                        });
                     }
                 });
             }
@@ -867,7 +897,6 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
             // still reset the scrolling flag
             setTimeout(() => {
                 setIsScrolling(false);
-                console.log("Reset scrolling flag (no position preserved)");
             }, 200)
         }
     }, [userChat, loadingMore]);
@@ -910,6 +939,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
     const sendMessage = async () => {
         const newchatID = Number(chatID);
         setSendTextLoading(true);
+        console.log("to_id", newchatID)
 
         const localTime = new Date().toLocaleTimeString("en-US", {
             hour: "2-digit",
@@ -955,6 +985,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
 
 
             if (response.data.status == "success") {
+
                 // setUserChat(prev => [...prev, {
                 //     ...response.data.data,
                 //     local_time: new Date(response.data.data.created_at.replace(" ", "T")).toLocaleString("en-GB", {
@@ -968,16 +999,24 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                         local_time: new Date(response.data.data.created_at.replace(" ", "T") + "Z").toISOString()
                     }
                 ]);
+
                 setTextMessage('');
+
+                setSelectedImage(null)
+                setVideoPreviewUrl(null)
+                setAudioPreviewUrl(null)
+
                 setChatImg(null);
                 setChatVideo(null);
                 setChatAudio(null);
                 setSendTextLoading(false);
 
             } else {
+                console.log(response.data)
                 toast.error(response.data.message);
                 setSendTextLoading(false);
             }
+
         } catch (error) {
             toast.error("Error while sending message.");
         } finally {
@@ -985,6 +1024,46 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
         }
     };
 
+
+
+    const NewMessagesIndicator = () => {
+        return (
+            <div
+                className="new-messages-indicator position-absolute d-flex align-items-center justify-content-center"
+                style={{
+                    bottom: "85px", // Position it inside the chat window
+                    left: "51%",
+                    transform: "translateX(-50%)",
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    padding: "8px 10px",
+                    borderRadius: "20px",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+                    zIndex: 1000,
+                    cursor: "pointer",
+                }}
+                onClick={() => {
+                    scrollToBottom(true);
+                    setHasNewMessages(false);
+                }}
+            >
+                <i className="bi bi-arrow-down-circle-fill "></i>
+                {/* <span>New messages</span> */}
+            </div>
+        );
+    };
+
+      useEffect(() => {
+        const isNearBottom = chatContainerRef.current
+            ? chatContainerRef.current.scrollHeight - chatContainerRef.current.scrollTop <= chatContainerRef.current.clientHeight + 10
+            : true;
+    
+        setIsUserAtBottom(isNearBottom); // Update whether user is at the bottom
+    
+        if (isNearBottom && hasNewMessages) {
+            setHasNewMessages(false); // Reset new messages indicator if user scrolls to bottom
+        }
+    }, [userChat, hasNewMessages]);
 
 
     return (
@@ -1024,6 +1103,8 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                             </div>
                         </div>
                     )}
+
+                    {hasNewMessages && <NewMessagesIndicator />}
 
                     {/* {!loadingMore && hasMore && (
                         <div className="text-center p-2">
@@ -1082,156 +1163,157 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                                 </div>
                             </>
                         ) :
+                            userChat && userChat.length === 0 ? (
+                                <div className="text-center p-5">
+                                    <span className="bg-light px-4 py-2 rounded-pill text-muted" style={{ fontSize: "16px", fontWeight: "bold" }}>
+                                        No chats found
+                                    </span>
+                                </div>
+                            ) :
 
-                            (
-                                userChat?.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).map((chatMessage, index) => {
-                                    const isSentByUser = Number(chatMessage.from_id) === userID;
-                                    // const formattedTime = new Date(chatMessage.local_time).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" , hour12: true});
-                                    // const formattedTime = new Date(chatMessage.created_at.replace(" ", "T")).toLocaleTimeString("en-US", { 
-                                    //     hour: "2-digit", 
-                                    //     minute: "2-digit", 
-                                    //     hour12: true 
-                                    // });
+                                (
+                                    userChat?.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).map((chatMessage, index) => {
+                                        const isSentByUser = Number(chatMessage.from_id) === userID;
 
-                                    const formattedTime = chatMessage.local_time
-                                        ? new Date(chatMessage.local_time).toLocaleTimeString("en-GB", {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                            hour12: true
-                                        })
-                                        : "Time Unavailable";
-
-                                    const messageDate = new Date(chatMessage.created_at).toLocaleDateString("en-US", {
-                                        weekday: "long",
-                                        year: "numeric",
-                                        month: "short",
-                                        day: "2-digit",
-                                    });
-                                    const previousMessageDate =
-                                        index > 0
-                                            ? new Date(userChat[index - 1].created_at).toLocaleDateString("en-US", {
-                                                weekday: "long",
-                                                year: "numeric",
-                                                month: "short",
-                                                day: "2-digit",
+                                        const formattedTime = chatMessage.local_time
+                                            ? new Date(chatMessage.local_time).toLocaleTimeString("en-GB", {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true
                                             })
-                                            : null;
-                                    return (
-                                        <React.Fragment key={index}>
-                                            {messageDate !== previousMessageDate && (
-                                                <div className="text-center my-2">
-                                                    <span className="bg-light px-3 py-1 rounded-pill text-muted" style={{ fontSize: "13px" }}>{messageDate}</span>
-                                                </div>
-                                            )}
-                                            <div className={`d-flex flex-row align-items-center p-2 ${isSentByUser ? "justify-content-end" : "justify-content-start"}`}
-                                                onMouseEnter={() => setHoveredMessage(chatMessage.id)}
-                                                onMouseLeave={() => setHoveredMessage(null)}
-                                            >
-                                                {
-                                                    isSentByUser && hoveredMessage === chatMessage.id &&
-                                                    <div className="small">
+                                            : "Time Unavailable";
 
-                                                        <i className="bi bi-three-dots-vertical" data-bs-toggle="dropdown" aria-expanded="false" />
-                                                        <ul className="dropdown-menu text-center" >
-                                                            <li><button className="dropdown-item" onClick={() => {
-                                                                setShowMessageModal(true)
-                                                                setChatMessageID(chatMessage.id)
-
-                                                            }}> <span className="fw-bold small"> Delete - </span> <i className="bi bi-trash3 text-danger fs-6" /></button></li>
-                                                        </ul>
-
+                                        const messageDate = new Date(chatMessage.created_at).toLocaleDateString("en-US", {
+                                            weekday: "long",
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "2-digit",
+                                        });
+                                        const previousMessageDate =
+                                            index > 0
+                                                ? new Date(userChat[index - 1].created_at).toLocaleDateString("en-US", {
+                                                    weekday: "long",
+                                                    year: "numeric",
+                                                    month: "short",
+                                                    day: "2-digit",
+                                                })
+                                                : null;
+                                        return (
+                                            <React.Fragment key={index}>
+                                                {messageDate !== previousMessageDate && (
+                                                    <div className="text-center my-2">
+                                                        <span className="bg-light px-3 py-1 rounded-pill text-muted" style={{ fontSize: "13px" }}>{messageDate}</span>
                                                     </div>
-
-                                                }
-                                                {!isSentByUser && (
-                                                    <Image
-                                                        src={
-                                                            !chat?.avatar || chat?.avatar.trim() === ""
-                                                                ? "https://img.icons8.com/color/48/000000/circled-user-female-skin-type-7.png"
-                                                                : chat?.avatar
-                                                        }
-                                                        className="rounded-circle me-1 flex-shrink-0"
-                                                        width={25}
-                                                        height={25}
-                                                        style={{ objectFit: "cover" }}
-                                                        loader={({ src }) => src}
-                                                        alt="user-img"
-                                                    />
                                                 )}
-                                                <div
-                                                    className={`p-2  ${isSentByUser ? `${styles.bgWhite} ps-3 text-start ` : `${styles.chat} pe-4`}`}
-                                                    style={{
-                                                        borderRadius: "5px",
-                                                        background: isSentByUser ? "#FDF7F4" : "#e2ffe8",
-                                                    }}
+                                                <div className={`d-flex flex-row align-items-center p-2 ${isSentByUser ? "justify-content-end" : "justify-content-start"}`}
+                                                    onMouseEnter={() => setHoveredMessage(chatMessage.id)}
+                                                    onMouseLeave={() => setHoveredMessage(null)}
                                                 >
-                                                    <div className="row">
-                                                        {
-                                                            chatMessage.media && chatMessage.media_type == "1" ?
-                                                                <Image
-                                                                    src={chatMessage?.media}
-                                                                    className=" me-1 flex-shrink-0"
-                                                                    width={25}
-                                                                    height={55}
-                                                                    style={{ objectFit: "contain" }}
-                                                                    loader={({ src }) => src}
-                                                                    alt="chat-img"
-                                                                />
-                                                                :
-                                                                null
+                                                    {
+                                                        isSentByUser && hoveredMessage === chatMessage.id &&
+                                                        <div className="small">
 
+                                                            <i className="bi bi-three-dots-vertical" data-bs-toggle="dropdown" aria-expanded="false" style={{ cursor: "pointer" }} />
+                                                            <ul className="dropdown-menu text-center" >
+                                                                <li><button className="dropdown-item" onClick={() => {
+                                                                    setShowMessageModal(true)
+                                                                    setChatMessageID(chatMessage.id)
 
-                                                        }
+                                                                }}> <span className="fw-bold small"> Delete - </span> <i className="bi bi-trash3 text-danger fs-6" /></button></li>
+                                                            </ul>
 
-                                                        {
-                                                            chatMessage.media && chatMessage.media_type == "2" ?
-                                                                <video
-                                                                    controls
-                                                                    style={{
-                                                                        objectFit: "cover",
-                                                                        width: "100%",
-                                                                        height: "auto",
-                                                                    }}
-                                                                >
-                                                                    <source
+                                                        </div>
+
+                                                    }
+                                                    {!isSentByUser && (
+                                                        <Image
+                                                            src={
+                                                                !chat?.avatar || chat?.avatar.trim() === ""
+                                                                    ? "https://img.icons8.com/color/48/000000/circled-user-female-skin-type-7.png"
+                                                                    : chat?.avatar
+                                                            }
+                                                            className="rounded-circle me-1 flex-shrink-0"
+                                                            width={25}
+                                                            height={25}
+                                                            style={{ objectFit: "cover" }}
+                                                            loader={({ src }) => src}
+                                                            alt="user-img"
+                                                        />
+                                                    )}
+                                                    <div
+                                                        className={`p-2  ${isSentByUser ? `${styles.bgWhite} ps-3 text-start ` : `${styles.chat} pe-4`}`}
+                                                        style={{
+                                                            borderRadius: "5px",
+                                                            background: isSentByUser ? "#FDF7F4" : "#e2ffe8",
+                                                        }}
+                                                    >
+                                                        <div className="row">
+                                                            {
+                                                                chatMessage.media && chatMessage.media_type == "1" ?
+                                                                    <Image
                                                                         src={chatMessage?.media}
-                                                                        type="video/mp4"
+                                                                        className="img-fluid me-1 flex-shrink-0"
+                                                                        width={25}
+                                                                        height={25}
+                                                                        style={{ objectFit: "contain" }}
+                                                                        loader={({ src }) => src}
+                                                                        alt="chat-img"
                                                                     />
-                                                                    Your browser does not support the video tag.
-                                                                </video>
-                                                                :
-                                                                null
+                                                                    :
+                                                                    null
 
 
-                                                        }
+                                                            }
+
+                                                            {
+                                                                chatMessage.media && chatMessage.media_type == "2" ?
+                                                                    <video
+                                                                        controls
+                                                                        style={{
+                                                                            objectFit: "cover",
+                                                                            width: "100%",
+                                                                            height: "auto",
+                                                                        }}
+                                                                    >
+                                                                        <source
+                                                                            src={chatMessage?.media}
+                                                                            type="video/mp4"
+                                                                        />
+                                                                        Your browser does not support the video tag.
+                                                                    </video>
+                                                                    :
+                                                                    null
 
 
-                                                        {chatMessage.media && chatMessage.media_type == "4" && (
-                                                            <div className="media-container w-100 d-flex align-items-center">
-                                                                <audio key={chatAudio} controls className="w-100" style={{ minWidth: chatMessage.message ? "15em" : "14em", height: "30px", maxWidth: "200px" }}>
-                                                                    <source src={chatMessage?.media} type="audio/mpeg" />
-                                                                    Your browser does not support the audio tag.
-                                                                </audio>
-                                                            </div>
-                                                        )}
-                                                        <span className={chatMessage?.media ? "text-center text-muted fw-bold mt-2" : "text-muted fw-bold"}>
-                                                            {chatMessage.message}
-                                                        </span>
+                                                            }
 
+
+                                                            {chatMessage.media && chatMessage.media_type == "4" && (
+                                                                <div className="media-container w-100 d-flex align-items-center">
+                                                                    <audio key={chatAudio} controls className="w-100" style={{ minWidth: chatMessage.message ? "15em" : "14em", height: "30px", maxWidth: "200px" }}>
+                                                                        <source src={chatMessage?.media} type="audio/mpeg" />
+                                                                        Your browser does not support the audio tag.
+                                                                    </audio>
+                                                                </div>
+                                                            )}
+                                                            <span className={chatMessage?.media ? "text-center text-muted fw-bold mt-2" : "text-muted fw-bold"}>
+                                                                {chatMessage.message}
+                                                            </span>
+
+                                                        </div>
+
+
+                                                        <div className={`text-muted  mt-1 text-${isSentByUser ? "end" : "start"}`} style={{ fontSize: "10px" }}>
+                                                            {formattedTime}
+                                                        </div>
                                                     </div>
 
 
-                                                    <div className={`text-muted small mt-1 text-${isSentByUser ? "end" : "start"}`}>
-                                                        {formattedTime}
-                                                    </div>
                                                 </div>
-
-
-                                            </div>
-                                        </React.Fragment>
-                                    );
-                                })
-                            )
+                                            </React.Fragment>
+                                        );
+                                    })
+                                )
                     }
                     <div ref={messagesEndRef}></div>
                 </div>
@@ -1330,7 +1412,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                             {
                                 chatAudio ? null :
                                     <textarea
-                                        className={`form-control ${styles.formControl}`}
+                                        className={`form-control  ${styles.formControl}`}
                                         value={textMessage}
                                         onChange={(e) => setTextMessage(e.target.value)}
                                         onKeyDown={(e) => {
@@ -1340,7 +1422,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                                             }
                                         }}
                                         placeholder="Type your message..."
-                                        rows={3}
+                                        rows={2}
                                         style={{ resize: "none" }}
 
                                     ></textarea>

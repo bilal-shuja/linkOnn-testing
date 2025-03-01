@@ -89,7 +89,7 @@ export default function TimelineProfileCard({pageTimelineID}) {
                                         {
                                             userID === pageTimelineData.user_id ?
                                                 <div className="edit-btn">
-                                                    <Link href={`/pages/page/editMyPage/${pageTimelineData.id}`} className="btn btn-danger"> <i className="fa fa-pencil"></i> Edit button</Link>
+                                                    <Link href={`/pages/page/editMyPage/${pageTimelineData.id}`} className="btn btn-danger"> <i className="fa fa-pencil"></i> Edit</Link>
                                                 </div>
                                                 :
                                                 null

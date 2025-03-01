@@ -149,68 +149,29 @@ export default function sharedPosts({ sharedPost, posts, setPosts }) {
 
     return (
         <>
-
-
-
             <div className="card shadow-sm border rounded-1 my-2">
-
-                    <div className="card shadow-sm border rounded-1 my-2">
-                                            
-    
-                        <div className="card-body">
-                            <div className="d-flex align-items-center justify-content-between">
-                                <div className="d-flex align-items-center">
-
-                                    <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                                        onClick={() => handleClick(sharedPost.user.id)} >
-
-                             
-                                            <Image
-                                                className="avatar-img rounded-circle"
-                                                src={sharedPost.user.avatar || "/assets/images/userplaceholder.png"}
-                                                alt="User Avatar"
-                                                width={50}
-                                                height={50}
-                                                style={{ objectFit: 'cover' }}
-                                            />
-                                    
-
-                                        {sharedPost.user.is_verified === '1' && (
-                                            <div
-                                                className="bg-light rounded-circle d-flex align-items-center justify-content-center"
-                                                style={{
-                                                    position: 'absolute',
-                                                    bottom: '0',
-                                                    right: '0',
-                                                    width: '20px',
-                                                    height: '20px',
-                                                    fontSize: '1.2rem',
-                                                    padding: '2px',
-                                                }}
-                                            >
-                                                <i className="bi bi-check-circle-fill text-success"></i>
-                                            </div>
-                                        )}
-
-
                 <div className="card-body">
                     <div className="d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center">
-
-                            <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                                onClick={() => handleClick(sharedPost.user.id)} >
-
-                                <Link href="#">
-                                    <Image
-                                        className="avatar-img rounded-circle"
-                                        src={sharedPost.user.avatar}
-                                        alt="User Avatar"
-                                        width={50}
-                                        height={50}
-                                        style={{ objectFit: 'cover' }}
-                                    />
-                                </Link>
-
+                            <div
+                                className="avatar-container"
+                                style={{
+                                    position: 'relative',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                onClick={() => handleClick(sharedPost.user.id)}
+                            >
+                                <Image
+                                    className="avatar-img rounded-circle"
+                                    src={sharedPost.user.avatar || "/assets/images/userplaceholder.png"}
+                                    alt="User Avatar"
+                                    width={50}
+                                    height={50}
+                                    style={{ objectFit: 'cover' }}
+                                />
+    
                                 {sharedPost.user.is_verified === '1' && (
                                     <div
                                         className="bg-light rounded-circle d-flex align-items-center justify-content-center"
@@ -227,19 +188,18 @@ export default function sharedPosts({ sharedPost, posts, setPosts }) {
                                         <i className="bi bi-check-circle-fill text-success"></i>
                                     </div>
                                 )}
-
                             </div>
-
+    
                             <div className="mx-2">
                                 <h6 className="card-title">
-
                                     <span
                                         style={{ cursor: 'pointer' }}
                                         onMouseEnter={(e) => e.target.style.color = 'blue'}
                                         onMouseLeave={(e) => e.target.style.color = 'inherit'}
                                         onClick={() => router.push(`/pages/UserProfile/timeline/${sharedPost.user.id}`)}
                                     >
-                                        {sharedPost?.user.first_name} {sharedPost?.user.last_name}  {sharedPost?.post_location && sharedPost.post_location !== "" && (
+                                        {sharedPost?.user.first_name} {sharedPost?.user.last_name}{' '}
+                                        {sharedPost?.post_location && sharedPost.post_location !== "" && (
                                             <span className="text-primary ms-1">
                                                 <small className="text-dark"> is in </small>
                                                 <i className="bi bi-geo-fill"></i>
@@ -253,81 +213,57 @@ export default function sharedPosts({ sharedPost, posts, setPosts }) {
                                                 </a>
                                             </span>
                                         )}
-
-
                                     </span>
-
-                                    {
-                                        (sharedPost.group || sharedPost.page) &&
-                                        (
-
-                                            <>
-                                                <i className="bi bi-arrow-right"></i> {sharedPost?.page?.page_title}
-
-                                            </>
-                                        )
-                                    }
-
-
+                                    {sharedPost.group || sharedPost.page && (
+                                        <>
+                                            <i className="bi bi-arrow-right"></i> {sharedPost?.page?.page_title}
+                                        </>
+                                    )}
                                 </h6>
                                 <small className="text-secondary">
                                     {sharedPost.created_human} -
                                     {sharedPost.privacy === '1' && (
                                         <i className="bi bi-globe-asia-australia mx-1 text-primary"></i>
                                     )}
-
                                     {sharedPost.privacy === '2' && (
-                                        <i className=" bi bi-people-fill mx-1 text-primary"></i>
+                                        <i className="bi bi-people-fill mx-1 text-primary"></i>
                                     )}
-
                                     {sharedPost.privacy === '4' && (
-                                        <i className=" bi bi-people mx-1 text-primary"></i>
+                                        <i className="bi bi-people mx-1 text-primary"></i>
                                     )}
-
                                     {sharedPost.privacy === '5' && (
-                                        <i className=" bi bi-briefcase mx-1 text-primary"></i>
+                                        <i className="bi bi-briefcase mx-1 text-primary"></i>
                                     )}
-
                                     {sharedPost.privacy === '3' && (
-                                        <i className=" bi bi-lock-fill mx-1 text-primary"></i>
+                                        <i className="bi bi-lock-fill mx-1 text-primary"></i>
                                     )}
                                 </small>
                             </div>
                         </div>
-
-
                     </div>
-
-               
-                    {
-                      
-                        sharedPost.bg_color && (
-                            <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
-                                style={{
-                                    background: getDisplayColor(sharedPost.bg_color),
-                                    backgroundSize: sharedPost.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
-                                    backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
-                                    backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
-                                    padding: "220px 27px",
-                                }}
-                            >
-                                <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {sharedPost.post_text} </span>
-                            </div>
-                        )
-                    }
-                    {sharedPost?.post_type !== "donation" && !sharedPost.bg_color && (
-                        <span
-                            dangerouslySetInnerHTML={{ __html: sharedPost.post_text }}
-                        />
+    
+                    {sharedPost.bg_color && (
+                        <div
+                            className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
+                            style={{
+                                background: getDisplayColor(sharedPost.bg_color),
+                                backgroundSize: sharedPost.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                padding: "220px 27px",
+                            }}
+                        >
+                            <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>
+                                {sharedPost.post_text}
+                            </span>
+                        </div>
                     )}
-
-
-                    {/* {post.post_text && sharedPost?.post_type !== "donation" && !sharedPost.bg_color && (
-                                    <p className="mb-2">{sharedPost.post_text}</p>
-                                )} */}
-
+                    {sharedPost?.post_type !== "donation" && !sharedPost.bg_color && (
+                        <span dangerouslySetInnerHTML={{ __html: sharedPost.post_text }} />
+                    )}
+    
                     <PageImagesLayout key={sharedPost.id} post={sharedPost} />
-
+    
                     {sharedPost.video && (
                         <div className="media-container mt-2">
                             <video controls width="100%" style={{ borderRadius: "5px" }}>
@@ -336,7 +272,7 @@ export default function sharedPosts({ sharedPost, posts, setPosts }) {
                             </video>
                         </div>
                     )}
-
+    
                     {sharedPost.audio && (
                         <div className="media-container mt-2">
                             <audio controls className="w-100">
@@ -345,16 +281,14 @@ export default function sharedPosts({ sharedPost, posts, setPosts }) {
                             </audio>
                         </div>
                     )}
-
-
-
+    
                     {pollData && pollData.poll_options && (
                         <div className="w-100">
                             <ul className="list-unstyled">
                                 {pollData.poll_options.map((option) => {
                                     const totalVotes = pollData.poll_total_votes || 0;
                                     const percentage = totalVotes > 0 ? Math.round((option.no_of_votes / totalVotes) * 100) : 0;
-
+    
                                     return (
                                         <li key={option.id} className="mb-4 w-100">
                                             <div className="d-flex align-items-center justify-content-between">
@@ -398,6 +332,7 @@ export default function sharedPosts({ sharedPost, posts, setPosts }) {
                             </ul>
                         </div>
                     )}
+    
                     {localDonation && (
                         <div>
                             <Image
@@ -411,113 +346,84 @@ export default function sharedPosts({ sharedPost, posts, setPosts }) {
                                 }}
                                 loader={({ src }) => src}
                             />
-
+    
                             <div className="card-body text-center">
-                                <h5 className="card-title">
-                                    {localDonation.title}
-                                </h5>
-                                <p className="card-text">
-                                    {localDonation.description}
-                                </p>
+                                <h5 className="card-title">{localDonation.title}</h5>
+                                <p className="card-text">{localDonation.description}</p>
                                 <div className="progress mb-3">
-                                    <div
-                                        className="progress-bar"
-                                        role="progressbar"
-
-                            {sharedPost?.donation && (
-                                <div>
-                                    <Image
-                                        src={sharedPost?.donation?.image || "/assets/images/placeholder-image.png"}
-                                        alt={sharedPost.donation.title}
-                                        className="img-fluid d-block mx-auto"
-                                        width={400}
-                                        height={200}
-                                        style={{
-                                            width: `${(parseFloat(localDonation.collected_amount) /
-                                                parseFloat(localDonation.amount)) *
-                                                100}%`,
-                                        }}
-                                        aria-valuenow={localDonation.collected_amount}
-                                        aria-valuemin="0"
-                                        aria-valuemax={localDonation.amount}
-                                    ></div>
+                                    <div className="progress-bar" role="progressbar" />
                                 </div>
-                                <div className="d-flex align-items-center justify-content-between">
-                                    <p className="text-muted">
-                                        {localDonation.collected_amount} Collected
-                                    </p>
-                                    <p className="text-dark"> Required: <span className="fw-bold"> {localDonation.amount} </span> </p>
-
-                                    <button
-                                        className="btn btn-primary btn-sm"
-                                        onClick={() => {
-                                            setDonationModal(!donationModal)
-                                            setDonationID(localDonation.id)
-                                        }}
-                                    >
-                                        Donate
-                                    </button>
-                                </div>
+    
+                                {sharedPost?.donation && (
+                                    <div>
+                                        <Image
+                                            src={sharedPost?.donation?.image || "/assets/images/placeholder-image.png"}
+                                            alt={sharedPost.donation.title}
+                                            className="img-fluid d-block mx-auto"
+                                            width={400}
+                                            height={200}
+                                            style={{
+                                                width: `${(parseFloat(localDonation.collected_amount) /
+                                                    parseFloat(localDonation.amount)) * 100}%`,
+                                            }}
+                                            aria-valuenow={localDonation.collected_amount}
+                                            aria-valuemin="0"
+                                            aria-valuemax={localDonation.amount}
+                                        ></Image>
+    
+                                        <div className="d-flex align-items-center justify-content-between">
+                                            <p className="text-muted">{localDonation.collected_amount} Collected</p>
+                                            <p className="text-dark">
+                                                Required: <span className="fw-bold"> {localDonation.amount} </span>
+                                            </p>
+    
+                                            <button
+                                                className="btn btn-primary btn-sm"
+                                                onClick={() => {
+                                                    setDonationModal(!donationModal);
+                                                    setDonationID(localDonation.id);
+                                                }}
+                                            >
+                                                Donate
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
-
-
                 </div>
+    
+                <Modal show={donationModal} backdrop="static" keyboard={false}>
+                    <Modal.Header>
+                        <Modal.Title>Donate</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <label className="form-label">Amount</label>
+                        <input
+                            type="number"
+                            className="form-control"
+                            value={donate}
+                            onChange={donateAmount}
+                            disabled={loading}
+                        />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="primary" onClick={handleDonationSend} disabled={loading}>
+                            {loading ? (
+                                <>
+                                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                                </>
+                            ) : (
+                                "Donate"
+                            )}
+                        </Button>
+                        <Button className="bg-dark border border-0" onClick={() => setDonationModal(false)} disabled={loading}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
-
-
-
-
-
-
-
-            {/* 
-            {
-                donationModal && (
-                    <MakeDonationModal
-                        donationID={donationID}
-                        donationModal={donationModal}
-                        setDonationModal={setDonationModal}
-                        posts={posts}
-                        setPosts={setPosts}
-                    />
-                )
-
-            } */}
-
-
-
-            <Modal show={donationModal} backdrop="static" keyboard={false}>
-                <Modal.Header>
-                    <Modal.Title>Donate</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <label className="form-label">Amount</label>
-                    <input
-                        type="number"
-                        className="form-control"
-                        value={donate}
-                        onChange={donateAmount}
-                        disabled={loading}
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="primary" onClick={handleDonationSend} disabled={loading}>
-                        {loading ? (
-                            <>
-                                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-                            </>
-                        ) : (
-                            "Donate"
-                        )}
-                    </Button>
-                    <Button className="bg-dark border border-0" onClick={() => setDonationModal(false)} disabled={loading}>
-                        Close
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
         </>
-    )
+    );
 }

@@ -435,7 +435,7 @@ export default function Navbar() {
                       className="text-truncate mb-0"
                       style={{ maxWidth: "75%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}
                     >
-                      {chat?.last_message}
+                      {chat?.last_message === "" ? "Empty message": chat?.last_message}
                     </p>
                   </div>
                   <span className="text-muted ms-2 text-nowrap" style={{fontSize:"13px",  minWidth: "fit-content" }}>
