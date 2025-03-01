@@ -1,8 +1,8 @@
 "use client";
 import { use } from "react";
-import RightNav from '../../components/rightNav';
+import RightNav from '../../components/RightNav';
 import React, { useState, useEffect } from 'react';
-import TimelineProfileCard from '../../components/timelineProfileCard';
+import TimelineProfileCard from '../../components/TimelineProfileCard';
 
 export default function Followers({ params }) {
     const { Followers } = use(params);
