@@ -5,6 +5,7 @@ import createAPI from "@/app/lib/axios";
 import { toast } from "react-toastify";
 import { use } from "react";
 import Link from 'next/link';
+import Image from "next/image";
 
 export default function JobApplicantPage({ params }) {
     const router = useRouter();
@@ -81,11 +82,13 @@ export default function JobApplicantPage({ params }) {
                         {job.map((applicant) => (
                             <tr key={applicant.id}>
                                 <td>
-                                    <img
+                                    <Image
                                         src={applicant.avatar}
                                         alt={applicant.username}
+                                        height={50}
+                                        width={50}
                                         className="img-fluid rounded-circle"
-                                        style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                                        style={{objectFit: "cover" }}
                                     />
                                 </td>
                                 <td>{applicant.username}</td>

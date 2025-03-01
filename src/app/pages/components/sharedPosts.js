@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UserImagesLayout from "./userImagesLayout";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -19,6 +19,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
     const [donate, setDonate] = useState("");
     const [loading, setLoading] = useState(false);
     const [localDonation, setLocalDonation] = useState(sharedPost.donation);
+    const [userId, setUserId] = useState(null);
 
 
     const donateAmount = (e) => {
@@ -134,6 +135,13 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
     const getDisplayColor = (code) => {
         return colorMap[code] || code;
     }
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+          const storedUserId = localStorage.getItem("userid");
+          setUserId(storedUserId);
+        }
+      }, []);
 
     return (
         <>
@@ -323,7 +331,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                                     <div className="col-md-3 text-end">
                                         <Link href={`/pages/Marketplace/productdetails/${sharedPost.product.id}`}>
                                             <button className="btn btn-primary rounded-pill px-3 py-2">
-                                            Product
+                                            {userId === sharedPost.user_id ? "Edit Product" : "Buy Product"}
                                             </button>
                                         </Link>
                                     </div>

@@ -1690,14 +1690,18 @@ export default function Newsfeed() {
                                     </p>
                                   </div>
 
-                                
+
                                   <div className="col-md-3 text-end">
+
                                     <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
                                       <button className="btn btn-primary rounded-pill px-3 py-2">
-                                        Product
+                                        {userId === post.user_id ? "Edit Product" : "Buy Product"}
                                       </button>
                                     </Link>
+
                                   </div>
+
+
                                 </div>
                               </div>
                             </div>

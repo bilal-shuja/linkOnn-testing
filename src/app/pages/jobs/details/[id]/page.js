@@ -9,7 +9,6 @@ export default function JobDetailPage({ params }) {
     const router = useRouter();
     const unwrappedParams = use(params);
     const id = unwrappedParams.id;
-
     const api = createAPI();
     const [loading, setLoading] = useState(true);
     const [job, setJob] = useState(null);

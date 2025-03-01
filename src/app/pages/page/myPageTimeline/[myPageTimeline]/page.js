@@ -46,7 +46,7 @@ export default function MyPageTimeline({ params }) {
 
     const { myPageTimeline } = use(params);
 
-
+    const [userId, setUserId] = useState(null);
     const [postID, setPostID] = useState('');
     const [pageTimelineData, setPageTimelineData] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -889,6 +889,12 @@ export default function MyPageTimeline({ params }) {
 
     const getUserIdFromPages = posts.map((post) => post.page.user_id);
 
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUserId = localStorage.getItem("userid");
+            setUserId(storedUserId);
+        }
+    }, []);
 
     return (
         <>
@@ -1701,7 +1707,7 @@ export default function MyPageTimeline({ params }) {
                                                                         <div className="col-md-3 mt-4">
                                                                             <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
                                                                                 <button className="btn btn-primary rounded-pill px-3 py-2">
-                                                                                    Product
+                                                                                    {userId === post.user_id ? "Edit Product" : "Buy Product"}
                                                                                 </button>
                                                                             </Link>
                                                                         </div>

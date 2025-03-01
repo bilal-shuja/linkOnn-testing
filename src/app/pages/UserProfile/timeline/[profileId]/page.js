@@ -82,6 +82,7 @@ export default function UserProfileCard({ params }) {
     const [activeReactionPost, setActiveReactionPost] = useState(null);
 
 
+
     const fileImageRef = useRef(null);
 
     const fileVideoRef = useRef(null);
@@ -815,7 +816,6 @@ export default function UserProfileCard({ params }) {
     const getDisplayColor = (code) => {
         return colorMap[code] || code;
     };
-
 
     return (
         <>
@@ -1698,7 +1698,7 @@ export default function UserProfileCard({ params }) {
                                                                 <div className="col-md-3 text-end">
                                                                     <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
                                                                         <button className="btn btn-primary rounded-pill px-3 py-2">
-                                                                            Product
+                                                                        {userId === post.user_id ? "Edit Product" : "Buy Product"}
                                                                         </button>
                                                                     </Link>
                                                                 </div>

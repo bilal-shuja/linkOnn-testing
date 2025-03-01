@@ -5,6 +5,7 @@ import createAPI from "@/app/lib/axios";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
+import Link from "next/link";
 
 export default function MarketPlace() {
     const api = createAPI();
@@ -12,7 +13,7 @@ export default function MarketPlace() {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState("");
-    
+
     const settings = useSiteSettings();
 
     useEffect(() => {
@@ -77,16 +78,19 @@ export default function MarketPlace() {
                             {products.map((product) => (
                                 <div className="col-lg-3 col-md-4 col-sm-6 d-flex justify-content-center mb-4" key={product.id}>
                                     <div className="card border-0 shadow-sm p-3 rounded-4 text-center w-100">
-                                        <Image
-                                            src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
-                                            alt={product.product_name}
-                                            className="img-fluid rounded"
-                                            width={500}
-                                            height={300}
-                                            priority
-                                            style={{ objectFit: "cover", height: "200px" }}
-                                        />
-                                        <h6 className="mt-3 text-dark">{product.product_name}</h6>
+                                        <Link href={`/pages/Marketplace/productdetails/${product.id}`} className="text-decoration-none">
+                                            <Image
+                                                src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
+                                                alt={product.product_name}
+                                                className="img-fluid rounded"
+                                                width={500}
+                                                height={300}
+                                                priority
+                                                style={{ objectFit: "cover", height: "200px" }}
+                                            />
+
+                                            <h6 className="mt-3 text-dark">{product.product_name}</h6>
+                                        </Link>
                                     </div>
                                 </div>
                             ))}
@@ -126,16 +130,20 @@ export default function MarketPlace() {
                                     className="card border-0 shadow-lg rounded-4 overflow-hidden"
                                     style={{ transition: "transform 0.3s ease-in-out" }}
                                 >
-                                    <Image
-                                        src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
-                                        alt={product.product_name}
-                                        className="card-img-top"
-                                        width={400}
-                                        height={250}
-                                        style={{ objectFit: "cover" }}
-                                    />
+                                    <Link href={`/pages/Marketplace/productdetails/${product.id}`} className="text-decoration-none">
+                                        <Image
+                                            src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
+                                            alt={product.product_name}
+                                            className="card-img-top"
+                                            width={400}
+                                            height={250}
+                                            style={{ objectFit: "cover" }}
+                                        />
+                                    </Link>
                                     <div className="card-body text-center">
-                                        <h6 className="text-primary fw-bold">{product.product_name}</h6>
+                                        <Link href={`/pages/Marketplace/productdetails/${product.id}`} className="text-decoration-none">
+                                            <h6 className="text-primary fw-bold">{product.product_name}</h6>
+                                        </Link>
                                         <p className="text-muted small">
                                             by {product.user_info.first_name} {product.user_info.last_name} in{" "}
                                             {product.category}
