@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
- 
+import { useState } from "react";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
-   
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function AddProductForm() {
-      
     const router = useRouter();
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState("");
@@ -23,6 +21,7 @@ export default function AddProductForm() {
     const [type, setType] = useState("");
 
     const api = createAPI();
+    const settings = useSiteSettings();
 
     const handleNameChange = (e) => setProductName(e.target.value);
     const handleCategoryChange = (e) => setCategory(e.target.value);
@@ -32,7 +31,7 @@ export default function AddProductForm() {
     const handleStockChange = (e) => setStock(e.target.value);
     const handleLocationChange = (e) => setLocation(e.target.value);
     const handleTypeChange = (e) => setType(e.target.value);
-
+    
     const handleFileChange = (e) => {
         const files = e.target.files;
         if (files.length > 0) {
@@ -41,7 +40,7 @@ export default function AddProductForm() {
     };
 
     const addProduct = async () => {
-        if (!productName || !category || !price || !stock || !image ) {
+        if (!productName || !category || !price || !stock || !image) {
             setError("Please fill in all required fields!");
             return;
         }
@@ -64,8 +63,8 @@ export default function AddProductForm() {
             formData.append("price", price);
             formData.append("currency", currency);
             formData.append("units", stock);
-            formData.append("location", location)
-            formData.append("type", type)
+            formData.append("location", location);
+            formData.append("type", type);
             if (image) {
                 formData.append("images[]", image);
             }
@@ -89,9 +88,10 @@ export default function AddProductForm() {
         }
     };
 
+    if (!settings) return null;
+
     return (
         <div>
-              
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -102,9 +102,7 @@ export default function AddProductForm() {
                             <div className="card shadow-lg border-0 p-3">
                                 <div className="card-body">
                                     <h5 className="fw-bold mt-2 fs-4">Add Product</h5>
-                                    {success && (
-                                        <div className="alert alert-success mt-2">{success}</div>
-                                    )}
+                                    {success && <div className="alert alert-success mt-2">{success}</div>}
                                     {error && <p className="text-center text-danger">{error}</p>}
 
                                     <div className="mt-4 gap-3 d-flex justify-content-between">
@@ -159,17 +157,13 @@ export default function AddProductForm() {
                                                 onChange={handleCategoryChange}
                                             >
                                                 <option value="">Select Category</option>
-                                                <option value="1">Clothing</option>
-                                                <option value="2">Business & Finance</option>
-                                                <option value="3">Books & Media</option>
-                                                <option value="4">Fashion & Beauty</option>
-                                                <option value="5">Sports & Outdoors</option>
-                                                <option value="6">Toys & Games</option>
-                                                <option value="7">Automotive</option>
-                                                <option value="8">Health & Wellness</option>
-                                                <option value="9">Grocery & Food</option>
-                                                <option value="10">Home & Furniture</option>
-                                                <option value="11">ITs</option>
+                                               
+                                                {settings.product_categories &&
+                                                    Object.entries(settings.product_categories).map(([id, categoryName]) => (
+                                                        <option key={id} value={id}>
+                                                            {categoryName}
+                                                        </option>
+                                                    ))}
                                             </select>
                                         </div>
                                     </div>
@@ -193,17 +187,13 @@ export default function AddProductForm() {
                                                 onChange={handleCurrencyChange}
                                             >
                                                 <option value="">Select Currency</option>
-                                                <option value="USD">USD</option>
-                                                <option value="EUR">EUR</option>
-                                                <option value="JPY">JPY</option>
-                                                <option value="TRY">TRY</option>
-                                                <option value="GBP">GBP</option>
-                                                <option value="RUB">RUB</option>
-                                                <option value="PLN">PLN</option>
-                                                <option value="ILS">ILS</option>
-                                                <option value="BRL">BRL</option>
-                                                <option value="INR">INR</option>
-                                                <option value="PKR">PKR</option>
+                                            
+                                                {settings.currecy_array &&
+                                                    settings.currecy_array.map((currencyCode, index) => (
+                                                        <option key={index} value={currencyCode}>
+                                                            {currencyCode}
+                                                        </option>
+                                                    ))}
                                             </select>
                                         </div>
                                     </div>

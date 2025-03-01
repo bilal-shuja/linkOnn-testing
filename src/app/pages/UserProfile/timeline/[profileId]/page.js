@@ -82,6 +82,7 @@ export default function UserProfileCard({ params }) {
     const [activeReactionPost, setActiveReactionPost] = useState(null);
 
 
+
     const fileImageRef = useRef(null);
 
     const fileVideoRef = useRef(null);
@@ -800,22 +801,21 @@ export default function UserProfileCard({ params }) {
         '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
         '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
         '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
-      };
-    
-      const reverseColorMap = Object.fromEntries(
+    };
+
+    const reverseColorMap = Object.fromEntries(
         Object.entries(colorMap).map(([key, value]) => [value, key])
-      );
-    
-    
-      const handleColorSelect = (colorValue) => {
+    );
+
+
+    const handleColorSelect = (colorValue) => {
         const code = reverseColorMap[colorValue] || encodeURIComponent(colorValue);
         setColor(code);
-      };
-    
-      const getDisplayColor = (code) => {
-        return colorMap[code] || code;
-      };
+    };
 
+    const getDisplayColor = (code) => {
+        return colorMap[code] || code;
+    };
 
     return (
         <>
@@ -1695,11 +1695,10 @@ export default function UserProfileCard({ params }) {
                                                                     </p>
                                                                 </div>
 
-                                                                {/* Edit Product Button */}
                                                                 <div className="col-md-3 text-end">
-                                                                    <Link href="#">
+                                                                    <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
                                                                         <button className="btn btn-primary rounded-pill px-3 py-2">
-                                                                            Edit Product
+                                                                        {userId === post.user_id ? "Edit Product" : "Buy Product"}
                                                                         </button>
                                                                     </Link>
                                                                 </div>

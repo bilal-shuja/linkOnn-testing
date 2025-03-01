@@ -7,7 +7,6 @@ import Link from "next/link";
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import { useRouter } from "next/navigation";
-import Storycreate from "@/app/pages/storydata/createstory/page";
 import EmojiPicker from 'emoji-picker-react';
 import Image from "next/image";
 import { toast } from "react-toastify";
@@ -27,6 +26,7 @@ import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
 import Spinner from 'react-bootstrap/Spinner';
 import SharedPosts from "../components/sharedPosts";
 import { ReactionBarSelector } from '@charkour/react-reactions';
+import Stories from "../components/Stories";
 
 export default function Newsfeed() {
 
@@ -61,10 +61,6 @@ export default function Newsfeed() {
   const [repliesData, setRepliesData] = useState({});
   const [showReplyInput, setShowReplyInput] = useState({});
   const [commentreplyText, setCommentreplyText] = useState({});
-  const [stories, setStories] = useState([]);
-  const [showCarousel, setShowCarousel] = useState(false);
-  const [currentUserStories, setCurrentUserStories] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
   const [activeGreatJobId, setActiveGreatJobId] = useState(null);
@@ -234,40 +230,6 @@ export default function Newsfeed() {
   }, [page]);
 
   useEffect(() => {
-    const fetchStories = async () => {
-      try {
-        setLoading(true);
-        const response = await api.post("/api/story/get-stories");
-
-        if (response.data.code === "200") {
-          const allStories = response.data.data.flatMap((user) =>
-            user.stories.map((story) => ({
-              id: story.id,
-              username: user.username,
-              avatar: user.avatar,
-              userName: `${user.first_name} ${user.last_name}`,
-              media: story.media,
-              description: story.description,
-              userProfileImage: user.avatar,
-            }))
-          );
-          setStories(allStories);
-          setError("");
-        } else {
-          setError("Failed to load stories");
-          toast.error("Failed to load stories")
-        }
-      } catch (err) {
-        toast.error("Error fetching stories. Please try again later.")
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStories();
-  }, []);
-
-  useEffect(() => {
     const data = localStorage.getItem("userdata");
     if (data) {
       setUserdata(JSON.parse(data));
@@ -284,14 +246,6 @@ export default function Newsfeed() {
   if (!userdata) {
     return;
   }
-
-  const openStoryCarousel = (userStories, startIndex = 0) => {
-    setCurrentUserStories(userStories);
-    setCurrentIndex(startIndex);
-    setShowCarousel(true);
-  };
-
-  const closeCarousel = () => setShowCarousel(false);
 
   const handleCommentSubmit = async (postId) => {
     const comment = commentText[postId] || "";
@@ -858,250 +812,8 @@ export default function Newsfeed() {
             <div className="col-md-6 p-2">
               <div id="stories"></div>
 
-              <div className="d-flex gap-2 mb-n3">
-                <div>
-                  <Storycreate />
-                </div>
-
-                <div className="container-fluid">
-
-                  <div className="carousel">
-                    <div
-                      className="d-flex flex-nowrap overflow-auto"
-                      style={{ whiteSpace: "nowrap" }}
-                    >
-                      {stories
-                        .reduce((acc, story) => {
-                          if (
-                            !acc.some(
-                              (existing) => existing.username === story.username
-                            )
-                          ) {
-                            acc.push(story);
-                          }
-                          return acc;
-                        }, [])
-                        .map((story, index) => (
-                          <div
-                            key={story.id}
-                            className="text-center mb-3 mx-2"
-                            style={{ width: "9rem", flexShrink: 0 }}
-                            onClick={() =>
-                              openStoryCarousel(
-                                stories.filter(
-                                  (s) => s.username === story.username
-                                ),
-                                index
-                              )
-                            }
-                          >
-                            <div className="position-relative">
-                              <div
-                                className="rounded-circle border border-3 border-light position-absolute"
-                                style={{
-                                  top: "0.5rem",
-                                  left: "0.5rem",
-                                  width: "3rem",
-                                  height: "3rem",
-                                  backgroundImage: `url(${story.userProfileImage})`,
-                                  backgroundSize: "cover",
-                                  backgroundPosition: "center",
-                                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
-                                }}
-                              ></div>
-
-                              <div
-                                className="position-absolute"
-                                style={{
-                                  bottom: "0.5rem",
-                                  left: "0.5rem",
-                                }}
-                              >
-                                <p className="mb-0 text-white fw-bold">
-                                  {story.userName}
-                                </p>
-                              </div>
-
-                              <div className="story-img-container">
-                                {story.media.endsWith(".mp4") ? (
-                                  <video
-                                    className="card-img-top rounded-3"
-                                    style={{
-                                      height: "12rem",
-                                      width: "9rem",
-                                      objectFit: "cover",
-                                      borderRadius: "10px",
-                                    }}
-                                    controls={false}
-                                    onClick={(e) => {
-                                      const video = e.target;
-                                      if (video.paused) {
-                                        video.play();
-                                      } else {
-                                        video.pause();
-                                      }
-                                    }}
-                                  >
-                                    <source
-                                      src={story.media}
-                                      type="video/mp4"
-                                    />
-                                  </video>
-                                ) : (
-                                  <Image
-                                    src={story.media || "/assets/images/placeholder-image.png"}
-                                    className="card-img-top rounded-3"
-                                    alt="Story Background"
-                                    width={144}
-                                    height={192}
-                                    style={{
-                                      objectFit: "cover",
-                                      borderRadius: "10px",
-                                    }}
-                                  />
-
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  {showCarousel && (
-                    <div
-                      className="fullscreen-carousel"
-                      style={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        zIndex: 1050,
-                        background: "rgba(0, 0, 0, 0.8)",
-                      }}
-                    >
-                      <div
-                        className="container"
-                        style={{
-                          maxWidth: "100%",
-                          maxHeight: "100%",
-                          marginTop: "2rem",
-                        }}
-                      >
-                        <div
-                          id="storyCarousel"
-                          className="carousel slide"
-                          data-bs-ride="carousel"
-                        >
-                          <div className="carousel-inner">
-                            {currentUserStories.map((story, index) => (
-                              <div
-                                key={story.id}
-                                className={`carousel-item ${currentIndex === index ? "active" : ""
-                                  }`}
-                              >
-                                <div className="position-relative">
-                                  <div
-                                    className="rounded-circle border border-3 border-light position-absolute"
-                                    style={{
-                                      bottom: "1rem",
-                                      left: "50%",
-                                      transform: "translateX(-50%)",
-                                      width: "5rem",
-                                      height: "5rem",
-                                      backgroundImage: `url(${story.userProfileImage})`,
-                                      backgroundSize: "cover",
-                                      backgroundPosition: "center",
-                                      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
-                                    }}
-                                  ></div>
-
-
-                                  <div className="story-img-container">
-                                    {story.media.endsWith(".mp4") ? (
-                                      <video
-                                        className="d-block w-100"
-                                        style={{
-                                          height: "80rem",
-                                          objectFit: "cover",
-                                        }}
-                                        controls={false}
-                                      >
-                                        <source
-                                          src={story.media}
-                                          type="video/mp4"
-                                        />
-                                      </video>
-                                    ) : (
-                                      <Image
-                                        src={story.media || "/assets/images/placeholder-image.png"}
-                                        className="d-block"
-                                        alt="Story Background"
-                                        width={1200}
-                                        height={1280}
-                                        style={{
-                                          objectFit: "cover",
-                                        }}
-                                      />
-
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <button
-                            className="carousel-control-prev"
-                            type="button"
-                            data-bs-target="#storyCarousel"
-                            data-bs-slide="prev"
-                            onClick={() =>
-                              setCurrentIndex(
-                                currentIndex === 0
-                                  ? currentUserStories.length - 1
-                                  : currentIndex - 1
-                              )
-                            }
-                          >
-                            <span
-                              className="carousel-control-prev-icon"
-                              aria-hidden="true"
-                            ></span>
-                            <span className="visually-hidden">Previous</span>
-                          </button>
-                          <button
-                            className="carousel-control-next"
-                            type="button"
-                            data-bs-target="#storyCarousel"
-                            data-bs-slide="next"
-                            onClick={() =>
-                              setCurrentIndex(
-                                currentIndex === currentUserStories.length - 1
-                                  ? 0
-                                  : currentIndex + 1
-                              )
-                            }
-                          >
-                            <span
-                              className="carousel-control-next-icon"
-                              aria-hidden="true"
-                            ></span>
-                            <span className="visually-hidden">Next</span>
-                          </button>
-                        </div>
-
-                        <button
-                          className="btn btn-light position-absolute"
-                          style={{ top: "1rem", right: "1rem", zIndex: 1100 }}
-                          onClick={closeCarousel}
-                        >
-                          <i className="bi bi-x-lg"></i>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <div className=" mb-n3">
+                <Stories />
               </div>
 
               <div className="card mb-3 shadow-lg border-0 mt-3">
@@ -1507,16 +1219,16 @@ export default function Newsfeed() {
                           onClick={() => handleClick(post.user.id)}
                         >
 
-                  
-                            <Image
-                              className="avatar-img rounded-circle"
-                              src={post.user.avatar || "/assets/images/userplaceholder.png"}
-                              alt="User Avatar"
-                              width={50}
-                              height={50}
-                              style={{ objectFit: 'cover' }}
-                            />
-                     
+
+                          <Image
+                            className="avatar-img rounded-circle"
+                            src={post.user.avatar || "/assets/images/userplaceholder.png"}
+                            alt="User Avatar"
+                            width={50}
+                            height={50}
+                            style={{ objectFit: 'cover' }}
+                          />
+
 
                           {post.user.is_verified === '1' && (
                             <div
@@ -1978,14 +1690,18 @@ export default function Newsfeed() {
                                     </p>
                                   </div>
 
-                                  {/* Edit Product Button */}
+
                                   <div className="col-md-3 text-end">
-                                    <Link href="#">
+
+                                    <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
                                       <button className="btn btn-primary rounded-pill px-3 py-2">
-                                        Edit Product
+                                        {userId === post.user_id ? "Edit Product" : "Buy Product"}
                                       </button>
                                     </Link>
+
                                   </div>
+
+
                                 </div>
                               </div>
                             </div>

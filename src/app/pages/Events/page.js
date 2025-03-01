@@ -5,13 +5,14 @@ import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-   
+import moment from "moment";
 import { toast } from "react-toastify";
 import useConfirmationToast from "../Modals/useConfirmationToast";
 import Link from "next/link";
+import { Modal, Spinner } from "react-bootstrap";
 
 export default function Events() {
-    
+
   const [activeTab, setActiveTab] = useState(0);
   const [eventLoading, setEventLoading] = useState({ allEvents: false, myEvents: false });
   const [events, setEvents] = useState([]);
@@ -21,6 +22,11 @@ export default function Events() {
   const itemsPerPage = 6;
   const router = useRouter();
   const api = createAPI();
+  const [showModal, setShowModal] = useState(false);
+  const [modalAction, setModalAction] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [loading, setLoading] = useState(false);
+
 
   const fetchAllEvents = async (page) => {
     const offset = (page - 1) * itemsPerPage;
@@ -121,10 +127,51 @@ export default function Events() {
     cancelText: 'Cancel',
   });
 
+  const openModal = (action, eventId) => {
+    setModalAction(action);
+    setSelectedEvent(eventId);
+    setShowModal(true);
+  };
+
+  const handleConfirmAction = async () => {
+    setLoading(true);
+
+    try {
+      let response;
+      if (modalAction === "going") {
+        response = await api.post("/api/go-to-event", { event_id: selectedEvent });
+      } else if (modalAction === "interest") {
+        response = await api.post("/api/interest-event", { event_id: selectedEvent });
+      }
+
+      if (response.data.code === "200") {
+        toast.success(response.data.message);
+
+        setEvents((prevEvents) =>
+          prevEvents.map((event) =>
+            event.id === selectedEvent
+              ? {
+                ...event,
+                is_going: modalAction === "going" ? !event.is_going : event.is_going,
+                is_interested: modalAction === "interest" ? !event.is_interested : event.is_interested,
+              }
+              : event
+          )
+        );
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("Error");
+    } finally {
+      setLoading(false);
+      setShowModal(false);
+    }
+  };
 
   return (
     <div>
-        
+
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">
@@ -177,7 +224,7 @@ export default function Events() {
                   className={`tab-pane fade ${activeTab === 0 ? "show active" : ""}`}
                   id="suggested"
                 >
-                  <div className="card shadow-lg border-0 p-3">
+                  <div className="card shadow-lg border-0 p-3 hover-shadow transition">
                     <div className="card-body">
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4>All Events</h4>
@@ -220,29 +267,58 @@ export default function Events() {
                             <div className="row">
                               {events?.map((event) => (
                                 <div key={event.id} className="col-md-4 mb-4">
-                                  <div className="card text-center">
-                                    <Image
-                                      src={event.cover || "/assets/images/placeholder-image.png"}
-                                      alt="Event Image"
-                                      className="card-img-top mx-auto mt-3"
-                                      width={80}
-                                      height={80}
-                                      style={{
-                                        objectFit: "cover",
-                                      }}
-                                    />
+                                  <div className="row g-3">
+                                    <div className="card hover-shadow transition border-0 bg-light">
+                                      <Link href={`/pages/Events/eventDetails/${event.id}`} className="text-decoration-none">
+                                        <Image
+                                          src={event.cover || "/assets/images/placeholder-image.png"}
+                                          alt="Event Image"
+                                          className="card-img-top mx-auto mt-3"
+                                          width={80}
+                                          height={130}
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      </Link>
+                                      <div className="card-body text-center">
+                                        <h6 className="card-title mb-1">
+                                          <Link href={`/pages/Events/eventDetails/${event.id}`} className="text-decoration-none" style={{ cursor: "pointer" }}>
+                                            {event.name}
+                                          </Link>
+                                        </h6>
+                                        <p className="mb-0 small">
+                                          <i className="bi bi-calendar-check pe-1"></i>
+                                          {moment(event.start_date).format("MMM DD, YYYY")} to {moment(event.end_date).format("MMM DD, YYYY")}
+                                        </p>
+                                        <p className="small text-muted">
+                                          <i className="bi bi-geo-alt pe-1"></i>
+                                          {event.location}
+                                        </p>
 
-                                    <div className="card-body">
-                                      <h5 className="card-title mb-1">
-                                        {event.name}
-                                      </h5>
-                                      <p className="text-muted">{event.location}</p>
-                                      <div className="d-flex justify-content-around align-items-center">
-                                        <p>{event.start_date}</p>
+
+                                        <div className="d-flex justify-content-evenly">
+                                          {event.is_going ? (
+                                            <button className="btn btn-sm btn-outline-danger m-1" onClick={() => openModal("going", event.id)}>
+                                              <i className="bi bi-x-circle-fill"></i> Not Going
+                                            </button>
+                                          ) : (
+                                            <button className="btn btn-sm btn-primary m-1" onClick={() => openModal("going", event.id)}>
+                                              <i className="bi bi-check-circle-fill"></i> Going
+                                            </button>
+                                          )}
+
+                                          {event.is_interested ? (
+                                            <button className="btn btn-sm btn-outline-danger m-1" onClick={() => openModal("interest", event.id)}>
+                                              <i className="bi bi-hand-thumbs-down-fill"></i> Not Interested
+                                            </button>
+                                          ) : (
+                                            <button className="btn btn-sm btn-success m-1" onClick={() => openModal("interest", event.id)}>
+                                              <i className="bi bi-hand-thumbs-up"></i> Interested
+                                            </button>
+                                          )}
+
+                                        </div>
+
                                       </div>
-                                      <button className="btn btn-outline-success mt-3">
-                                        {event.is_going ? "Going" : "Join"}
-                                      </button>
                                     </div>
                                   </div>
                                 </div>
@@ -300,7 +376,7 @@ export default function Events() {
                   className={`tab-pane fade ${activeTab === 1 ? "show active" : ""}`}
                   id="my-events"
                 >
-                  <div className="card shadow-lg border-0 p-3">
+                  <div className="card hover-shadow transition shadow-lg border-0 p-3">
                     <div className="card-body">
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4>My Events</h4>
@@ -339,52 +415,39 @@ export default function Events() {
                             </div>
                           ) : (
                             myEvents.map((event) => (
-                              <div key={event.id} className="col-md-4  mb-4">
+                              <div key={event.id} className="col-md-4 mb-4">
                                 <div className="row g-3">
-                                  <div className="card">
-                                    <Image
-                                      src={event.cover || "/assets/images/placeholder-image.png"}
-                                      alt="Event Image"
-                                      className="card-img-top mx-auto mt-3"
-                                      width={80}
-                                      height={130}
-                                      style={{
-                                        // objectFit: "cover",
-                                      }}
-                                    />
+                                  <div className="card hover-shadow transition border-0 bg-light">
+                                    <Link href={`/pages/Events/eventDetails/${event.id}`} className="text-decoration-none">
+                                      <Image
+                                        src={event.cover || "/assets/images/placeholder-image.png"}
+                                        alt="Event Image"
+                                        className="card-img-top mx-auto mt-3"
+                                        width={80}
+                                        height={130}
+                                        style={{ cursor: "pointer" }}
+                                      />
+                                    </Link>
                                     <div className="card-body text-center">
                                       <h6 className="card-title mb-1">
-                                        {event.name}
-                                      </h6>
-                                      <p className="mb-0 small"><i className="bi bi-calendar-check pe-1"></i>{event.start_date} {event.start_time} {event.end_date} {event.end_time}</p>
-                                      <p className="small text-muted">
-                                      <i className="bi bi-geo-alt pe-1"></i>
-                                        {event.location}</p>
-                                      <div className="d-flex justify-content-between">
-
-                                      <Link
-                                          className="btn btn-sm btn-outline-primary mt-2" 
-
-                                          href={`/pages/Events/eventDetails/${event.id}`}
-                                        >
-                                         <i className="bi bi-card-checklist"></i>
-                                         &nbsp;Details
+                                        <Link href={`/pages/Events/eventDetails/${event.id}`} className="text-decoration-none" style={{ cursor: "pointer" }}>
+                                          {event.name}
                                         </Link>
-
-                                      <Link
-                                          className="btn btn-sm btn-outline-info mt-2"
-
-                                          href={`/pages/Events/editEvent/${event.id}`}
-                                        
-                                        >
+                                      </h6>
+                                      <p className="mb-0 small">
+                                        <i className="bi bi-calendar-check pe-1"></i>
+                                        {moment(event.start_date).format("MMM DD, YYYY")} to {moment(event.end_date).format("MMM DD, YYYY")}
+                                      </p>
+                                      <p className="small text-muted">
+                                        <i className="bi bi-geo-alt pe-1"></i>
+                                        {event.location}
+                                      </p>
+                                      <div className="d-flex justify-content-evenly">
+                                        <Link className="btn btn-sm btn-outline-info mt-2" href={`/pages/Events/editEvent/${event.id}`}>
                                           <i className="bi bi-pencil"></i>
                                           &nbsp;Edit
                                         </Link>
-
-                                        <button
-                                          className="btn btn-sm btn-outline-danger mt-2"
-                                          onClick={() => handleDeleteEvent(event.id)}
-                                        >
+                                        <button className="btn btn-sm btn-outline-danger mt-2" onClick={() => handleDeleteEvent(event.id)}>
                                           <i className="bi bi-trash"></i>
                                           Delete
                                         </button>
@@ -444,7 +507,31 @@ export default function Events() {
             </div>
           </div>
         </div>
+
+        <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+          <Modal.Body className="text-center">
+            <i className="bi bi-exclamation-square text-info pe-3"></i>
+            Are you sure you want to perform this action?
+          </Modal.Body>
+          <Modal.Footer>
+            <button className="btn btn-sm btn-primary ps-4 pe-4" onClick={handleConfirmAction} disabled={loading}>
+              {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Yes"}
+            </button>
+            <button className="btn btn-sm btn-secondary ps-4 pe-4" onClick={() => setShowModal(false)} disabled={loading}>
+              Cancel
+            </button>
+          </Modal.Footer>
+        </Modal>
       </div>
+
+      <style jsx>{`
+        .hover-shadow:hover {
+          box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+        .transition {
+          transition: all 0.3s ease;
+        }
+      `}</style>
     </div>
   );
 }

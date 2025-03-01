@@ -1558,14 +1558,11 @@ export default function GroupTimeline({ params }) {
                                                                     </p>
                                                                 </div>
 
-                                                                {/* Edit Product Button */}
-                                                                <div className="col-md-3 text-end">
-                                                                    <Link href="#">
-                                                                        <button className="btn btn-primary rounded-pill px-3 py-2">
-                                                                            Edit Product
-                                                                        </button>
-                                                                    </Link>
-                                                                </div>
+                                                                <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
+                                                                    <button className="btn btn-primary rounded-pill px-3 py-2">
+                                                                    {userId === post.user_id ? "Edit Product" : "Buy Product"}
+                                                                    </button>
+                                                                </Link>
                                                             </div>
                                                         </div>
                                                     </div>

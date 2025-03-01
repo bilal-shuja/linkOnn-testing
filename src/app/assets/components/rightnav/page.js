@@ -82,25 +82,6 @@ export default function Leftnav() {
                   </Link>
 
                   <div className="mt-3">
-                    {/* <div className="d-flex justify-content-around">
-                      <Link href="#" className="text-decoration-none text-secondary">
-                        About Us
-                      </Link>
-                      <Link href="#" className="text-decoration-none text-secondary">
-                        Settings
-                      </Link>
-                      <Link href="#" className="text-decoration-none text-secondary">
-                        Support
-                      </Link>
-                    </div>
-                    <div className="d-flex justify-content-around mt-2">
-                      <Link href="#" className="text-decoration-none text-secondary">
-                        Terms & Conditions
-                      </Link>
-                      <Link href="#" className="text-decoration-none text-secondary">
-                        Privacy Policy
-                      </Link>
-                    </div> */}
                     <div className="text-center mt-2">
                       <Link href="#" className="text-decoration-none text-secondary">
                         ©2025 linkon

@@ -1,9 +1,9 @@
 "use client";
 
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Image from "next/image";
-   
+import ChatWindow from "@/app/pages/Chat/ChatWindow/ChatWindow";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Link from "next/link";
@@ -11,14 +11,15 @@ import useConfirmationToast from "../../Modals/useConfirmationToast";
 import { toast } from "react-toastify";
 
 export default function BloodReqs() {
-      
+
     const [bloodreqs, setBloodreqs] = useState([]);
     const [userdata, setUserdata] = useState(null);
     const api = createAPI();
+    const [selectedChat, setSelectedChat] = useState(null);
 
     const fetchDonors = async () => {
         try {
-            const response = await api.post(`/api/get-blood-request`, { limit: 20 });
+            const response = await api.post(`/api/get-blood-request`, { limit: 50 });
             if (response.data.code === "200") {
                 setBloodreqs(response.data.data);
             } else {
@@ -39,6 +40,10 @@ export default function BloodReqs() {
             setUserdata(JSON.parse(data));
         }
     }, []);
+
+    const toggleChatWindow = (chat) => {
+        setSelectedChat(chat);
+    };
 
     const handleDeleteReq = async (requestId) => {
         try {
@@ -68,7 +73,7 @@ export default function BloodReqs() {
 
     return (
         <div>
-              
+
             <div className="container-fluid bg-light">
                 <div className="container mt-5 pt-5">
                     <div className="row">
@@ -128,7 +133,9 @@ export default function BloodReqs() {
                                                                         <i className="bi bi-trash3"></i> Delete
                                                                     </button>
                                                                 ) : (
-                                                                    <button className="btn btn-success">
+                                                                    <button className="btn btn-success"
+                                                                        onClick={() => toggleChatWindow(req.user_id)}
+                                                                    >
                                                                         <i className="bi bi-chat-dots"></i> Message
                                                                     </button>
                                                                 )}
@@ -145,6 +152,9 @@ export default function BloodReqs() {
                     </div>
                 </div>
             </div>
+            {selectedChat && (
+                <ChatWindow chat={selectedChat} onClose={() => setSelectedChat(null)} />
+            )}
         </div>
     );
 }

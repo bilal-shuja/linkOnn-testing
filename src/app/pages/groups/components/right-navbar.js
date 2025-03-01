@@ -109,7 +109,6 @@ const RightNavbar = ({ group_id }) => {
             if (response.data.code === "200") {
                 toast.success(response.data.message);
 
-                // 🔥 Update the UI immediately after a successful join
                 setSuggessList((prevGroups) =>
                     prevGroups.map((group) =>
                         group.id === groupToJoin ? { ...group, is_joined: "1" } : group

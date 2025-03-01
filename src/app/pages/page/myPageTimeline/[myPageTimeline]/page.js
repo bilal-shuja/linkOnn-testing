@@ -46,7 +46,7 @@ export default function MyPageTimeline({ params }) {
 
     const { myPageTimeline } = use(params);
 
-
+    const [userId, setUserId] = useState(null);
     const [postID, setPostID] = useState('');
     const [pageTimelineData, setPageTimelineData] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -889,6 +889,12 @@ export default function MyPageTimeline({ params }) {
 
     const getUserIdFromPages = posts.map((post) => post.page.user_id);
 
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUserId = localStorage.getItem("userid");
+            setUserId(storedUserId);
+        }
+    }, []);
 
     return (
         <>
@@ -1253,16 +1259,16 @@ export default function MyPageTimeline({ params }) {
                                                         <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                                             onClick={() => handleClick(post.user.id)} >
 
-                                                          
-                                                                <Image
-                                                                    className="avatar-img rounded-circle"
-                                                                    src={post.user.avatar || "/assets/images/userplaceholder.png"}
-                                                                    alt="User Avatar"
-                                                                    width={50}
-                                                                    height={50}
-                                                                    style={{ objectFit: 'cover' }}
-                                                                />
-                                                         
+
+                                                            <Image
+                                                                className="avatar-img rounded-circle"
+                                                                src={post.user.avatar || "/assets/images/userplaceholder.png"}
+                                                                alt="User Avatar"
+                                                                width={50}
+                                                                height={50}
+                                                                style={{ objectFit: 'cover' }}
+                                                            />
+
 
                                                             {post.user.is_verified === '1' && (
                                                                 <div
@@ -1699,8 +1705,10 @@ export default function MyPageTimeline({ params }) {
                                                                             <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
                                                                         </div>
                                                                         <div className="col-md-3 mt-4">
-                                                                            <Link href="#" >
-                                                                                <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
+                                                                            <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
+                                                                                <button className="btn btn-primary rounded-pill px-3 py-2">
+                                                                                    {userId === post.user_id ? "Edit Product" : "Buy Product"}
+                                                                                </button>
                                                                             </Link>
                                                                         </div>
                                                                     </div>

@@ -6,7 +6,7 @@ import createAPI from "@/app/lib/axios";
 import { toast } from "react-toastify";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
-
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function EditJob({ params }) {
 
@@ -33,7 +33,7 @@ export default function EditJob({ params }) {
     const [isActive, setIsActive] = useState("0");
     const [isUrgentHiring, setIsUrgentHiring] = useState("0")
 
-
+    const settings = useSiteSettings();
 
 
     function fetchSpecificJob() {
@@ -94,7 +94,7 @@ export default function EditJob({ params }) {
         if (companyName) formData.append("company_name", companyName);
         if (currency) formData.append("currency", currency);
 
-        
+
         if (isActive) formData.append("is_active", isActive);
 
         if (isUrgentHiring) formData.append("is_urgent_hiring", isUrgentHiring);
@@ -140,8 +140,7 @@ export default function EditJob({ params }) {
 
 
 
-
-
+    if (!settings) return null;
 
     return (
         <>
@@ -199,23 +198,18 @@ export default function EditJob({ params }) {
                                         </div>
                                         <div className="col-sm-6">
                                             <label className="form-label">Currency</label>
-                                            <select className="form-control" id="currency" name="currency"
-                                               value={currency || specificJobDetails.currency || ''}
+                                            <select
+                                                className="form-select bg-light"
+                                                aria-label="Default select example"
+                                                value={currency || specificJobDetails.currency || ''}
                                                 onChange={(e) => setCurrency(e.target.value)}
-
-
                                             >
-                                                <option value="USD">USD</option>
-                                                <option value="EUR">EUR</option>
-                                                <option value="JPY">JPY</option>
-                                                <option value="TRY">TRY</option>
-                                                <option value="GBP">GBP</option>
-                                                <option value="RUB">RUB</option>
-                                                <option value="PLN">PLN</option>
-                                                <option value="ILS">ILS</option>
-                                                <option value="BRL">BRL</option>
-                                                <option value="INR">INR</option>
-                                                <option value="PKR">PKR</option>
+                                                <option value="">Select Currency</option>
+                                                {settings?.currecy_array?.map((cur, index) => (
+                                                    <option key={index} value={cur}>
+                                                        {cur}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
                                     </div>
@@ -260,49 +254,16 @@ export default function EditJob({ params }) {
                                                 setJobSelectedCategory(e.target.value);
                                             }}
                                         >
-                                            {/* <option disabled>Select Category</option> */}
+
                                             {jobCategories?.map((jobCate) => (
                                                 <option key={jobCate.id} value={jobCate.id}>
                                                     {jobCate.name}
                                                 </option>
                                             ))}
-                                            {/* 
-                            <option value={1}>Healthcares</option>
-                            <option value={2}>Government</option>
-                            <option value={3}>Science and Research</option>
-                            <option value={4}>Information Technology</option>
-                            <option value={5}>Transportation</option>
-                            <option value={6}>Education</option>
-                            <option value={7}>Finance</option>
-                            <option value={8}>Sales</option>
-                            <option value={9}>Engineering</option>
-                            <option value={10}>Hospitality</option>
-                            <option value={11}>Retail</option>
-                            <option value={12}>Human Resources</option>
-                            <option value={13}>Construction</option>
-                            <option value={14}>Marketing</option>
-                            <option value={15}>Legal</option>
-                            <option value={16}>Customer Service</option>
-                            <option value={17}>Design</option>
-                            <option value={18}>Media and Entertainment</option>
-                            <option value={19}>Agriculture and Forestry</option>
-                            <option value={20}>Arts and Culture</option>
-                            <option value={21}>Real Estate</option>
-                            <option value={22}>Manufacturing</option>
-                            <option value={23}>Environmental</option>
-                            <option value={24}>Non-Profit and Social Services</option>
-                            <option value={25}>Telecommunications</option>
-                            <option value={26}>Sports and Recreation</option>
-                            <option value={27}>Travel and Tourism</option>
-                            <option value={28}>Food Services</option>
-                            <option value={29}>Beauty and Wellness</option>
-                            <option value={30}>Security and Law Enforcement</option>
-                            <option value={31}>Writer</option>
-                            <option value={32}>test</option>
-                            <option value={33}>testing</option> */}
+
 
                                         </select>
-                                        {/* <div className="invalid-feedback">Please select a category</div> */}
+
                                     </div>
                                     <div className="col-12 mb-2">
                                         <label className="form-label">Company Name</label>
@@ -360,7 +321,7 @@ export default function EditJob({ params }) {
 
 
                                     <div className="col-12 text-end">
-                                    <Link href="/pages/jobs" className="btn btn-danger me-2">Cancel</Link>
+                                        <Link href="/pages/jobs" className="btn btn-danger me-2">Cancel</Link>
                                         <button type="submit" className="btn btn-primary mb-0"
                                             onClick={updateJobDetails}
                                         >Update Job </button>
