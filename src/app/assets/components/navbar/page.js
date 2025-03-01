@@ -22,48 +22,54 @@ export default function Navbar() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChatID, setSelectedChatID] = useState(null);
 
   const settings = useSiteSettings();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        setLoadingNotifications(true);
-        const response = await api.post(`/api/notifications/new`);
-        if (response.data.code === "200") {
-          setNotifications(response.data.data);
-        } else {
-          setError(response.data.message);
-        }
-      } catch (error) {
-        setError("Error fetching notifications");
-      } finally {
-        setLoadingNotifications(false);
-      }
-    };
 
+
+
+  const fetchNotifications = async () => {
+    try {
+      setLoadingNotifications(true);
+      const response = await api.post(`/api/notifications/new`);
+      if (response.data.code === "200") {
+        setNotifications(response.data.data);
+      } else {
+        setError(response.data.message);
+      }
+    } catch (error) {
+      setError("Error fetching notifications");
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  useEffect(() => {
     fetchNotifications();
   }, []);
 
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        setLoadingChats(true);
-        const response = await api.post("/api/chat/get-all-chats");
 
-        if (response.data.status === "200") {
-          setChats(response.data.data);
-        } else {
-          setError("Failed to load chats.");
-        }
-      } catch (err) {
-        setError("Error fetching chats. Please try again later.");
-      } finally {
-        setLoadingChats(false);
+
+  const fetchChats = async () => {
+    try {
+      setLoadingChats(true);
+      const response = await api.post("/api/chat/get-all-chats");
+
+      if (response.data.status === "200") {
+        setChats(response.data.data);
+      } else {
+        setError("Failed to load chats.");
       }
-    };
+    } catch (err) {
+      setError("Error fetching chats. Please try again later.");
+    } finally {
+      setLoadingChats(false);
+    }
+  };
 
+  useEffect(() => {
     fetchChats();
   }, []);
 
@@ -88,10 +94,12 @@ export default function Navbar() {
 
   const toggleOffcanvas = () => {
     setIsOffcanvasOpen(!isOffcanvasOpen);
+    fetchChats();
   };
 
-  const toggleChatWindow = (chat) => {
+  const toggleChatWindow = (chat, chatID) => {
     setSelectedChat(chat);
+    setSelectedChatID(chatID)
     setIsOffcanvasOpen(!isOffcanvasOpen);
   };
 
@@ -402,6 +410,8 @@ export default function Navbar() {
           )}
 
           {chats.length > 0 ? (
+
+            
             chats?.map((chat) => (
 
 
@@ -409,7 +419,7 @@ export default function Navbar() {
                 key={chat.id}
                 className="d-flex align-items-center p-2 bg-light rounded-3 mb-2"
                 style={{ cursor: "pointer" }}
-                onClick={() => toggleChatWindow(chat)}
+                onClick={() => toggleChatWindow(chat , chat.id)}
               >
                 <Image
                   src={chat.avatar || "/assets/images/userplaceholder.png"}
@@ -435,7 +445,7 @@ export default function Navbar() {
                       className="text-truncate mb-0"
                       style={{ maxWidth: "75%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}
                     >
-                      {chat?.last_message}
+                      {chat?.last_message === "" ? "Empty message": chat?.last_message}
                     </p>
                   </div>
                   <span className="text-muted ms-2 text-nowrap" style={{ fontSize: "13px", minWidth: "fit-content" }}>
@@ -452,7 +462,7 @@ export default function Navbar() {
         </div>
       </div>
       {selectedChat && (
-        <ChatWindow chat={selectedChat} onClose={() => setSelectedChat(null)} />
+        <ChatWindow chat={selectedChat} chatID = {selectedChatID} onClose={() => setSelectedChat(null)} />
       )}
     </>
   );
