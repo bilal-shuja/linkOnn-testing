@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 
 
 export default function OpenPostInNewTab({ params }) {
+ 
     const api = createAPI();
     const router = useRouter();
 
@@ -533,36 +534,33 @@ export default function OpenPostInNewTab({ params }) {
                         <div className="col-md-3 p-3">
                             <Rightnav />
                         </div>
-
+    
                         <div className="col-md-9 p-3 mt-2">
-
-
                             {posts?.map((post, index) => {
-
-
-
                                 return (
-
                                     <div key={`${post.id}-${index}`} className="card shadow-lg border-0 rounded-1 mb-2">
-                                        <div className="card-body" >
-
+                                        <div className="card-body">
                                             <div className="d-flex align-items-center justify-content-between">
                                                 <div className="d-flex align-items-center">
-
-                                                    <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                                                        onClick={() => handleClick(post.user.id)} >
-
-                                                       
-                                                            <Image
-                                                                className="avatar-img rounded-circle"
-                                                                src={post.user.avatar || "/assets/images/userplaceholder.png"}
-                                                                alt="User Avatar"
-                                                                width={50}
-                                                                height={50}
-                                                                style={{ objectFit: 'cover' }}
-                                                            />
-                                                      
-
+                                                    <div
+                                                        className="avatar-container"
+                                                        style={{
+                                                            position: 'relative',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                        }}
+                                                        onClick={() => handleClick(post.user.id)}
+                                                    >
+                                                        <Image
+                                                            className="avatar-img rounded-circle"
+                                                            src={post.user.avatar || "/assets/images/userplaceholder.png"}
+                                                            alt="User Avatar"
+                                                            width={50}
+                                                            height={50}
+                                                            style={{ objectFit: 'cover' }}
+                                                        />
+    
                                                         {post.user.is_verified === '1' && (
                                                             <div
                                                                 className="bg-light rounded-circle d-flex align-items-center justify-content-center"
@@ -579,22 +577,20 @@ export default function OpenPostInNewTab({ params }) {
                                                                 <i className="bi bi-check-circle-fill text-success"></i>
                                                             </div>
                                                         )}
-
                                                     </div>
-
+    
                                                     <div className="mx-2">
                                                         <h6 className="card-title">
-
                                                             <span
                                                                 style={{ cursor: 'pointer' }}
                                                                 onMouseEnter={(e) => e.target.style.color = 'blue'}
                                                                 onMouseLeave={(e) => e.target.style.color = 'inherit'}
                                                                 onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
                                                             >
-                                                                {post?.user.first_name} {post?.user.last_name}  {post?.post_location && post.post_location !== "" && (
+                                                                {post?.user.first_name} {post?.user.last_name}{' '}
+                                                                {post?.post_location && post.post_location !== "" && (
                                                                     <span className="text-primary ms-1">
                                                                         <small className="text-dark"> is in </small>
-                                                                        {/* {post.post_location} */}
                                                                         <i className="bi bi-geo-fill"></i>
                                                                         <a
                                                                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post?.post_location)}`}
@@ -608,34 +604,32 @@ export default function OpenPostInNewTab({ params }) {
                                                                 )}
                                                             </span>
                                                             <i className="bi bi-arrow-right"></i> {pageTimelineData?.page_title}
-
-
                                                         </h6>
                                                         <small className="text-secondary">
                                                             {post.created_human} -
                                                             {post.privacy === '1' && (
                                                                 <i className="bi bi-globe-asia-australia mx-1 text-primary"></i>
                                                             )}
-
+    
                                                             {post.privacy === '2' && (
                                                                 <i className=" bi bi-people-fill mx-1 text-primary"></i>
                                                             )}
-
+    
                                                             {post.privacy === '4' && (
                                                                 <i className=" bi bi-people mx-1 text-primary"></i>
                                                             )}
-
+    
                                                             {post.privacy === '5' && (
                                                                 <i className=" bi bi-briefcase mx-1 text-primary"></i>
                                                             )}
-
+    
                                                             {post.privacy === '3' && (
                                                                 <i className=" bi bi-lock-fill mx-1 text-primary"></i>
                                                             )}
                                                         </small>
                                                     </div>
                                                 </div>
-
+    
                                                 <div className="dropstart">
                                                     <button
                                                         className="btn border-0"
@@ -650,195 +644,154 @@ export default function OpenPostInNewTab({ params }) {
                                                         className="dropdown-menu dropdown-menu-light"
                                                         aria-labelledby="dropdownMenuButton2"
                                                     >
-                                                        {
-                                                            userID && post?.user?.id === userID ?
-                                                                <>
-                                                                    <li className="align-items-center d-flex">
-                                                                        <button
-                                                                            className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
-                                                                            onClick={() => {
-                                                                                setShowEnableDisableCommentsModal(true)
-                                                                                setPostID(post.id)
-
-                                                                            }}
-                                                                        >
-                                                                            {
-                                                                                post.comments_status === '1' ?
-                                                                                    <>
-                                                                                        <i className="bi bi-chat-left-text "></i> <span>Disable Comments</span>
-                                                                                    </>
-                                                                                    :
-                                                                                    <>
-                                                                                        <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>
-                                                                                    </>
-
-
-                                                                            }
-
-                                                                        </button>
-                                                                    </li>
-                                                                    <li>
-                                                                    </li><li className=" align-items-center d-flex">
-                                                                        <button
-                                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                                            onClick={() => {
-                                                                                setShowEditPostModal(true)
-                                                                                setPostID({ id: post.id, post_text: post.post_text })
-
-                                                                            }}
-                                                                        >
-                                                                            <i className="bi bi-pencil-fill"></i> Edit Post
-                                                                        </button>
-                                                                    </li>
-                                                                </>
-                                                                :
-
-                                                                (
-                                                                    <>
-                                                                        <li className="align-items-center d-flex">
-                                                                            <button
-                                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                                onClick={() => {
-                                                                                    setShowSavePostModal(true);
-                                                                                    setPostID(post.id);
-                                                                                }}
-                                                                            >
-
-                                                                                {post.is_saved === false ?
-                                                                                    <>
-                                                                                        <i className="bi bi-bookmark"></i> Save
-                                                                                        post
-                                                                                    </>
-                                                                                    :
-                                                                                    <>
-                                                                                        <i className="bi bi-bookmark-fill"></i> Un save
-                                                                                        post
-                                                                                    </>}
-                                                                            </button>
-                                                                        </li>
-                                                                        <li>
-                                                                            <hr className="dropdown-divider" />
-                                                                        </li><li className=" align-items-center d-flex">
-                                                                            <button
-                                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                                onClick={() => {
-                                                                                    setShowReportPostModal(true)
-                                                                                    setPostID(post.id)
-
-                                                                                }}
-                                                                            >
-                                                                                <i className="bi bi-flag"></i> Report Post
-                                                                            </button>
-                                                                        </li>
-                                                                    </>
-                                                                )
-
-
-                                                        }
-
-
-
-
-                                                        {post?.user?.id == userID && (
+                                                        {userID && post?.user?.id === userID ? (
+                                                            <>
+                                                                <li className="align-items-center d-flex">
+                                                                    <button
+                                                                        className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
+                                                                        onClick={() => {
+                                                                            setShowEnableDisableCommentsModal(true);
+                                                                            setPostID(post.id);
+                                                                        }}
+                                                                    >
+                                                                        {post.comments_status === '1' ? (
+                                                                            <>
+                                                                                <i className="bi bi-chat-left-text "></i> <span>Disable Comments</span>
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <i className="bi bi-chat-left-text-fill "></i> <span>Enable Comments</span>
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                </li>
+                                                                <li className="align-items-center d-flex">
+                                                                    <button
+                                                                        className="text-decoration-none dropdown-item text-secondary"
+                                                                        onClick={() => {
+                                                                            setShowEditPostModal(true);
+                                                                            setPostID({ id: post.id, post_text: post.post_text });
+                                                                        }}
+                                                                    >
+                                                                        <i className="bi bi-pencil-fill"></i> Edit Post
+                                                                    </button>
+                                                                </li>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <li className="align-items-center d-flex">
+                                                                    <button
+                                                                        className="text-decoration-none dropdown-item text-secondary"
+                                                                        onClick={() => {
+                                                                            setShowSavePostModal(true);
+                                                                            setPostID(post.id);
+                                                                        }}
+                                                                    >
+                                                                        {post.is_saved === false ? (
+                                                                            <>
+                                                                                <i className="bi bi-bookmark"></i> Save post
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <i className="bi bi-bookmark-fill"></i> Un save post
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                </li>
+                                                                <li>
+                                                                    <hr className="dropdown-divider" />
+                                                                </li>
+                                                                <li className="align-items-center d-flex">
+                                                                    <button
+                                                                        className="text-decoration-none dropdown-item text-secondary"
+                                                                        onClick={() => {
+                                                                            setShowReportPostModal(true);
+                                                                            setPostID(post.id);
+                                                                        }}
+                                                                    >
+                                                                        <i className="bi bi-flag"></i> Report Post
+                                                                    </button>
+                                                                </li>
+                                                            </>
+                                                        )}
+    
+                                                        {post?.user?.id === userID && (
                                                             <li className="align-items-center d-flex">
                                                                 <button
                                                                     className="btn dropdown-item text-secondary"
                                                                     onClick={() => handlePostDelete(post.id)}
                                                                 >
-                                                                    <i className="bi bi-trash3 pe-2"></i>
-                                                                    Delete Post
+                                                                    <i className="bi bi-trash3 pe-2"></i> Delete Post
                                                                 </button>
                                                             </li>
                                                         )}
-
+    
                                                         <hr className="dropdown-divider" />
-
-
-                                                        <li className=" align-items-center d-flex">
+                                                        <li className="align-items-center d-flex">
                                                             <Link
                                                                 className="text-decoration-none dropdown-item text-secondary"
                                                                 href={`/pages/page/openPostInNewTab/${post.id}`}
-                                                                target="_blank" rel="noopener noreferrer"
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
                                                             >
                                                                 <i className="bi bi-box-arrow-up-right pe-2"></i>
                                                                 Open post in new tab
                                                             </Link>
                                                         </li>
-
-
-
                                                     </ul>
                                                 </div>
-
-
                                             </div>
-
+    
                                             <hr className="my-2 text-muted" />
-
+    
                                             {post?.post_type !== "donation" && !post.bg_color && (
-                                                <span
-                                                    dangerouslySetInnerHTML={{ __html: post.post_text }}
-                                                />
+                                                <span dangerouslySetInnerHTML={{ __html: post.post_text }} />
                                             )}
-
-
-                                            {/* shared post check from here..  */}
+    
                                             {post.parent_id !== "0" && !post.shared_post && (
-                                                    <div className="alert alert-warning" role="alert">
-                                                        <strong>This content is not available</strong>
-                                                        <div className="mb-0" style={{ fontSize: "14px" }}>
-                                                            This content isn't available right now. When this happens, it's usually because the owner
-                                                            only shared it with a small group of people, changed who can see it, or it's been deleted.
-                                                        </div>
+                                                <div className="alert alert-warning" role="alert">
+                                                    <strong>This content is not available</strong>
+                                                    <div className="mb-0" style={{ fontSize: "14px" }}>
+                                                        This content isn't available right now. When this happens, it's usually because the owner
+                                                        only shared it with a small group of people, changed who can see it, or it's been deleted.
                                                     </div>
-                                                )}
-
-
-                                            {post.shared_post === null ?
+                                                </div>
+                                            )}
+    
+                                            {post.shared_post === null ? (
                                                 <>
-
-                                                    {
-
-                                                        post.bg_color && (
-                                                            <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
-                                                                style={{
-                                                                    background: getDisplayColor(post.bg_color),
-                                                                    backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
-                                                                    backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
-                                                                    backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
-                                                                    padding: "220px 27px",
-                                                                }}
-                                                            >
-                                                                <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
-                                                            </div>
-                                                        )
-                                                    }
-
-
-                                                    {
-                                                        post?.images && post?.images.length > 0 && (
-                                                            <UserImagesLayout key={`${post.id}-${index}`} post={post} />
-                                                        )
-                                                    }
-
-
-
-
+                                                    {post.bg_color && (
+                                                        <div
+                                                            className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
+                                                            style={{
+                                                                background: getDisplayColor(post.bg_color),
+                                                                backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                                                backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                                                backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                                                padding: "220px 27px",
+                                                            }}
+                                                        >
+                                                            <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>
+                                                                {post.post_text}
+                                                            </span>
+                                                        </div>
+                                                    )}
+    
+                                                    {post?.images && post?.images.length > 0 && (
+                                                        <UserImagesLayout key={`${post.id}-${index}`} post={post} />
+                                                    )}
+    
                                                     {post.poll && post.poll.poll_options && (
                                                         <div className="d-flex justify-content-center flex-wrap mb-1">
-
                                                             <div className="w-100">
                                                                 <ul className="list-unstyled">
                                                                     {post.poll.poll_options.map((option) => {
-                                                                        const totalVotes =
-                                                                            post.poll.poll_total_votes || 0;
+                                                                        const totalVotes = post.poll.poll_total_votes || 0;
                                                                         const percentage =
                                                                             totalVotes > 0
-                                                                                ? Math.round(
-                                                                                    (option.no_of_votes / totalVotes) * 100
-                                                                                )
+                                                                                ? Math.round((option.no_of_votes / totalVotes) * 100)
                                                                                 : 0;
-
+    
                                                                         return (
                                                                             <li key={option.id} className="mb-3 w-100">
                                                                                 <div className="d-flex align-items-center justify-content-between">
@@ -848,13 +801,7 @@ export default function OpenPostInNewTab({ params }) {
                                                                                             height: "30px",
                                                                                             cursor: "pointer",
                                                                                         }}
-                                                                                        onClick={() =>
-                                                                                            handleVote(
-                                                                                                option.id,
-                                                                                                post.poll.id,
-                                                                                                post.id
-                                                                                            )
-                                                                                        }
+                                                                                        onClick={() => handleVote(option.id, post.poll.id, post.id)}
                                                                                     >
                                                                                         <div
                                                                                             className="progress-bar"
@@ -887,126 +834,96 @@ export default function OpenPostInNewTab({ params }) {
                                                                     })}
                                                                 </ul>
                                                             </div>
-
                                                         </div>
                                                     )}
-
-                                            {post?.donation && (
-                                                <div>
-                                                    <Image
-                                                        src={post?.donation?.image || "/assets/images/placeholder-image.png"}
-                                                        alt={post.donation.title}
-                                                        className="img-fluid d-block mx-auto"
-                                                        width={400}
-                                                        height={200}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                        loader={({ src }) => src}
-                                                    />
-
-                                                    <div className="card-body text-center">
-                                                        <h5 className="card-title">
-                                                            {post.donation.title}
-                                                        </h5>
-                                                        <p className="card-text">
-                                                            {post.donation.description}
-                                                        </p>
-                                                        <div className="progress mb-3">
-                                                            <div
-                                                                className="progress-bar"
-                                                                role="progressbar"
+    
+                                                    {post?.donation && (
+                                                        <div>
+                                                            <Image
+                                                                src={post?.donation?.image || "/assets/images/placeholder-image.png"}
+                                                                alt={post.donation.title}
+                                                                className="img-fluid d-block mx-auto"
+                                                                width={400}
+                                                                height={200}
                                                                 style={{
                                                                     objectFit: "cover",
                                                                 }}
                                                                 loader={({ src }) => src}
                                                             />
-
+    
                                                             <div className="card-body text-center">
-                                                                <h5 className="card-title">
-                                                                    {post.donation.title}
-                                                                </h5>
-                                                                <p className="card-text">
-                                                                    {post.donation.description}
-                                                                </p>
+                                                                <h5 className="card-title">{post.donation.title}</h5>
+                                                                <p className="card-text">{post.donation.description}</p>
                                                                 <div className="progress mb-3">
                                                                     <div
                                                                         className="progress-bar"
                                                                         role="progressbar"
                                                                         style={{
-                                                                            width: `${(post.donation.collected_amount /
-                                                                                post.donation.amount) *
-                                                                                100
-                                                                                }%`,
+                                                                            objectFit: "cover",
                                                                         }}
-                                                                        aria-valuenow={post.donation.collected_amount}
-                                                                        aria-valuemin="0"
-                                                                        aria-valuemax={post.donation.amount}
-                                                                    ></div>
+                                                                        loader={({ src }) => src}
+                                                                    />
                                                                 </div>
-                                                                <div className="d-flex align-items-center justify-content-between">
-                                                                    <p className="text-muted">
-                                                                        {post.donation.collected_amount} Collected
-                                                                    </p>
-                                                                    <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
-                                                                    {
-                                                                        post.donation.collected_amount < post.donation.amount &&
-                                                                        (
+                                                                <div className="card-body text-center">
+                                                                    <h5 className="card-title">{post.donation.title}</h5>
+                                                                    <p className="card-text">{post.donation.description}</p>
+                                                                    <div className="progress mb-3">
+                                                                        <div
+                                                                            className="progress-bar"
+                                                                            role="progressbar"
+                                                                            style={{
+                                                                                width: `${(post.donation.collected_amount / post.donation.amount) * 100}%`,
+                                                                            }}
+                                                                            aria-valuenow={post.donation.collected_amount}
+                                                                            aria-valuemin="0"
+                                                                            aria-valuemax={post.donation.amount}
+                                                                        ></div>
+                                                                    </div>
+                                                                    <div className="d-flex align-items-center justify-content-between">
+                                                                        <p className="text-muted">
+                                                                            {post.donation.collected_amount} Collected
+                                                                        </p>
+                                                                        <p className="text-dark">
+                                                                            Required: <span className="fw-bold"> {post.donation.amount} </span>
+                                                                        </p>
+                                                                        {post.donation.collected_amount < post.donation.amount && (
                                                                             <button
                                                                                 className="btn btn-primary btn-sm"
                                                                                 onClick={() => {
-                                                                                    setDonationModal(!donationModal)
-
-                                                                                    setDonationID(post.donation.id)
+                                                                                    setDonationModal(!donationModal);
+                                                                                    setDonationID(post.donation.id);
                                                                                 }}
                                                                             >
                                                                                 Donate
                                                                             </button>
-                                                                        )
-
-                                                                    }
-
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     )}
-
-
-                                                    {
-                                                        post.event && post.event.cover && (
-                                                            <div>
-                                                                <Image
-                                                                    src={post.event.cover}
-                                                                    alt="Event Cover"
-                                                                    className="img-fluid mt-1"
-                                                                    width={500}
-                                                                    height={300}
-                                                                    style={{
-                                                                        objectFit: "cover",
-                                                                    }}
-                                                                />
-
-                                                                <h5 className="fw-bold mt-2">{post.event.name}</h5>
-                                                                <button className="badge btn-primary rounded-pill mt-3">
-                                                                    {post.event.start_date}
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                            {
-                                                post.event && post.event.cover && (
-                                                    <div>
-                                                        <Image
-                                                            src={post.event.cover || "/assets/images/placeholder-image.png"}
-                                                            alt="Event Cover"
-                                                            className="img-fluid mt-1"
-                                                            width={500}
-                                                            height={300}
-                                                            style={{
-                                                                objectFit: "cover",
-                                                            }}
-                                                        />
-
-                                                    {post.product && (
+    
+                                                    {post?.event && post.event.cover && (
+                                                        <div>
+                                                            <Image
+                                                                src={post.event.cover}
+                                                                alt="Event Cover"
+                                                                className="img-fluid mt-1"
+                                                                width={500}
+                                                                height={300}
+                                                                style={{
+                                                                    objectFit: "cover",
+                                                                }}
+                                                            />
+    
+                                                            <h5 className="fw-bold mt-2">{post.event.name}</h5>
+                                                            <button className="badge btn-primary rounded-pill mt-3">
+                                                                {post.event.start_date}
+                                                            </button>
+                                                        </div>
+                                                    )}
+    
+                                                    {post?.product && (
                                                         <div>
                                                             <Image
                                                                 src={post.product.images[0].image}
@@ -1020,22 +937,34 @@ export default function OpenPostInNewTab({ params }) {
                                                             />
                                                             <div className="row mt-3">
                                                                 <div className="col-md-9">
-                                                                    <h6><b>{post.product.product_name}</b></h6>
-                                                                    <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
+                                                                    <h6>
+                                                                        <b>{post.product.product_name}</b>
+                                                                    </h6>
+                                                                    <span>
+                                                                        <b>Price: </b>
+                                                                        {post.product.price} ({post.product.currency})
+                                                                    </span>
                                                                     <br />
-                                                                    <span><b>Category: </b>{post.product.category}</span>
+                                                                    <span>
+                                                                        <b>Category: </b>
+                                                                        {post.product.category}
+                                                                    </span>
                                                                     <br />
-                                                                    <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
+                                                                    <span>
+                                                                        <i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}
+                                                                    </span>
                                                                 </div>
                                                                 <div className="col-md-3 mt-4">
-                                                                    <Link href="#" >
-                                                                        <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
+                                                                    <Link href="#">
+                                                                        <button className="btn btn-primary-hover btn-outline-primary rounded-pill">
+                                                                            Edit Product
+                                                                        </button>
                                                                     </Link>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     )}
-
+    
                                                     {post?.video && (
                                                         <div
                                                             className="media-container mt-1"
@@ -1055,79 +984,21 @@ export default function OpenPostInNewTab({ params }) {
                                                                 />
                                                                 Your browser does not support the video tag.
                                                             </video>
-                                                    )}
-
-                                            {post.product && (
-                                                <div>
-                                                    <Image
-                                                        src={post.product.images[0].image || "/assets/images/placeholder-image.png"}
-                                                        alt="Product"
-                                                        className="img-fluid"
-                                                        width={600}
-                                                        height={400}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
-                                                    <div className="row mt-3">
-                                                        <div className="col-md-9">
-                                                            <h6><b>{post.product.product_name}</b></h6>
-                                                            <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
-                                                            <br />
-                                                            <span><b>Category: </b>{post.product.category}</span>
-                                                            <br />
-                                                            <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
                                                         </div>
                                                     )}
-
-
-
-                                                    {post?.audio && (
-                                                        <div className="media-container w-100">
-                                                            <audio controls className="w-100">
-                                                                <source src={post.audio.media_path} />
-                                                                Your browser does not support the audio tag.
-                                                            </audio>
-                                                        </div>
-                                                    )}
-
-
-                                                    {
-                                                        post?.post_location && (
-                                                            <div className="media-container text-center w-100 mt-3">
-                                                                <span className="text-muted">
-                                                                    <i className="bi bi-geo-alt-fill"></i> {post.post_location}
-                                                                </span>
-                                                            </div>
-                                                        )
-
-                                                    }
-
-                                                    {/*  shared post till here*/}
-
                                                 </>
-
-
-                                                :
-
-                                                post.shared_post && <SharedPosts sharedPost={post.shared_post} userdata={userdata} post={post} posts={posts} setPosts={setPosts}  />
-
-                                            }
-
-
-
+                                            ) : (
+                                                post.shared_post && <SharedPosts sharedPost={post.shared_post} userdata={userdata} post={post} posts={posts} setPosts={setPosts} />
+                                            )}
+    
                                             <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-2 px-3">
                                                 <div className="d-flex align-items-center mb-2 mb-md-0">
-                                                    <span className="me-2">
-                                                        {post.reaction ? post.reaction.count || 0 : 0}
-                                                    </span>
-                                                    {
-                                                        post?.reaction.is_reacted === true ?
-                                                            <i className="bi bi-hand-thumbs-up-fill text-primary"></i>
-                                                            :
-                                                            <i className="bi bi-hand-thumbs-up"></i>
-
-                                                    }
+                                                    <span className="me-2">{post.reaction ? post.reaction.count || 0 : 0}</span>
+                                                    {post?.reaction.is_reacted === true ? (
+                                                        <i className="bi bi-hand-thumbs-up-fill text-primary"></i>
+                                                    ) : (
+                                                        <i className="bi bi-hand-thumbs-up"></i>
+                                                    )}
                                                 </div>
                                                 <div className="d-flex flex-wrap align-items-center text-muted">
                                                     <span className="me-3 d-flex align-items-center">
@@ -1144,12 +1015,10 @@ export default function OpenPostInNewTab({ params }) {
                                                     </span>
                                                 </div>
                                             </div>
-
+    
                                             <hr className="my-1" />
-
+    
                                             <div className="d-flex justify-content-between">
-
-
                                                 <div style={{ position: "relative", display: "inline-block" }}>
                                                     <button
                                                         className="btn border-0 d-flex align-items-center"
@@ -1160,18 +1029,11 @@ export default function OpenPostInNewTab({ params }) {
                                                         }}
                                                     >
                                                         <span style={{ fontSize: "18px", marginRight: "8px" }}>
-
-                                                            {postReactions[post.id] || (post.reaction?.reaction_type ?
-                                                                reactionEmojis[
-                                                                Object.keys(reactionValues).find(
-                                                                    key => reactionValues[key] === Number(post.reaction.reaction_type)
-                                                                )
-                                                                ] : "😊")}
+                                                            {postReactions[post.id] || (post.reaction?.reaction_type ? reactionEmojis[Object.keys(reactionValues).find(key => reactionValues[key] === Number(post.reaction.reaction_type))] : "😊")}
                                                         </span>
                                                         Reaction
                                                     </button>
-
-
+    
                                                     {activeReactionPost === post.id && (
                                                         <div
                                                             style={{
@@ -1185,20 +1047,18 @@ export default function OpenPostInNewTab({ params }) {
                                                             onMouseEnter={() => setActiveReactionPost(post.id)}
                                                             onMouseLeave={() => setActiveReactionPost(null)}
                                                         >
-                                                            <ReactionBarSelector
-                                                                onSelect={(reaction) => handleReactionSelect(reaction, post.id)}
-                                                            />
+                                                            <ReactionBarSelector onSelect={(reaction) => handleReactionSelect(reaction, post.id)} />
                                                         </div>
                                                     )}
                                                 </div>
-
+    
                                                 <button
                                                     className="btn border-0 d-flex align-items-center"
                                                     onClick={() => handleCommentToggle(post.id)}
                                                 >
                                                     <i className="bi bi-chat me-2"></i> Comments
                                                 </button>
-
+    
                                                 <div className="dropdown">
                                                     <button
                                                         className="btn border-0"
@@ -1209,12 +1069,9 @@ export default function OpenPostInNewTab({ params }) {
                                                     >
                                                         <i className="bi bi-share me-2"></i> Share
                                                     </button>
-
-                                                    <ul
-                                                        className="dropdown-menu"
-                                                        aria-labelledby="dropdownMenuButton3"
-                                                    >
-                                                        <li className=" align-items-center d-flex">
+    
+                                                    <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton3">
+                                                        <li className="align-items-center d-flex">
                                                             <Link
                                                                 className="text-decoration-none dropdown-item text-muted"
                                                                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(post.post_link)}`}
@@ -1224,46 +1081,43 @@ export default function OpenPostInNewTab({ params }) {
                                                                 <i className="bi bi-facebook pe-2"></i> Share on Facebook
                                                             </Link>
                                                         </li>
-
-                                                        <li className=" align-items-center d-flex">
+    
+                                                        <li className="align-items-center d-flex">
                                                             <Link
                                                                 className="text-decoration-none dropdown-item text-muted"
                                                                 href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(post.post_link)}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                             >
-                                                                <i className="bi bi-twitter-x pe-2"></i> Share on
-                                                                X
+                                                                <i className="bi bi-twitter-x pe-2"></i> Share on X
                                                             </Link>
                                                         </li>
-                                                        <li className=" align-items-center d-flex">
+                                                        <li className="align-items-center d-flex">
                                                             <Link
                                                                 className="text-decoration-none dropdown-item text-muted"
                                                                 href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(post.post_link)}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                             >
-                                                                <i className="bi bi-linkedin pe-2"></i> Share on
-                                                                Linkedln
+                                                                <i className="bi bi-linkedin pe-2"></i> Share on Linkedln
                                                             </Link>
                                                         </li>
-
+    
                                                         <li>
                                                             <hr className="dropdown-divider" />
                                                         </li>
-                                                        <li className=" align-items-center d-flex">
+                                                        <li className="align-items-center d-flex">
                                                             <button
                                                                 className="text-decoration-none dropdown-item text-muted custom-hover"
                                                                 onClick={() => {
-                                                                    setShareShowTimelineModal(true)
-                                                                    setPostID(post.id)
+                                                                    setShareShowTimelineModal(true);
+                                                                    setPostID(post.id);
                                                                 }}
                                                             >
-                                                                <i className="bi bi-bookmark-check pe-2"></i> Post
-                                                                on Timeline
+                                                                <i className="bi bi-bookmark-check pe-2"></i> Post on Timeline
                                                             </button>
                                                         </li>
-                                                        <li className=" align-items-center d-flex">
+                                                        <li className="align-items-center d-flex">
                                                             <span
                                                                 className="text-decoration-none dropdown-item text-muted"
                                                                 onClick={() => handleCopy(post.post_link)}
@@ -1274,378 +1128,230 @@ export default function OpenPostInNewTab({ params }) {
                                                     </ul>
                                                 </div>
                                             </div>
-
-
-
+    
                                             <hr className="my-1" />
-
-
-                                            {
-                                                userID && post?.user?.id === userID ?
-                                                    null
-                                                    :
-
-                                                    <div className="d-flex mb-3 mt-2">
-                                                        <button
-                                                            className="btn me-2 d-flex align-items-center rounded-1"
-                                                            style={{
-                                                                backgroundColor: "#C19A6B",
-                                                                borderRadius: "10px",
-                                                                color: "#fff",
-                                                            }}
-                                                            onClick={() => openModalCupCoffee(post.id)}
-                                                        >
-                                                            <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                                        </button>
-
-                                                        {activeCupCoffeeId === post.id && (
-                                                            <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
-                                                        )}
-
-                                                        <button className="btn btn-danger d-flex align-items-center rounded-1"
-                                                            onClick={() => openModalGreatJob(post.id)}
-                                                        >
-                                                            <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                                        </button>
-                                                        {activeGreatJobId === post.id && (
-                                                            <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
-                                                        )}
-                                                    </div>
-
-                                            }
-
-
-
-                                            {
-
-
-                                                post.comments_status === "1" && showComments[post.id] ? (
-                                                    <div className="mt-2">
-                                                        {comments[post.id] && comments[post.id].length > 0 ? (
-                                                            comments[post.id].map((comment) => (
-                                                                <div key={comment.id} className="mb-3">
-                                                                    <div className="d-flex">
-                                                                        <Image
-                                                                            src={comment.avatar || "/assets/images/userplaceholder.png"}
-                                                                            alt="Profile"
-                                                                            className="rounded-circle me-1 mt-2"
-                                                                            width={40}
-                                                                            height={40}
-                                                                            style={{
-                                                                                objectFit: "cover",
-                                                                            }}
-                                                                        />
-
-                                                                        <div className="mb-3">
-                                                                            <div className="card border-0 bg-light w-100 mx-2 p-2">
-                                                                                <div className="flex-grow-1 mx-2">
-                                                                                    <div className="d-flex align-items-center justify-content-between">
-                                                                                        <p className="mb-0 fw-bold">
-                                                                                            {comment.first_name}{" "}
-                                                                                            {comment.last_name}
-                                                                                        </p>
-                                                                                        <small className="text-muted lead-font-size">
-                                                                                            {comment.created_human}
-                                                                                        </small>
-                                                                                    </div>
-                                                                                    <p className="mb-1">
-                                                                                        {comment.comment || "No text available"}
+    
+                                            {userID && post?.user?.id === userID ? null : (
+                                                <div className="d-flex mb-3 mt-2">
+                                                    <button
+                                                        className="btn me-2 d-flex align-items-center rounded-1"
+                                                        style={{
+                                                            backgroundColor: "#C19A6B",
+                                                            borderRadius: "10px",
+                                                            color: "#fff",
+                                                        }}
+                                                        onClick={() => openModalCupCoffee(post.id)}
+                                                    >
+                                                        <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                    </button>
+    
+                                                    {activeCupCoffeeId === post.id && (
+                                                        <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                                    )}
+    
+                                                    <button
+                                                        className="btn btn-danger d-flex align-items-center rounded-1"
+                                                        onClick={() => openModalGreatJob(post.id)}
+                                                    >
+                                                        <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                    </button>
+                                                    {activeGreatJobId === post.id && (
+                                                        <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                                    )}
+                                                </div>
+                                            )}
+    
+                                            {post?.comments_status === "1" && showComments[post.id] ? (
+                                                <div className="mt-2">
+                                                    {comments[post.id] && comments[post.id].length > 0 ? (
+                                                        comments[post.id].map((comment) => (
+                                                            <div key={comment.id} className="mb-3">
+                                                                <div className="d-flex">
+                                                                    <Image
+                                                                        src={comment.avatar || "/assets/images/userplaceholder.png"}
+                                                                        alt="Profile"
+                                                                        className="rounded-circle me-1 mt-2"
+                                                                        width={40}
+                                                                        height={40}
+                                                                        style={{
+                                                                            objectFit: "cover",
+                                                                        }}
+                                                                    />
+    
+                                                                    <div className="mb-3">
+                                                                        <div className="card border-0 bg-light w-100 mx-2 p-2">
+                                                                            <div className="flex-grow-1 mx-2">
+                                                                                <div className="d-flex align-items-center justify-content-between">
+                                                                                    <p className="mb-0 fw-bold">
+                                                                                        {comment.first_name} {comment.last_name}
                                                                                     </p>
+                                                                                    <small className="text-muted lead-font-size">
+                                                                                        {comment.created_human}
+                                                                                    </small>
                                                                                 </div>
+                                                                                <p className="mb-1">
+                                                                                    {comment.comment || "No text available"}
+                                                                                </p>
                                                                             </div>
-
-                                                                            <div className="mx-3">
-                                                                                <button
-                                                                                    className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                                    onClick={() =>
-                                                                                        LikeComment(post.id, comment.id)
-                                                                                    }
-                                                                                >
-                                                                                    <i className="bi bi-hand-thumbs-up"></i>{" "}
-                                                                                    Like {comment.like_count}
-                                                                                </button>
-                                                                                <button
-                                                                                    className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                                    onClick={() =>
-                                                                                        handleToggleReplyInput(comment.id)
-                                                                                    }
-                                                                                >
-                                                                                    Reply
-                                                                                </button>
-
-                                                                                <button
-                                                                                    className="btn text-dark p-0 text-danger text-decoration-none"
-                                                                                    onClick={() =>
-                                                                                        handleCommentDelete(comment.id, post.id)
-                                                                                    }
-                                                                                >
-                                                                                    Delete
-                                                                                </button>
-                                                                                <button
-                                                                                    className="btn text-secondary p-0 me-3 text-decoration-none mx-3"
-                                                                                    onClick={() => toggleReplies(comment.id)}
-                                                                                >
-                                                                                    ({comment.reply_count}) Replies
-                                                                                </button>
-                                                                            </div>
+                                                                        </div>
+    
+                                                                        <div className="mx-3">
+                                                                            <button
+                                                                                className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                onClick={() => LikeComment(post.id, comment.id)}
+                                                                            >
+                                                                                <i className="bi bi-hand-thumbs-up"></i>{" "}
+                                                                                Like {comment.like_count}
+                                                                            </button>
+                                                                            <button
+                                                                                className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                onClick={() => handleToggleReplyInput(comment.id)}
+                                                                            >
+                                                                                Reply
+                                                                            </button>
+    
+                                                                            <button
+                                                                                className="btn text-dark p-0 text-danger text-decoration-none"
+                                                                                onClick={() => handleCommentDelete(comment.id, post.id)}
+                                                                            >
+                                                                                Delete
+                                                                            </button>
+                                                                            <button
+                                                                                className="btn text-secondary p-0 me-3 text-decoration-none mx-3"
+                                                                                onClick={() => toggleReplies(comment.id)}
+                                                                            >
+                                                                                ({comment.reply_count}) Replies
+                                                                            </button>
                                                                         </div>
                                                                     </div>
-
-                                                                    {showReplies[comment.id] &&
-                                                                        repliesData[comment.id] && (
-                                                                            <div className="ms-4 mt-2">
-                                                                                {repliesData[comment.id].length > 0 ? (
-                                                                                    repliesData[comment.id].map((reply) => (
-                                                                                        <div
-                                                                                            key={reply.id}
-                                                                                            className="d-flex mb-2 mx-5"
-                                                                                        >
-                                                                                            <Image
-                                                                                                src={reply.avatar || "/assets/images/userplaceholder.png"}
-                                                                                                alt="Profile"
-                                                                                                className="rounded-circle me-1 mt-2"
-                                                                                                width={40}
-                                                                                                height={40}
-                                                                                                style={{
-                                                                                                    objectFit: "cover",
-                                                                                                }}
-                                                                                            />
-
-                                                                                            <div className="mb-3">
-                                                                                                <div className="card border-0 bg-light w-100 mx-2 p-2">
-                                                                                                    <div className="flex-grow-1 mx-2">
-                                                                                                        <div className="d-flex align-items-center justify-content-between">
-                                                                                                            <p className="mb-0 fw-bold">
-                                                                                                                {reply.first_name}{" "}
-                                                                                                                {reply.last_name}
-                                                                                                            </p>
-                                                                                                            <small className="text-muted lead-font-size">
-                                                                                                                {reply.created_human}
-                                                                                                            </small>
-                                                                                                        </div>
-                                                                                                        <p className="mb-1">
-                                                                                                            {reply.comment}
-                                                                                                        </p>
-                                                                                                    </div>
+                                                                </div>
+    
+                                                                {showReplies[comment.id] && repliesData[comment.id] && (
+                                                                    <div className="ms-4 mt-2">
+                                                                        {repliesData[comment.id].length > 0 ? (
+                                                                            repliesData[comment.id].map((reply) => (
+                                                                                <div key={reply.id} className="d-flex mb-2 mx-5">
+                                                                                    <Image
+                                                                                        src={reply.avatar || "/assets/images/userplaceholder.png"}
+                                                                                        alt="Profile"
+                                                                                        className="rounded-circle me-1 mt-2"
+                                                                                        width={40}
+                                                                                        height={40}
+                                                                                        style={{
+                                                                                            objectFit: "cover",
+                                                                                        }}
+                                                                                    />
+    
+                                                                                    <div className="mb-3">
+                                                                                        <div className="card border-0 bg-light w-100 mx-2 p-2">
+                                                                                            <div className="flex-grow-1 mx-2">
+                                                                                                <div className="d-flex align-items-center justify-content-between">
+                                                                                                    <p className="mb-0 fw-bold">
+                                                                                                        {reply.first_name} {reply.last_name}
+                                                                                                    </p>
+                                                                                                    <small className="text-muted lead-font-size">
+                                                                                                        {reply.created_human}
+                                                                                                    </small>
                                                                                                 </div>
-
-                                                                                                <div className="mx-3">
-                                                                                                    <button
-                                                                                                        className="btn text-secondary p-0 me-3 text-decoration-none"
-                                                                                                        onClick={() =>
-                                                                                                            commentReplyLike(reply.id)
-                                                                                                        }
-                                                                                                    >
-                                                                                                        <i className="bi bi-hand-thumbs-up"></i>{" "}
-                                                                                                        Like {reply.like_count}
-                                                                                                    </button>
-                                                                                                    <button
-                                                                                                        className="btn text-dark p-0 text-danger text-decoration-none"
-                                                                                                        onClick={() =>
-                                                                                                            handleCommentreplyDelete(
-                                                                                                                reply.id
-                                                                                                            )
-                                                                                                        }
-                                                                                                    >
-                                                                                                        Delete
-                                                                                                    </button>
-                                                                                                </div>
+                                                                                                <p className="mb-1">{reply.comment}</p>
                                                                                             </div>
                                                                                         </div>
-                                                                                    ))
-                                                                                ) : (
-                                                                                    <p className="mx-5">
-                                                                                        No replies available
-                                                                                    </p>
-                                                                                )}
-                                                                            </div>
+    
+                                                                                        <div className="mx-3">
+                                                                                            <button
+                                                                                                className="btn text-secondary p-0 me-3 text-decoration-none"
+                                                                                                onClick={() => commentReplyLike(reply.id)}
+                                                                                            >
+                                                                                                <i className="bi bi-hand-thumbs-up"></i>{" "}
+                                                                                                Like {reply.like_count}
+                                                                                            </button>
+                                                                                            <button
+                                                                                                className="btn text-dark p-0 text-danger text-decoration-none"
+                                                                                                onClick={() => handleCommentreplyDelete(reply.id)}
+                                                                                            >
+                                                                                                Delete
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))
+                                                                        ) : (
+                                                                            <p className="mx-5">No replies available</p>
                                                                         )}
-
-                                                                    {showReplyInput[comment.id] && (
-                                                                        <div className="mt-2 w-75 mx-5">
-                                                                            <div className="input-group">
-                                                                                <input
-                                                                                    type="text"
-                                                                                    className="form-control"
-                                                                                    placeholder="Write a reply..."
-                                                                                    aria-label="Reply"
-                                                                                    value={commentreplyText[comment.id] || ""}
-                                                                                    onChange={(e) =>
-                                                                                        setCommentreplyText((prevState) => ({
-                                                                                            ...prevState,
-                                                                                            [comment.id]: e.target.value,
-                                                                                        }))
-                                                                                    }
-                                                                                />
-                                                                                <button
-                                                                                    className="btn btn-primary"
-                                                                                    type="button"
-                                                                                    onClick={() =>
-                                                                                        ReplyComment(
-                                                                                            comment.id,
-                                                                                            commentreplyText[comment.id]
-                                                                                        )
-                                                                                    }
-                                                                                >
-                                                                                    Submit
-                                                                                </button>
-                                                                            </div>
+                                                                    </div>
+                                                                )}
+    
+                                                                {showReplyInput[comment.id] && (
+                                                                    <div className="mt-2 w-75 mx-5">
+                                                                        <div className="input-group">
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control"
+                                                                                placeholder="Write a reply..."
+                                                                                aria-label="Reply"
+                                                                                value={commentreplyText[comment.id] || ""}
+                                                                                onChange={(e) =>
+                                                                                    setCommentreplyText((prevState) => ({
+                                                                                        ...prevState,
+                                                                                        [comment.id]: e.target.value,
+                                                                                    }))
+                                                                                }
+                                                                            />
+                                                                            <button
+                                                                                className="btn btn-primary"
+                                                                                type="button"
+                                                                                onClick={() => ReplyComment(comment.id, commentreplyText[comment.id])}
+                                                                            >
+                                                                                Submit
+                                                                            </button>
                                                                         </div>
-                                                                    )}
-                                                                </div>
-                                                            ))
-                                                        ) : (
-                                                            <div className="form-control w-100 d-flex justify-content-center">
-                                                                No Comments Yet!
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                )
-
-
-                                                    :
-                                                    null
-
-
-                                            }
-
-
-                                            {
-                                                post?.comments_status === "1" && (
-                                                    <div className="d-flex align-items-center mt-3">
-                                                        <Image
-                                                            src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
-                                                            alt="User Avatar"
-                                                            className="rounded-5"
-                                                            width={40}
-                                                            height={40}
+                                                        ))
+                                                    ) : (
+                                                        <div className="form-control w-100 d-flex justify-content-center">
+                                                            No Comments Yet!
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : null}
+    
+                                            {post?.comments_status === "1" && (
+                                                <div className="d-flex align-items-center mt-3">
+                                                    <Image
+                                                        src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
+                                                        alt="User Avatar"
+                                                        className="rounded-5"
+                                                        width={40}
+                                                        height={40}
+                                                    />
+                                                    <form className="position-relative w-100 ms-2">
+                                                        <input
+                                                            type="text"
+                                                            className="form-control bg-light border-1 rounded-2"
+                                                            placeholder="Add a comment..."
+                                                            value={commentText[post.id] || ""}
+                                                            onChange={(e) => handleCommentTextChange(e, post.id)}
                                                         />
-                                                        <form className="position-relative w-100 ms-2">
-                                                            <input
-                                                                type="text"
-                                                                className="form-control bg-light border-1 rounded-2"
-                                                                placeholder="Add a comment..."
-                                                                value={commentText[post.id] || ""}
-                                                                onChange={(e) => handleCommentTextChange(e, post.id)}
-                                                            />
-                                                            <button
-                                                                className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                                type="button"
-                                                                onClick={() => handleCommentSubmit(post.id)}
-                                                            >
-                                                                <i className="bi bi-send"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-
-                                                )
-
-                                            }
-
-
-
-
+                                                        <button
+                                                            className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                            type="button"
+                                                            onClick={() => handleCommentSubmit(post.id)}
+                                                        >
+                                                            <i className="bi bi-send"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-
-
-                                )
-
-
-                            }
-
-                            )}
-
-
-
+                                );
+                            })}
                         </div>
-
-
-                        {
-                            donationModal && (
-                                <MakeDonationModal
-                                    donationID={donationID}
-                                    donationModal={donationModal}
-                                    setDonationModal={setDonationModal}
-                                    posts={posts}
-                                    setPosts={setPosts}
-
-                                />
-
-                            )
-
-                        }
-
-
-                        {
-                            showEnableDisableCommentsModal && (
-                                <EnableDisableCommentsModal
-                                    showEnableDisableCommentsModal={showEnableDisableCommentsModal}
-                                    setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
-                                    postID={postID}
-                                    posts={posts}
-                                    setPosts={setPosts}
-
-                                />
-                            )
-
-
-                        }
-
-
-                        {
-                            showSavePostModal && (
-                                <SavePostModal
-                                    postID={postID}
-                                    posts={posts}
-                                    setPosts={setPosts}
-                                    showSavePostModal={showSavePostModal}
-                                    setShowSavePostModal={setShowSavePostModal}
-                                />
-                            )}
-
-
-                        {
-                            showReportPostModal && (
-                                <ReportPostModal
-                                    postID={postID}
-                                    posts={posts}
-                                    setPosts={setPosts}
-                                    showReportPostModal={showReportPostModal}
-                                    setShowReportPostModal={setShowReportPostModal}
-                                />
-                            )}
-
-
-                        {
-
-                            showEditPostModal && (
-                                <EditPostModal
-                                    showEditPostModal={showEditPostModal}
-                                    setShowEditPostModal={setShowEditPostModal}
-                                    posts={posts}
-                                    setPosts={setPosts}
-                                    postID={postID}
-                                />
-                            )
-                        }
-
-                        {
-                            sharePostTimelineModal && (
-                                <SharePostTimelineModal
-                                    sharePostTimelineModal={sharePostTimelineModal}
-                                    setShareShowTimelineModal={setShareShowTimelineModal}
-                                    postID={postID}
-                                />
-                            )
-                        }
-
-
-
-
                     </div>
                 </div>
             </div>
         </>
-    )
+    );
 }

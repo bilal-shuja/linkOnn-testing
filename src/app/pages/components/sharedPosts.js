@@ -143,6 +143,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
         }
       }, []);
 
+
     return (
         <>
             <div className="card-body border border-1 shadow-sm mb-2 rounded-2">
@@ -480,5 +481,6 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
             </Modal>
 
         </>
+    
     );
 }

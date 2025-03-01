@@ -1464,7 +1464,7 @@ export default function MyPageTimeline({ params }) {
                                                             <li className=" align-items-center d-flex">
                                                                 <Link
                                                                     className="text-decoration-none dropdown-item text-secondary"
-                                                                    href={`/pages/page/openPostInNewTab/${post.id}`}
+                                                                    href={`/pages/openPostInNewTab/${post.id}`}
                                                                     onClick={handlePageTimeline}
                                                                     target="_blank" rel="noopener noreferrer"
                                                                 >
