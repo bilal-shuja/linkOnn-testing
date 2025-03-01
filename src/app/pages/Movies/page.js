@@ -279,7 +279,7 @@ export default function MoviesPage() {
                         <div className="empty-state">
                           <i className="bi bi-film text-muted mb-3" style={{ fontSize: "4rem" }}></i>
                           <h4>No movies found</h4>
-                          <p className="text-muted">We couldn't find any movies matching your search criteria.</p>
+                          <p className="text-muted">We could not find any movies matching your search criteria.</p>
                           <button
                             className="btn btn-outline-primary mt-2"
                             onClick={() => {

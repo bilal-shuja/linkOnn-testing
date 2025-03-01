@@ -98,7 +98,7 @@ export default function PayPalSuccess() {
                             <i className="bi bi-exclamation-circle-fill text-danger"></i>
                         </div>
                         <h2 className="text-danger">PayPal Payment Verification Failed</h2>
-                        <p>We couldn't verify your payment. Please contact support.</p>
+                        <p>We could not verify your payment. Please contact support.</p>
                         <button onClick={() => router.push("/pages/Wallet")}
                             className="btn btn-primary mt-3">
                             Go to Wallet

@@ -169,7 +169,7 @@ export default function ProductEdit({ params }) {
             <div className="card p-5 shadow text-center">
               <i className="bi bi-exclamation-circle text-warning" style={{ fontSize: "3rem" }}></i>
               <h3 className="mt-3">Product Not Found</h3>
-              <p className="text-muted">The product details you're looking for could not be found.</p>
+              <p className="text-muted">The product details you are looking for could not be found.</p>
             </div>
           </div>
         </div>

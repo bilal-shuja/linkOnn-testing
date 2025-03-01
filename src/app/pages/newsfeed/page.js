@@ -1742,8 +1742,8 @@ export default function Newsfeed() {
                       <div className="alert alert-warning" role="alert">
                         <strong>This content is not available</strong>
                         <p className="mb-0" style={{ fontSize: "14px" }}>
-                          This content isn't available right now. When this happens, it's usually because the owner
-                          only shared it with a small group of people, changed who can see it, or it's been deleted.
+                          This content is not available right now. When this happens, it is usually because the owner
+                          only shared it with a small group of people, changed who can see it, or it is been deleted.
                         </p>
                       </div>
                     )}

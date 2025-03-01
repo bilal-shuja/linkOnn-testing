@@ -54,7 +54,7 @@ export default function JobDetailPage({ params }) {
                         <div className="card p-5 shadow text-center">
                             <i className="bi bi-exclamation-circle text-warning" style={{ fontSize: "3rem" }}></i>
                             <h3 className="mt-3">Job Not Found</h3>
-                            <p className="text-muted">The job details you're looking for could not be found.</p>
+                            <p className="text-muted">The job details you are looking for could not be found.</p>
                         </div>
                     </div>
                 </div>

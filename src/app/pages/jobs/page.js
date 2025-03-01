@@ -351,7 +351,7 @@ export default function JobsPage() {
                         <div className="d-flex justify-content-between">
                           <h5 className="card-title">Jobs</h5>
                           {searchQuery && (
-                            <p className="text-muted">Search results for: "{searchQuery}"</p>
+                            <p className="text-muted">Search results for: {searchQuery} </p>
                           )}
                         </div>
                         <hr className="text-muted" />
@@ -418,7 +418,7 @@ export default function JobsPage() {
                           <h5 className="card-title">My Jobs</h5>
                           <div className="d-flex">
                             {searchQuery && (
-                              <p className="text-muted me-3 mt-2">Search results for: "{searchQuery}"</p>
+                              <p className="text-muted me-3 mt-2">Search results for: {searchQuery} </p>
                             )}
                             <button className="btn btn-outline-primary" onClick={() => router.push("/pages/jobs/createJob")}>
                               <i className="bi bi-plus-lg"></i> Create a Job
