@@ -11,7 +11,7 @@ import React, { useState, useEffect } from "react";
 // import MakeDonationModal from "../Modal/MakeDonationModal";
 import PageImagesLayout from "../myPageTimeline/[myPageTimeline]/pageImagesLayout";
 
-export default function sharedPosts({ sharedPost, posts, setPosts }) {
+export default function SharedPosts({ sharedPost, posts, setPosts }) {
     if (!sharedPost) return null;
     const api = createAPI();
 
