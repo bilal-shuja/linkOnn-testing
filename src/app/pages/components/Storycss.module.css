@@ -1,0 +1,360 @@
+
+  .storiesRow {
+    padding: 12px 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    display: flex;
+    gap: 10px; /* Adjust spacing between stories */
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+  
+  .storiesRow::-webkit-scrollbar {
+    height: 6px; /* Adjust scrollbar height */
+  }
+
+  .storiesRow::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
+  .storyPreviewCard {
+    position: relative;
+    width: 8rem;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+    height: 192px;
+}
+
+  
+  .storyCardInner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Story preview image */
+  .storyPreviewImage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #f0f2f5;
+  }
+  
+  .storyMediaPreview {
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  
+  /* User profile circle */
+  .userProfileCircle {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid #0d6efd;
+    overflow: hidden;
+    z-index: 2;
+    background-color: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  
+  .profileImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* User name display */
+  .userNameDisplay {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    padding: 4px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    text-align: center;
+    z-index: 2;
+  }
+  
+  .userNameDisplay span {
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+  
+  /* Fullscreen Story Viewer */
+  .fullscreenStoryViewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .storyViewerContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  /* Progress bar for story timing */
+  .storyProgressContainer {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    gap: 4px;
+    z-index: 1060;
+  }
+  
+  .progressBarSegment {
+    height: 3px;
+    flex-grow: 1;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .progressBarFill {
+    height: 100%;
+    width: 0;
+    background-color: #fff;
+    border-radius: 3px;
+  }
+  
+  .progressBarFill.completed {
+    width: 100%;
+  }
+  
+  .progressBarFill.active {
+    transition: width 0.1s linear;
+  }
+  
+  /* Story header - user info and close button */
+  .storyHeader {
+    position: absolute;
+    top: 30px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1060;
+    padding: 10px;
+  }
+  
+  .userInfo {
+    display: flex;
+    align-items: center;
+  }
+  
+  .userAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    overflow: hidden;
+    margin-right: 10px;
+  }
+  
+  .userDetails {
+    color: white;
+  }
+  
+  .username {
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  .timestamp {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  
+  .closeButton {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  /* Story content area */
+  .storyContent {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .storySlide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .storySlide.active {
+    display: flex;
+  }
+  
+  .imageContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .storyMedia {
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+  }
+  
+  /* Story description */
+  .storyDescription {
+    position: absolute;
+    bottom: 60px;
+    left: 0;
+    right: 0;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    text-align: center;
+    z-index: 1056;
+  }
+  
+  /* Navigation areas for story progression */
+  .navArea {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 50%;
+    z-index: 1055;
+  }
+  
+  .navPrev {
+    left: 0;
+  }
+  
+  .navNext {
+    right: 0;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .storyViewerContainer {
+      max-width: 100%;
+    }
+    
+    .storyPreviewCard {
+        flex: 0 0 auto;
+        width: 8rem; /* Adjust width to prevent overlap */
+      height: 160px;
+    }
+    
+    .userProfileCircle {
+      width: 35px;
+      height: 35px;
+    }
+  }
+
+  
+  #storyCarousel .carousel-inner {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+  }
+  
+  #storyCarousel .carousel-item {
+    flex: 0 0 auto;
+    width: 120px; /* Adjust width based on your design */
+    margin-right: 8px;
+  }
+  
+  .story-card {
+    position: relative;
+    width: 100%;
+    height: 192px;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .story-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .profile-circle {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid #0d6efd;
+    overflow: hidden;
+  }
+  
+  .user-name {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+    color: white;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 4px;
+  }
+  
+  .carousel-control-prev, .carousel-control-next {
+    width: 40px;
+  }
+  
+  .storiesSection {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+

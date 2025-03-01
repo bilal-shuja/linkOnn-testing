@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 
-/* .body {
+.body {
   font-family: 'Roboto', sans-serif;
   background-color: whitesmoke;
-} */
+}
 
 .list-group-item:hover {
   background-color: #f8f9fa;
@@ -74,22 +74,6 @@
   margin-bottom: 1rem;
 }
 
-.carousel {
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  scrollbar-width: thin;
-}
-
-.story-img-container:hover .card-img-top {
-  transform: scale(1.05);
-  transition: transform 0.3s ease;
-}
-
-
-.story-img-container:hover .rounded-circle {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
 
 .chat-container {
   background-color: #f8f9fa;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UserImagesLayout from "./userImagesLayout";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -19,6 +19,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
     const [donate, setDonate] = useState("");
     const [loading, setLoading] = useState(false);
     const [localDonation, setLocalDonation] = useState(sharedPost.donation);
+    const [userId, setUserId] = useState(null);
 
 
     const donateAmount = (e) => {
@@ -129,11 +130,18 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
         '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
         '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
 
+    }
 
     const getDisplayColor = (code) => {
         return colorMap[code] || code;
-    };
+    }
 
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+          const storedUserId = localStorage.getItem("userid");
+          setUserId(storedUserId);
+        }
+      }, []);
 
     return (
         <>
@@ -245,21 +253,21 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
 
                 <hr className="my-2 post-divider" />
                 {
-                      
-                      sharedPost.bg_color && (
-                          <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
-                              style={{
-                                  background: getDisplayColor(sharedPost.bg_color),
-                                  backgroundSize: sharedPost.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
-                                  backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
-                                  backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
-                                  padding: "220px 27px",
-                              }}
-                          >
-                              <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {sharedPost.post_text} </span>
-                          </div>
-                      )
-                  }
+
+                    sharedPost.bg_color && (
+                        <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
+                            style={{
+                                background: getDisplayColor(sharedPost.bg_color),
+                                backgroundSize: sharedPost.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
+                                backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
+                                backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                padding: "220px 27px",
+                            }}
+                        >
+                            <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {sharedPost.post_text} </span>
+                        </div>
+                    )
+                }
 
 
 
@@ -288,6 +296,47 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                                 <source src={sharedPost.audio.media_path} />
                                 Your browser does not support the audio tag.
                             </audio>
+                        </div>
+                    )}
+
+                    {sharedPost.product && sharedPost.product.images.length > 0 && (
+                        <div className="w-100 mt-4 card shadow-sm border-0 rounded p-3">
+                            {/* Product Image */}
+                            <div className="text-center">
+                                <Image
+                                    src={sharedPost.product.images[0].image || "/assets/images/placeholder-image.png"}
+                                    alt={sharedPost.product.product_name}
+                                    width={600}
+                                    height={400}
+                                    className="img-fluid rounded"
+                                    style={{ objectFit: "cover", maxHeight: "300px" }}
+                                />
+                            </div>
+
+                            {/* Product Details */}
+                            <div className="card-body">
+                                <h5 className="fw-bold text-dark">{sharedPost.product.product_name}</h5>
+                                <hr className="mb-2" />
+
+                                <div className="row align-items-center">
+                                    <div className="col-md-9">
+                                        <p className="mb-1"><b>Price:</b> <span className="text-success fw-bold">{sharedPost.product.price} {sharedPost.product.currency}</span></p>
+                                        <p className="mb-1"><b>Category:</b> {sharedPost.product.category}</p>
+                                        <p className="mb-0 text-primary">
+                                            <i className="bi bi-geo-alt-fill"></i> {sharedPost.product.location}
+                                        </p>
+                                    </div>
+
+                                  
+                                    <div className="col-md-3 text-end">
+                                        <Link href={`/pages/Marketplace/productdetails/${sharedPost.product.id}`}>
+                                            <button className="btn btn-primary rounded-pill px-3 py-2">
+                                            {userId === sharedPost.user_id ? "Edit Product" : "Buy Product"}
+                                            </button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 

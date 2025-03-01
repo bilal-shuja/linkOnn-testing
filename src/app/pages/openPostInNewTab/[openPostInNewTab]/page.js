@@ -975,11 +975,11 @@ export default function OpenPostInNewTab({ params }) {
                                                                         </p>
                                                                     </div>
 
-                                                                    {/* Edit Product Button */}
+                                                                 
                                                                     <div className="col-md-3 text-end">
-                                                                        <Link href="#">
+                                                                        <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
                                                                             <button className="btn btn-primary rounded-pill px-3 py-2">
-                                                                                Edit Product
+                                                                                Product
                                                                             </button>
                                                                         </Link>
                                                                     </div>

@@ -140,6 +140,11 @@ export default function Groups() {
       });
 
       if (response.data.code === "200") {
+        setGroups((prevGroups) =>
+          prevGroups.map((group) =>
+            group.id === groupToJoin ? { ...group, is_joined: "1" } : group
+          )
+        );
         toast.success(response.data.message);
       } else {
         toast.error(`Error: ${response.data.message}`);
@@ -219,10 +224,7 @@ export default function Groups() {
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4>All Groups</h4>
                         <div className="d-flex align-items-center">
-                          <select className="form-select me-2" style={{ width: "150px" }}>
-                            <option>Newest</option>
-                            <option>Alphabetical</option>
-                          </select>
+                        
                           <button
                             className="btn btn-primary"
                             onClick={() => router.push("/pages/createGroup")}
@@ -262,16 +264,16 @@ export default function Groups() {
                               {groups.map((group) => (
                                 <div key={group.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
-                            
-                                      <Image
-                                        src={group.avatar || "/assets/images/placeholder-image.png"}
-                                        alt="Group Image"
-                                        className="card-img-top mx-auto mt-3"
-                                        width={80}
-                                        height={200}
-                                        style={{ objectFit: "cover" }}
-                                      />
-                              
+
+                                    <Image
+                                      src={group.avatar || "/assets/images/placeholder-image.png"}
+                                      alt="Group Image"
+                                      className="card-img-top mx-auto mt-3"
+                                      width={80}
+                                      height={200}
+                                      style={{ objectFit: "cover" }}
+                                    />
+
 
                                     <div className="card-body">
                                       <h5 className="card-title mb-1"
@@ -379,15 +381,15 @@ export default function Groups() {
                             myGroups.map((group) => (
                               <div key={group.id} className="col-md-4 mb-4">
                                 <div className="card text-center">
-                                    <Image
-                                      src={group.avatar || "/assets/images/placeholder-image.png"}
-                                      alt="Group Image"
-                                      className="d-block mx-auto mt-1 rounded-circle"
-                                      width={150}
-                                      height={150}
-                                    // style={{ objectFit: "cover" }}
-                                    />
-                               
+                                  <Image
+                                    src={group.avatar || "/assets/images/placeholder-image.png"}
+                                    alt="Group Image"
+                                    className="d-block mx-auto mt-1 rounded-circle"
+                                    width={150}
+                                    height={150}
+                                  // style={{ objectFit: "cover" }}
+                                  />
+
                                   <div className="card-body">
                                     <h5 className="card-title mb-1"
                                       style={{ cursor: 'pointer' }}

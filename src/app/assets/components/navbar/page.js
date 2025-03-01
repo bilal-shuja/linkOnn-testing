@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 import ChatWindow from "@/app/pages/Chat/ChatWindow/ChatWindow";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
-
 export default function Navbar() {
 
   const api = createAPI();
@@ -21,7 +20,7 @@ export default function Navbar() {
   const [loadingChats, setLoadingChats] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [error, setError] = useState(null);
-
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedChat, setSelectedChat] = useState(null);
 
   const settings = useSiteSettings();
@@ -112,6 +111,13 @@ export default function Navbar() {
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/pages/Explore?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+    }
+  };
 
   if (!settings) return null;
 
@@ -144,13 +150,16 @@ export default function Navbar() {
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNav">
+
             <div className="d-flex flex-column flex-lg-row align-items-center justify-content-center w-75">
-              <form className="position-relative mb-3 mb-lg-0 py-0 w-75">
+              <form className="position-relative mb-3 mb-lg-0 py-0 w-75" onSubmit={handleSearch}>
                 <input
                   className="form-control ps-5 bg-light border-0 rounded-3"
                   type="search"
-                  placeholder="Search people and pages"
+                  placeholder="Search for people, pages, groups, and events"
                   aria-label="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <button
                   className="btn bg-transparent position-absolute top-50 start-0 translate-middle-y border-0"
@@ -160,6 +169,7 @@ export default function Navbar() {
                 </button>
               </form>
             </div>
+
             <div className="d-flex align-items-center justify-content-between">
               <button
                 className="btn mx-3"
@@ -401,17 +411,17 @@ export default function Navbar() {
                 style={{ cursor: "pointer" }}
                 onClick={() => toggleChatWindow(chat)}
               >
-                <Image    
+                <Image
                   src={chat.avatar || "/assets/images/userplaceholder.png"}
                   alt={`${chat.first_name} ${chat.last_name} Avatar`}
                   className="rounded-circle me-3"
                   width={40}
                   height={40}
-                  style={{ 
-                    objectFit: 'cover', 
-                    borderRadius: '50%',  
-                    width: '40px', 
-                    height: '40px', 
+                  style={{
+                    objectFit: 'cover',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
                     flexShrink: "0 !important"
                   }}
                   loader={({ src }) => src}
@@ -428,7 +438,7 @@ export default function Navbar() {
                       {chat?.last_message}
                     </p>
                   </div>
-                  <span className="text-muted ms-2 text-nowrap" style={{fontSize:"13px",  minWidth: "fit-content" }}>
+                  <span className="text-muted ms-2 text-nowrap" style={{ fontSize: "13px", minWidth: "fit-content" }}>
                     {chat?.time_ago}
                   </span>
                 </div>

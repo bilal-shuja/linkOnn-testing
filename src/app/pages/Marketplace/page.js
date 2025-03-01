@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
+import Link from "next/link";
 
 export default function MarketPlace() {
     const api = createAPI();
@@ -11,6 +13,8 @@ export default function MarketPlace() {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState("");
+
+    const settings = useSiteSettings();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -41,11 +45,12 @@ export default function MarketPlace() {
         setSelectedCategory(event.target.value);
     };
 
+    if (!settings) return null;
+
     return error ? (
         <div className="alert alert-danger text-center mt-4">{error}</div>
     ) : (
         <div>
-            {/* Featured Products Section */}
             <div className="bg-light py-5 mt-5">
                 <div className="container">
                     <div className="card shadow-lg border-0 p-5 rounded-4">
@@ -73,16 +78,19 @@ export default function MarketPlace() {
                             {products.map((product) => (
                                 <div className="col-lg-3 col-md-4 col-sm-6 d-flex justify-content-center mb-4" key={product.id}>
                                     <div className="card border-0 shadow-sm p-3 rounded-4 text-center w-100">
-                                        <Image
-                                            src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
-                                            alt={product.product_name}
-                                            className="img-fluid rounded"
-                                            width={500}
-                                            height={300}
-                                            priority
-                                            style={{ objectFit: "cover", height: "200px" }}
-                                        />
-                                        <h6 className="mt-3 text-dark">{product.product_name}</h6>
+                                        <Link href={`/pages/Marketplace/productdetails/${product.id}`} className="text-decoration-none">
+                                            <Image
+                                                src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
+                                                alt={product.product_name}
+                                                className="img-fluid rounded"
+                                                width={500}
+                                                height={300}
+                                                priority
+                                                style={{ objectFit: "cover", height: "200px" }}
+                                            />
+
+                                            <h6 className="mt-3 text-dark">{product.product_name}</h6>
+                                        </Link>
                                     </div>
                                 </div>
                             ))}
@@ -91,7 +99,6 @@ export default function MarketPlace() {
                 </div>
             </div>
 
-            {/* Recent Products Section */}
             <div className="container my-5">
                 <div className="card border-0 shadow-lg p-5 rounded-4">
                     <div className="d-flex justify-content-between align-items-center">
@@ -105,17 +112,13 @@ export default function MarketPlace() {
                                 border: "1px solid #ced4da",
                             }}
                         >
-                            <option>Select Category</option>
-                            <option>Clothing</option>
-                            <option>Home and Furniture</option>
-                            <option>Books and Media</option>
-                            <option>Beauty and Personal Care</option>
-                            <option>Sports and Outdoors</option>
-                            <option>Toys and Games</option>
-                            <option>Automotive</option>
-                            <option>Health and Wellness</option>
-                            <option>Grocery and Food</option>
-                            <option>Electronics</option>
+                            <option value="">Select Category</option>
+                            {settings.product_categories &&
+                                Object.entries(settings.product_categories).map(([id, category]) => (
+                                    <option key={id} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
                         </select>
                     </div>
                     <hr className="text-muted" />
@@ -127,16 +130,20 @@ export default function MarketPlace() {
                                     className="card border-0 shadow-lg rounded-4 overflow-hidden"
                                     style={{ transition: "transform 0.3s ease-in-out" }}
                                 >
-                                    <Image
-                                        src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
-                                        alt={product.product_name}
-                                        className="card-img-top"
-                                        width={400}
-                                        height={250}
-                                        style={{ objectFit: "cover" }}
-                                    />
+                                    <Link href={`/pages/Marketplace/productdetails/${product.id}`} className="text-decoration-none">
+                                        <Image
+                                            src={product.images?.[0]?.image || "/assets/images/placeholder-image.png"}
+                                            alt={product.product_name}
+                                            className="card-img-top"
+                                            width={400}
+                                            height={250}
+                                            style={{ objectFit: "cover" }}
+                                        />
+                                    </Link>
                                     <div className="card-body text-center">
-                                        <h6 className="text-primary fw-bold">{product.product_name}</h6>
+                                        <Link href={`/pages/Marketplace/productdetails/${product.id}`} className="text-decoration-none">
+                                            <h6 className="text-primary fw-bold">{product.product_name}</h6>
+                                        </Link>
                                         <p className="text-muted small">
                                             by {product.user_info.first_name} {product.user_info.last_name} in{" "}
                                             {product.category}
@@ -150,7 +157,6 @@ export default function MarketPlace() {
                 </div>
             </div>
 
-            {/* Custom Styles */}
             <style jsx>{`
                 .card:hover {
                     transform: scale(1.03);

@@ -1,15 +1,11 @@
 "use client";
 
- 
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import Image from "next/image";
-   
 
 export default function GamesPage() {
-    
-
   const [advertisements, setAdvertisements] = useState([]);
   const api = createAPI();
 
@@ -17,12 +13,18 @@ export default function GamesPage() {
     try {
       const response = await api.post(`/api/post/advertisement-requests`);
       if (response.data.status === "200") {
-        setAdvertisements(response.data.data);
+        if (response.data.message === "Post advertisement request not found") {
+          setAdvertisements([]);
+        } else {
+          setAdvertisements(response.data.data);
+        }
       } else {
         alert(response.data.message);
+        setAdvertisements([]);
       }
     } catch (error) {
       alert("Error fetching advertisements");
+      setAdvertisements([]);
     }
   };
 
@@ -32,7 +34,6 @@ export default function GamesPage() {
 
   return (
     <div>
-        
       <div className="container-fluid bg-light">
         <div className="container mt-5 pt-5">
           <div className="row">
@@ -44,39 +45,43 @@ export default function GamesPage() {
                 <div className="card-body">
                   <h3>Advertisements</h3>
                   <hr className="text-muted" />
-                  <table className="table table-secondary table-hover">
-                    <thead className="table-secondary">
-                      <tr>
-                        <th>Sr</th>
-                        <th>Image</th>
-                        <th>Ad Link</th>
-                        <th>Ad Title</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {advertisements.map((ad, index) => (
-                        <tr key={ad.id}>
-                          <td>{index + 1}</td>
-                          <td>
-                            <Image
-                              src={ad.image || "/assets/images/placeholder-image.png"}
-                              alt={ad.title}
-                              width={50}
-                              height={50}
-                            />
-                          </td>
-                          <td>{ad.user_data.email}</td>
-                          <td>{ad.title}</td>
-                          <td>
-                            <button className="btn btn-sm btn-outline-primary">
-                              <i className="bi bi-eye"></i>
-                            </button>
-                          </td>
+                  {advertisements.length === 0 ? (
+                    <p className="text-center">No advertisements found.</p>
+                  ) : (
+                    <table className="table table-secondary table-hover">
+                      <thead className="table-secondary">
+                        <tr>
+                          <th>Sr</th>
+                          <th>Image</th>
+                          <th>Ad Link</th>
+                          <th>Ad Title</th>
+                          <th>Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {advertisements.map((ad, index) => (
+                          <tr key={ad.id}>
+                            <td>{index + 1}</td>
+                            <td>
+                              <Image
+                                src={ad.image || "/assets/images/placeholder-image.png"}
+                                alt={ad.title}
+                                width={50}
+                                height={50}
+                              />
+                            </td>
+                            <td>{ad.user_data.email}</td>
+                            <td>{ad.title}</td>
+                            <td>
+                              <button className="btn btn-sm btn-outline-primary">
+                                <i className="bi bi-eye"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>

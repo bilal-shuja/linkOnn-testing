@@ -1,5 +1,5 @@
 "use client"
-import Navbar from '@/app/assets/components/navbar/page'
+
 import React from 'react'
 
 const page = () => {
