@@ -8,6 +8,7 @@ import createAPI from "@/app/lib/axios";
 import { toast } from "react-toastify";
 import { use } from "react";
 import { Modal, Spinner } from "react-bootstrap";
+import ChatWindow from "@/app/pages/Chat/ChatWindow/ChatWindow";
 
 export default function ProductDetails({ params }) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function ProductDetails({ params }) {
   const [isOwner, setIsOwner] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const [selectedChat, setSelectedChat] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -84,6 +86,10 @@ export default function ProductDetails({ params }) {
       setLoading(false);
       setShowModal(false);
     }
+  };
+
+  const toggleChatWindow = (chat) => {
+    setSelectedChat(chat);
   };
 
   if (loading) {
@@ -267,9 +273,11 @@ export default function ProductDetails({ params }) {
                     </h6>
                     <small className="text-muted">@{product.user_info.username}</small>
                   </div>
-                  <Link href={`/messages/${product.user_id}`} className="btn btn-sm btn-outline-primary ms-auto">
+                  <button className="btn btn-sm btn-outline-primary ms-auto"
+                    onClick={() => toggleChatWindow(product.user_id)}
+                  >
                     <i className="bi bi-chat-dots me-1"></i>Contact
-                  </Link>
+                  </button>
                 </div>
               </div>
             )}
@@ -333,6 +341,11 @@ export default function ProductDetails({ params }) {
           z-index: 1;
         }
       `}</style>
+
+      {selectedChat && (
+        <ChatWindow chat={selectedChat} onClose={() => setSelectedChat(null)} />
+      )}
+
     </div>
   );
 }
