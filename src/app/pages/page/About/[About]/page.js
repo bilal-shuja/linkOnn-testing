@@ -1,8 +1,8 @@
 "use client"
 import { use } from "react";
 import React, { useState, useEffect } from 'react';
-import RightNav from '../../components/rightNav';
-import TimelineProfileCard from '../../components/timelineProfileCard';
+import RightNav from '../../components/RightNav';
+import TimelineProfileCard from '../../components/TimelineProfileCard';
 
 export default function About({ params }) {
   const { About } = use(params);

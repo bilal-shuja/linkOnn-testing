@@ -7,6 +7,7 @@ import createAPI from "@/app/lib/axios";
 import { toast } from "react-toastify";
 import { useRouter } from 'next/navigation';
 import { useSiteSettings } from "@/context/SiteSettingsContext";
+import Image from "next/image";
 
 
 export default function EditMyPage({ params }) {
@@ -217,11 +218,13 @@ export default function EditMyPage({ params }) {
                                             {specificPageInfo && specificPageInfo.avatar && (
                                                 <div className="mt-2">
                                                     <small>Current avatar:</small>
-                                                    <img 
+                                                    <Image 
                                                         src={specificPageInfo.avatar} 
                                                         alt="Current avatar" 
                                                         className="img-thumbnail mt-1" 
-                                                        style={{height: "50px"}} 
+                                                        width={100}
+                                                        height={50}
+                                                        style={{ objectFit: 'contain' }}
                                                     />
                                                 </div>
                                             )}
@@ -238,11 +241,13 @@ export default function EditMyPage({ params }) {
                                             {specificPageInfo && specificPageInfo.cover && (
                                                 <div className="mt-2">
                                                     <small>Current cover:</small>
-                                                    <img 
+                                                    <Image 
                                                         src={specificPageInfo.cover} 
                                                         alt="Current cover" 
                                                         className="img-thumbnail mt-1" 
-                                                        style={{height: "50px"}} 
+                                                        width={100}
+                                                        height={50}
+                                                        style={{ objectFit: 'contain' }}
                                                     />
                                                 </div>
                                             )}
