@@ -6,6 +6,7 @@ import createAPI from "@/app/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 export default function GamesPage() {
 
@@ -13,6 +14,7 @@ export default function GamesPage() {
     const [gameloading, setGameloading] = useState(true);
     const [error, setError] = useState(null);
     const api = createAPI();
+    const settings = useSiteSettings()
 
     const fetchGames = async () => {
         setGameloading(true);
@@ -35,6 +37,16 @@ export default function GamesPage() {
     useEffect(() => {
         fetchGames();
     }, []);
+
+    if (!settings) return null
+    
+    if (settings["chck-games"] !== "1") return (
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+            <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    );;
 
 
     return (

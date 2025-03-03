@@ -62,6 +62,8 @@ export default function MoviesPage() {
 
   if (!settings) return null
 
+  if (settings["chck-movies"] !== "1") return null;
+
   return (
     <div className="movies-page bg-light">
       {/* Hero Banner */}

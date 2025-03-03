@@ -6,9 +6,8 @@ import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-   
 import { toast } from "react-toastify";
-
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 export default function Storyform() {
       
@@ -21,7 +20,7 @@ export default function Storyform() {
     const [userdata, setUserdata] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
+    const settings = useSiteSettings();
     const api = createAPI();
 
     
@@ -171,6 +170,13 @@ export default function Storyform() {
     if (!userdata) {
         return;
     }
+
+   
+        if (!settings) return null;
+    
+   
+        if (settings.user_stories !== "1") return null;
+    
 
     return (
         <div>

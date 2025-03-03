@@ -6,12 +6,13 @@ import createAPI from "@/app/lib/axios";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { use } from "react";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 export default function MovieDetailPage({ params }) {
   const router = useRouter();
   const { id } = use(params);
   const api = createAPI();
-
+  const settings = useSiteSettings()
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -56,19 +57,27 @@ export default function MovieDetailPage({ params }) {
       </div>
     );
   }
-  
+
 
   if (!movie) {
     return <div className="text-center text-white movie-bg vh-100 d-flex align-items-center justify-content-center fs-2">Movie not found</div>;
   }
+
+  if (settings["chck-movies"] !== "1") return (
+    <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="movie-details-page">
       {/* Backdrop */}
       <div className="backdrop-container position-relative mb-5">
         <div className="backdrop-gradient"></div>
-        <div className="backdrop-image" style={{ 
-          backgroundImage: `url(${movie.cover_pic || "/assets/images/placeholder-image.png"})` 
+        <div className="backdrop-image" style={{
+          backgroundImage: `url(${movie.cover_pic || "/assets/images/placeholder-image.png"})`
         }}></div>
       </div>
 
@@ -87,10 +96,10 @@ export default function MovieDetailPage({ params }) {
                 />
               </div>
             </div>
-            
+
             <div className="movie-info-card mt-4">
               <h3 className="info-title mb-3">Movie Info</h3>
-              
+
               <ul className="list-group list-group-flush movie-info-list">
                 <li className="list-group-item d-flex justify-content-between align-items-center">
                   <span className="info-icon">📅</span>
@@ -119,13 +128,13 @@ export default function MovieDetailPage({ params }) {
           {/* Right Column - Details & Player */}
           <div className="col-lg-8">
             <h1 className="movie-title">{movie.movie_name}</h1>
-            
+
             <div className="d-flex align-items-center gap-2 mb-4 stars-section">
               <span className="star-icon">⭐</span>
               <span className="starring">Starring:</span>
               <span className="stars-names">{movie.stars}</span>
             </div>
-            
+
             <div className="synopsis-card mb-4">
               <h3 className="synopsis-title mb-3">Synopsis</h3>
               <p className="synopsis-text">{movie.description}</p>
@@ -134,8 +143,8 @@ export default function MovieDetailPage({ params }) {
             {/* Video Player */}
             <div className="video-container">
               {isPlaying ? (
-                <video 
-                  controls 
+                <video
+                  controls
                   autoPlay
                   className="movie-video"
                 >
@@ -144,8 +153,8 @@ export default function MovieDetailPage({ params }) {
                 </video>
               ) : (
                 <div className="video-thumbnail" onClick={handlePlayClick}>
-                  <div className="thumbnail-image" style={{ 
-                    backgroundImage: `url(${movie.cover_pic || "/assets/images/placeholder-image.png"})` 
+                  <div className="thumbnail-image" style={{
+                    backgroundImage: `url(${movie.cover_pic || "/assets/images/placeholder-image.png"})`
                   }}></div>
                   <div className="play-button-wrapper">
                     <div className="play-button">

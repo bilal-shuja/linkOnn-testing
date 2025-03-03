@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import styles from "./Storycss.module.css";
 import moment from "moment";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 const Stories = () => {
     const [stories, setStories] = useState([]);
@@ -18,6 +19,7 @@ const Stories = () => {
     const [isPaused, setIsPaused] = useState(false);
     const [userdata, setUserdata] = useState(null);
     const api = createAPI();
+    const settings = useSiteSettings();
 
     useEffect(() => {
         const data = localStorage.getItem("userdata");
@@ -27,40 +29,43 @@ const Stories = () => {
     }, []);
 
     useEffect(() => {
-        const fetchStories = async () => {
-            try {
-                setLoading(true);
-                const response = await api.post("/api/story/get-stories");
+        // Only fetch stories if the feature is enabled
+        if (settings && settings.user_stories === "1") {
+            const fetchStories = async () => {
+                try {
+                    setLoading(true);
+                    const response = await api.post("/api/story/get-stories");
 
-                if (response.data.code === "200") {
-                    const groupedStories = response.data.data.map((user) => ({
-                        id: user.id,
-                        username: user.username,
-                        avatar: user.avatar,
-                        userName: `${user.first_name} ${user.last_name}`,
-                        stories: user.stories.map((story) => ({
-                            id: story.id,
-                            media: story.media,
-                            description: story.description,
-                            duration: parseInt(story.duration) * 1000,
-                            created_at: story.created_at,
-                            type: story.type,
-                        })),
-                    }));
+                    if (response.data.code === "200") {
+                        const groupedStories = response.data.data.map((user) => ({
+                            id: user.id,
+                            username: user.username,
+                            avatar: user.avatar,
+                            userName: `${user.first_name} ${user.last_name}`,
+                            stories: user.stories.map((story) => ({
+                                id: story.id,
+                                media: story.media,
+                                description: story.description,
+                                duration: parseInt(story.duration) * 1000,
+                                created_at: story.created_at,
+                                type: story.type,
+                            })),
+                        }));
 
-                    setStories(groupedStories);
-                } else {
-                    toast.error("Failed to load stories");
+                        setStories(groupedStories);
+                    } else {
+                        toast.error("Failed to load stories");
+                    }
+                } catch (err) {
+                    toast.error("Error fetching stories. Please try again later.");
+                } finally {
+                    setLoading(false);
                 }
-            } catch (err) {
-                toast.error("Error fetching stories. Please try again later.");
-            } finally {
-                setLoading(false);
-            }
-        };
+            };
 
-        fetchStories();
-    }, []);
+            fetchStories();
+        }
+    }, [settings]);
 
     useEffect(() => {
         if (!showCarousel || isPaused) return;
@@ -119,7 +124,9 @@ const Stories = () => {
         return moment(timestamp).fromNow();
     };
 
-
+    if (!settings) return null;
+    
+    if (settings.user_stories !== "1") return null;
 
     return (
         <div className={styles.storiesSection}>
