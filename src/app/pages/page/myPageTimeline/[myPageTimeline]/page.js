@@ -20,14 +20,14 @@ import ReportPostModal from "@/app/pages/Modals/ReportPost";
 import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
 import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
 
+import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
+
 import SharedPosts from "@/app/pages/components/sharedPosts";
 import { useRouter } from "next/navigation";
-import Spinner from 'react-bootstrap/Spinner';
 // import MakeDonationModal from "../../Modal/MakeDonationModal";
 import MakeDonationModal from "@/app/pages/Modals/MakeDonationModal";
 import { ReactionBarSelector } from '@charkour/react-reactions';
 
-import { FacebookCounter } from "@charkour/react-reactions";
 import UserImagesLayout from "@/app/pages/components/userImagesLayout";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import TimelineProfileCard from "../../components/TimelineProfileCard";
@@ -112,6 +112,8 @@ export default function MyPageTimeline({ params }) {
     const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
     const [showEditPostModal, setShowEditPostModal] = useState(false);
     const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+
+    const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
 
     const endpoint = "/api/post/create";
 
@@ -1211,17 +1213,17 @@ export default function MyPageTimeline({ params }) {
                                                 </div>
 
                                                 <div className="d-flex justify-content-between mt-3">
-                                        
-                                                        <button className={`btn w-100 ${styles.btnSuccessPost}`}
+
+                                                    <button className={`btn w-100 ${styles.btnSuccessPost}`}
                                                         onClick={uploadPost}
                                                         disabled={postLoadingState}
                                                     >
-                                                      Post <i className="bi bi-send me-2"></i>
+                                                        Post <i className="bi bi-send me-2"></i>
                                                     </button>
-                                                 
-                                                            
 
-                                        
+
+
+
                                                 </div>
                                             </div>
 
@@ -1841,10 +1843,7 @@ export default function MyPageTimeline({ params }) {
                                                                 />
                                                             </div>
                                                         )}
-                                                        {/* {postReactions[post.id] && postReactions[post.id].length > 0 && (
-                                                            <FacebookCounter counters={postReactions[post.id]} user="You" />
-                                                        )} */}
-
+                                                    
                                                     </div>
 
                                                     <button
@@ -2194,9 +2193,35 @@ export default function MyPageTimeline({ params }) {
                                                 }
 
 
+                                                {
+                                                    userID === post?.user_id ? null :
+                                                        <>
+                                                            <hr />
+
+                                                            <div className="text-center">
+                                                                <button className="btn btn-outline-primary" onClick={() => {
+                                                                        setShowAdvertismentModal(true)
+                                                                        setPostID(post.id)
+                                                                    }
+                                                                }>
+                                                                    <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                                                                </button>
+
+                                                            </div>
+                                                        </>
+
+
+                                                }
+
+
+
 
                                             </div>
+
+
+
                                         </div>
+
 
 
                                     </div>
@@ -2333,6 +2358,19 @@ export default function MyPageTimeline({ params }) {
                                     postID={postID}
                                 />
                             )
+                        }
+
+
+                        {
+                            showAdvertismentModal && (
+
+                                <AdvertismentModal
+                                    showAdvertismentModal={showAdvertismentModal}
+                                    setShowAdvertismentModal={setShowAdvertismentModal}
+                                    postID={postID}
+                                />
+                            )
+
                         }
 
 

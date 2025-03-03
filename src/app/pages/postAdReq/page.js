@@ -1,13 +1,17 @@
 "use client";
-
-import Rightnav from "@/app/assets/components/rightnav/page";
-import React, { useState, useEffect } from "react";
-import createAPI from "@/app/lib/axios";
 import Image from "next/image";
+import { toast } from "react-toastify";
+import createAPI from "@/app/lib/axios";
+import React, { useState, useEffect } from "react";
+import Rightnav from "@/app/assets/components/rightnav/page";
+import ApproveRejectAdvModal from "../Modals/Advertisment/ApproveRejectAdvModal";
 
 export default function GamesPage() {
-  const [advertisements, setAdvertisements] = useState([]);
   const api = createAPI();
+  const [advID, setAdvID] = useState('');
+  const [advertisements, setAdvertisements] = useState([]);
+  const [showApproveRejectAdvModal, setShowApproveRejectAdvModal] = useState(false);
+
 
   const fetchPostsReq = async () => {
     try {
@@ -19,11 +23,11 @@ export default function GamesPage() {
           setAdvertisements(response.data.data);
         }
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
         setAdvertisements([]);
       }
     } catch (error) {
-      alert("Error fetching advertisements");
+      toast.error("Error fetching advertisements");
       setAdvertisements([]);
     }
   };
@@ -43,12 +47,12 @@ export default function GamesPage() {
             <div className="col-md-9 p-3">
               <div className="card mb-3 shadow-lg border-0">
                 <div className="card-body">
-                  <h3>Advertisements</h3>
+                  <h3>Advertisements <i className="bi bi-tv" /></h3>
                   <hr className="text-muted" />
                   {advertisements.length === 0 ? (
                     <p className="text-center">No advertisements found.</p>
                   ) : (
-                    <table className="table table-secondary table-hover">
+                    <table className="table table-striped table-responsive table-bordered text-center table-hover">
                       <thead className="table-secondary">
                         <tr>
                           <th>Sr</th>
@@ -64,17 +68,23 @@ export default function GamesPage() {
                             <td>{index + 1}</td>
                             <td>
                               <Image
-                                src={ad.image || "/assets/images/placeholder-image.png"}
+                                src={ad?.image || "/assets/images/placeholder-image.png"}
                                 alt={ad.title}
                                 width={50}
                                 height={50}
+                                className="rounded rounded-5"
+                                loader={({ src }) => src}
+
                               />
                             </td>
                             <td>{ad.user_data.email}</td>
                             <td>{ad.title}</td>
                             <td>
-                              <button className="btn btn-sm btn-outline-primary">
-                                <i className="bi bi-eye"></i>
+                              <button className="btn btn-sm btn-outline-primary" onClick={()=>{
+                                setAdvID(ad)
+                                setShowApproveRejectAdvModal(true)
+                              }}>
+                                <i className="bi bi-folder2-open"></i>
                               </button>
                             </td>
                           </tr>
@@ -83,6 +93,17 @@ export default function GamesPage() {
                     </table>
                   )}
                 </div>
+
+                {
+                  showApproveRejectAdvModal && (
+                    <ApproveRejectAdvModal
+                    advID = {advID}
+                    showApproveRejectAdvModal = {showApproveRejectAdvModal}
+                    setShowApproveRejectAdvModal = {setShowApproveRejectAdvModal}
+                    />
+                  )
+                
+                }
               </div>
             </div>
           </div>
