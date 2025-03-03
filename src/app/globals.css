@@ -358,6 +358,12 @@
   transition: all 0.2s ease-in-out;
 }
 
+.pages-comment-section:hover{
+  color: #343a40;
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
+}
+
 
 
 /* 📌 Soft Divider */

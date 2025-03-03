@@ -1211,28 +1211,17 @@ export default function MyPageTimeline({ params }) {
                                                 </div>
 
                                                 <div className="d-flex justify-content-between mt-3">
-
-                                                    <button className={`btn w-100 ${styles.btnSuccessPost}`}
-                                                        disabled={postLoadingState}
+                                        
+                                                        <button className={`btn w-100 ${styles.btnSuccessPost}`}
                                                         onClick={uploadPost}
-
+                                                        disabled={postLoadingState}
                                                     >
-                                                      Post
+                                                      Post <i className="bi bi-send me-2"></i>
                                                     </button>
+                                                 
                                                             
 
-                                                            
-                                                    {/* {!postLoadingState && <i className="bi bi-send me-2"></i>}
-                                                        {postLoadingState ? (
-                                                            <Spinner
-                                                                as="span"
-                                                                animation="border"
-                                                                role="status"
-                                                                aria-hidden="true"
-                                                            />
-                                                        ) : (
-                                                            "Post"
-                                                        )} */}
+                                        
                                                 </div>
                                             </div>
 
