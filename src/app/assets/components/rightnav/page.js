@@ -15,7 +15,7 @@ export default function Leftnav() {
 
   return (
     <div className="position-sticky top-0">
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <nav className="navbar navbar-expand-lg navbar-light">
         <div className="container-fluid">
           <button
             className="navbar-toggler"

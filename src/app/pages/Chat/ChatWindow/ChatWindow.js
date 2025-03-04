@@ -383,129 +383,10 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
     }, [chatID, lastMessageTimestamp, isUserAtBottom, api.post]);
 
 
-
-
-    // Initial messages fetch
-
-    // const getUserChat = async (loadMore = false) => {
-    //     if (!chatID || isLoadingLock) return
-    //     try {
-    //         if (loadMore) {
-    //             setLoadingMore(true)
-    //             setIsLoadingLock(true)
-    //             if (scrollLockTimeout.current) {
-    //                 clearTimeout(scrollLockTimeout.current)
-    //             }
-    //             console.log("Loading more messages with offset:", offset + limit);
-    //         }
-
-    //         else {
-    //             setLoading(true)
-    //         }
-
-    //         // setLoading(true);
-    //         const formdata = new FormData();
-    //         formdata.append("to_id", chatID);
-    //         formdata.append("limit", limit);
-    //         formdata.append("offset", loadMore ? offset : 0)
-
-    //         console.log("Sending request with params:", {
-    //             to_id: chatID,
-    //             limit,
-    //             offset: loadMore ? offset : 0
-    //         });
-
-    //         const response = await api.post("/api/chat/get-user-chat", formdata, {
-    //             headers: {
-    //                 "Content-Type": "multipart/form-data",
-    //             }
-    //         });
-
-    //         if (response.data.status === "success") {
-    //             // setUserChat(response.data.data);
-    //             // setHasMore(response.data.data.length >= limit);
-    //             // scrollToBottom(true);
-
-    //             const newMessages = response.data.data
-
-    //             console.log(`Received ${newMessages.length} messages from API`);
-
-    //             // if (newMessages.length < limit) {
-    //             //     setHasMore(false)
-    //             // } else {
-    //             //     setHasMore(true)
-    //             // }
-    //             setHasMore(newMessages.length >= limit)
-    //             // if (loadMore) {
-    //             //   // Prepend older messages to the beginning of the chat
-    //             //   setUserChat((prev) => [...newMessages, ...prev])
-    //             //   setOffset((prev) => prev + limit)
-    //             // } 
-    //             if (loadMore) {
-    //                 setUserChat((prev) => {
-    //                     // Create a Map of existing messages using ID as key
-    //                     const existingMessages = new Map(prev.map((msg) => [msg.id, msg]))
-
-    //                     // Filter and add only unique messages
-
-    //                     // newMessages.forEach((msg) => {
-    //                     //     if (!existingMessages.has(msg.id)) {
-    //                     //         existingMessages.set(msg.id, msg)
-    //                     //     }
-    //                     // })
-
-    //                     const addedCount = newMessages.reduce((count, msg) => {
-    //                         if (!existingMessages.has(msg.id)) {
-    //                             existingMessages.set(msg.id, msg);
-    //                             return count + 1;
-    //                         }
-    //                         return count;
-    //                     }, 0);
-
-
-    //                     console.log(`Added ${addedCount} new unique messages`);
-
-    //                     // Convert Map back to array and sort by creation date
-    //                     const updatedMessages = Array.from(existingMessages.values()).sort(
-    //                         (a, b) => new Date(a.created_at) - new Date(b.created_at),
-    //                     )
-
-    //                     return updatedMessages
-    //                 })
-
-    //                 // Only update offset if we actually got new messages
-    //                 if (newMessages.length > 0) {
-    //                     setOffset((prev) => prev + limit);
-    //                     console.log("Updated offset to:", offset + limit);
-    //                 }
-    //             }
-    //             else {
-    //                 // Initial load
-    //                 setUserChat(newMessages)
-    //                 setOffset(limit)
-    //                 scrollToBottom(true)
-    //             }
-    //         }
-    //         else {
-    //             toast.error("Failed to load chats.");
-    //         }
-    //     } catch (err) {
-    //         toast.error("Error fetching chats. Please try again in a while.");
-    //     } finally {
-    //         setLoading(false)
-    //         setLoadingMore(false)
-    //         if (loadMore) {
-    //             scrollLockTimeout.current = setTimeout(() => {
-    //                 setIsLoadingLock(false);
-    //                 console.log("Loading lock released");
-    //             }, 2000); // Longer timeout to prevent rapid re-triggering
-    //         }
-    //     }
-    // };
-
-
     const getUserChat = async (loadMore = false) => {
         if (!chatID || isLoadingLock) return;
+
+        // const hasShownNoInternetToast = useRef(false);
         try {
             if (loadMore) {
                 setLoadingMore(true);
@@ -542,14 +423,13 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                 if (loadMore) {
                     setUserChat((prev) => {
                         const existingMessages = new Map(prev.map((msg) => [msg.id, msg]));
-                        const addedCount = newMessages.reduce((count, msg) => {
+                        newMessages.reduce((count, msg) => {
                             if (!existingMessages.has(msg.id)) {
                                 existingMessages.set(msg.id, msg);
                                 return count + 1;
                             }
                             return count;
                         }, 0);
-                        console.log(`Added ${addedCount} new unique messages`);
                         const updatedMessages = Array.from(existingMessages.values()).sort(
                             (a, b) => new Date(a.created_at) - new Date(b.created_at)
                         );
@@ -558,7 +438,6 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
 
                     if (newMessages.length > 0) {
                         setOffset((prev) => prev + limit);
-                        console.log("Updated offset to:", offset + limit);
                     }
                 } else {
                     setUserChat(newMessages);
@@ -569,14 +448,18 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                 toast.error("Failed to load chats.");
             }
         } catch (err) {
-            toast.error("Error fetching chats. Please try again in a while.");
+            if (!navigator.onLine) {
+                toast.error(` No internet connection. Please check your network.`);
+            }
+            else{
+                toast.error("Error fetching chats. Please try again in a while.");
+
+            }
         } finally {
             setLoading(false);
             setLoadingMore(false);
             if (loadMore) {
-                // Ensure isLoadingLock is reset after loading more messages
                 setIsLoadingLock(false);
-                console.log("Loading lock released");
             }
         }
     };
@@ -587,9 +470,6 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
         let currentInterval = null;
 
         const startPolling = () => {
-            //     if (isUserAtBottom) {
-
-            // }
             fetchNewMessages();
             currentInterval = setInterval(fetchNewMessages, 5000);
             return currentInterval;
@@ -711,7 +591,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
             }
 
             const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-            const isNearTop = scrollTop < 150; // Trigger load when user is near the top
+            const isNearTop = scrollTop < 50; // Trigger load when user is near the top
             const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
 
             if (isNearBottom && hasNewMessages) {
@@ -793,94 +673,12 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
 
 
 
-    // useEffect(() => {
-    //     if (preserveScrollPosition.current && chatContainerRef.current) {
-    //         const { scrollHeight, scrollTop } = chatContainerRef.current;
-
-    //         chatContainerRef.current.scrollTop = scrollHeight - preserveScrollPosition.current
-    //         preserveScrollPosition.current = null
-    //     }
-    // }, [userChat])
-
-
-
-    // useEffect(() => {
-    //     if (preserveScrollPosition.current && chatContainerRef.current && loadingMore) {
-    //         const { scrollHeight } = chatContainerRef.current
-    //         const previousHeight = preserveScrollPosition.current
-    //         const newPosition = scrollHeight - previousHeight
-
-
-    //         console.log("Adjusting scroll position:", {
-    //             scrollHeight,
-    //             previousHeight,
-    //             newPosition
-    //         });
-
-    //         if (newPosition > 0) {
-    //             requestAnimationFrame(() => {
-    //                 if (chatContainerRef.current) {
-    //                     chatContainerRef.current.scrollTop = newPosition;
-
-    //                     requestAnimationFrame(() => {
-    //                         if (chatContainerRef.current) {
-    //                             const currentPos = chatContainerRef.current.scrollTop;
-    //                             if (Math.abs(currentPos - newPosition) > 10) {
-    //                                 console.log("First adjustment didn't work, trying again");
-    //                                 chatContainerRef.current.scrollTop = newPosition;
-    //                             }
-
-    //                             setTimeout(() => {
-    //                                 setIsScrolling(false);
-    //                                 console.log("Reset scrolling flag");
-    //                             }, 300);
-    //                         }
-    //                     });
-    //                 }
-    //             });
-    //         }
-    //         preserveScrollPosition.current = null
-    //     }
-    //     else if (loadingMore && !preserveScrollPosition.current) {
-
-    //         setTimeout(() => {
-    //             setIsScrolling(false);
-    //             console.log("Reset scrolling flag (no position preserved)");
-    //         }, 200)
-    //     }
-    // }, [userChat, loadingMore])
 
     useEffect(() => {
         if (preserveScrollPosition.current && chatContainerRef.current && loadingMore) {
             const { scrollHeight } = chatContainerRef.current
             const previousHeight = preserveScrollPosition.current
             const newPosition = scrollHeight - previousHeight
-
-
-
-            // if (newPosition > 0) {
-            //     requestAnimationFrame(() => {
-            //         if (chatContainerRef.current) {
-            //             chatContainerRef.current.scrollTop = newPosition;
-
-            //             requestAnimationFrame(() => {
-            //                 if (chatContainerRef.current) {
-            //                     const currentPos = chatContainerRef.current.scrollTop;
-            //                     if (Math.abs(currentPos - newPosition) > 10) {
-            //                         console.log("First adjustment didn't work, trying again");
-            //                         chatContainerRef.current.scrollTop = newPosition;
-            //                     }
-
-            //                     setTimeout(() => {
-            //                         setIsScrolling(false);
-            //                         console.log("Reset scrolling flag");
-            //                     }, 300);
-            //                 }
-            //             });
-            //         }
-            //     });
-            // }
-            // preserveScrollPosition.current = null;
 
 
             if (newPosition > 0) {
@@ -893,8 +691,6 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
             preserveScrollPosition.current = null;
         }
         else if (loadingMore && !preserveScrollPosition.current) {
-            // If we're loading more but don't have a position to preserve,
-            // still reset the scrolling flag
             setTimeout(() => {
                 setIsScrolling(false);
             }, 200)
@@ -1048,7 +844,6 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                 }}
             >
                 <i className="bi bi-arrow-down-circle-fill "></i>
-                {/* <span>New messages</span> */}
             </div>
         );
     };
@@ -1166,7 +961,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                             userChat && userChat.length === 0 ? (
                                 <div className="text-center p-5">
                                     <span className="bg-light px-4 py-2 rounded-pill text-muted" style={{ fontSize: "16px", fontWeight: "bold" }}>
-                                        No chats found
+                                        No chat found
                                     </span>
                                 </div>
                             ) :

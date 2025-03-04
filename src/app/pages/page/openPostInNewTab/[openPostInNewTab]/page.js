@@ -15,7 +15,7 @@ import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
 import EnableDisableCommentsModal from '../../Modal/EnableDisableCommentsModal';
 // import PageImagesLayout from "../../myPageTimeline/[myPageTimeline]/pageImagesLayout";
-import SharedPosts from "../../components/sharedPosts";
+import SharedPosts from "../../components/SharedPosts";
 import UserImagesLayout from "@/app/pages/components/userImagesLayout";
 import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
 import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
@@ -528,7 +528,7 @@ export default function OpenPostInNewTab({ params }) {
 
     return (
         <>
-            <div className="container-fluid bg-light">
+            <div className="container-fluid">
                 <div className="container mt-3 pt-5">
                     <div className="row">
                         <div className="col-md-3 p-3">
@@ -967,16 +967,12 @@ export default function OpenPostInNewTab({ params }) {
     
                                                     {post?.video && (
                                                         <div
-                                                            className="media-container mt-1"
-                                                            style={{ width: "100%", height: "auto" }}
+                                                            className="media-container w-100 mt-1"
+                                                           
                                                         >
                                                             <video
                                                                 controls
-                                                                style={{
-                                                                    objectFit: "cover",
-                                                                    width: "100%",
-                                                                    height: "auto",
-                                                                }}
+                                                                style={{ maxHeight: '400px', objectFit: 'contain' }}
                                                             >
                                                                 <source
                                                                     src={post.video.media_path}

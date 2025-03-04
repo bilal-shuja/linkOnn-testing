@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
@@ -16,8 +15,12 @@ import SavePostModal from "../Modals/SaveUnsavePost";
 import useConfirmationToast from "../Modals/useConfirmationToast";
 import { ReactionBarSelector } from '@charkour/react-reactions';
 import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
+import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
+import ReadMoreLess from 'react-read-more-less';
+
 
 export default function VideoFeed() {
+    const userID = localStorage.getItem('userid');
 
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -46,6 +49,9 @@ export default function VideoFeed() {
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
     const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+
+    const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
+
 
     const reactionEmojis = {
         satisfaction: "👍",
@@ -506,16 +512,16 @@ export default function VideoFeed() {
                                         <div className="d-flex align-items-center justify-content-between">
                                             <div className="d-flex align-items-center">
                                                 <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                 
-                                                        <Image
-                                                            className="avatar-img rounded-circle"
-                                                            src={post.user.avatar || "/assets/images/placeholder-image.png"}
-                                                            alt="User Avatar"
-                                                            width={50}
-                                                            height={50}
-                                                            style={{ objectFit: 'cover' }}
-                                                        />
-                                                  
+
+                                                    <Image
+                                                        className="avatar-img rounded-circle"
+                                                        src={post.user.avatar || "/assets/images/placeholder-image.png"}
+                                                        alt="User Avatar"
+                                                        width={50}
+                                                        height={50}
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
+
 
                                                     {post.user.is_verified === '1' && (
                                                         <div
@@ -730,15 +736,11 @@ export default function VideoFeed() {
                                             {post.video && (
                                                 <div
                                                     className="media-container mt-1"
-                                                    style={{ width: "100%", height: "auto" }}
                                                 >
                                                     <video
                                                         controls
-                                                        style={{
-                                                            objectFit: "cover",
-                                                            width: "100%",
-                                                            height: "auto",
-                                                        }}
+                                                         className="w-100 rounded"
+                                                        style={{ maxHeight: '400px', objectFit: 'contain' }}
                                                     >
                                                         <source
                                                             src={post.video.media_path}
@@ -1162,7 +1164,65 @@ export default function VideoFeed() {
                                             )
                                         }
 
+
+
+
+                                        <hr />
+
+                                        {
+                                            post?.post_advertisement ? (
+                                                <div className="card mb-3 mt-4 p-2 border-secondary">
+                                                    <div className="row g-0">
+                                                        <div className="col-md-4 advertisment-image">
+                                                            <Image src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"} width={200} height={100} className="img-fluid rounded-4 mt-1 p-0" alt="adv-img" style={{ objectFit: "cover" }} />
+                                                        </div>
+                                                        <div className="col-md-8 d-flex justify-content-start align-items-start ">
+                                                            <div className="card-body advertistment-details p-1">
+                                                                <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none" target="_blank">{post?.post_advertisement.link}</a>
+                                                                <h5 className="card-title">{post?.post_advertisement.title}</h5>
+                                                                <div className="card-text">
+                                                                    {post?.post_advertisement.body ? (
+                                                                        <span>
+                                                                            <ReadMoreLess
+                                                                                charLimit={50}
+                                                                                readMoreText="read more"
+                                                                                readLessText="read less"
+                                                                            >
+                                                                                {post?.post_advertisement.body}
+                                                                            </ReadMoreLess>
+                                                                        </span>
+                                                                    ) : null}
+                                                                </div>
+                                                                <p className="card-text"><small className="text-body-secondary">{post?.post_advertisement.created_at.split(' ')[0]}</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : null
+                                        }
+
+                                        {
+                                            userID !== post?.user_id && (
+                                                <>
+                                                    {/* <hr /> */}
+                                                    <div className="text-center mt-2">
+                                                        <button
+                                                            className="btn btn-outline-primary"
+                                                            onClick={() => {
+                                                                setShowAdvertismentModal(true);
+                                                                setPostID(post.id);
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+
+
                                     </div>
+
                                 </div>
                             ))}
 
@@ -1188,6 +1248,8 @@ export default function VideoFeed() {
                             <Leftnav />
                         </div>
                     </div>
+
+
                 </div>
             </div>
             {
@@ -1248,6 +1310,20 @@ export default function VideoFeed() {
                     />
                 )
             }
+
+
+            {
+                showAdvertismentModal && (
+
+                    <AdvertismentModal
+                        showAdvertismentModal={showAdvertismentModal}
+                        setShowAdvertismentModal={setShowAdvertismentModal}
+                        postID={postID}
+                    />
+                )
+
+            }
+
         </div>
     );
 }

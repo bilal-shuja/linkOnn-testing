@@ -265,14 +265,14 @@ export default function Groups() {
                                 <div key={group.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
 
-                                    <Image
-                                      src={group.avatar || "/assets/images/placeholder-image.png"}
-                                      alt="Group Image"
-                                      className="card-img-top mx-auto mt-3"
-                                      width={80}
-                                      height={200}
-                                      style={{ objectFit: "cover" }}
-                                    />
+                                  <Image
+                                    src={group.avatar || "/assets/images/placeholder-image.png"}
+                                    alt="Group Image"
+                                    className="d-block mx-auto mt-1 rounded-circle"
+                                    width={150}
+                                    height={150}
+                                  // style={{ objectFit: "cover" }}
+                                  />
 
 
                                     <div className="card-body">
@@ -291,11 +291,11 @@ export default function Groups() {
                                         </div>
                                       </div>
                                       {group.is_joined === "1" ? (
-                                        <button className="btn btn-success btn-sm">
+                                        <button className="btn btn-outline-success btn-sm mt-2">
                                           <i className="bi bi-check-circle-fill pe-1"> </i>
                                           Joined</button>
                                       ) : (
-                                        <button className="btn btn-primary btn-sm"
+                                        <button className="btn btn-outline-primary btn-sm mt-2"
                                           onClick={() => handleJoinGroup(group.id)}
                                         >+ Join Group</button>
                                       )}

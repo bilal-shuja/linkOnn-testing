@@ -11,7 +11,6 @@ export default function ConfirmModal({pageID , showPageLikeModal, setShowPageLik
     const endpoint = `/api/like-unlike-page`;
 
     function likeDislikePage(){
-      alert(pageID)
         api.post(endpoint,{
             page_id:pageID
         })

@@ -1,15 +1,14 @@
 "use client";
-
 import { useState } from "react";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import Spinner from "react-bootstrap/Spinner"; // Import Bootstrap Spinner
+import Spinner from "react-bootstrap/Spinner"; 
 
 export default function EditPostModal({ postID, setPosts, showEditPostModal, setShowEditPostModal }) {
     const [postText, setPostText] = useState("");
-    const [loading, setLoading] = useState(false); // Loading state
+    const [loading, setLoading] = useState(false); 
     const api = createAPI();
     const { id, post_text } = postID;
 
@@ -42,7 +41,6 @@ export default function EditPostModal({ postID, setPosts, showEditPostModal, set
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.log(error);
             toast.error("Error while updating post");
         } finally {
             setLoading(false);
