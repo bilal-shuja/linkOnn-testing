@@ -15,6 +15,7 @@ import SavePostModal from "../Modals/SaveUnsavePost";
 import useConfirmationToast from "../Modals/useConfirmationToast";
 import { ReactionBarSelector } from '@charkour/react-reactions';
 import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
 import ReadMoreLess from 'react-read-more-less';
 
@@ -49,6 +50,7 @@ export default function VideoFeed() {
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
     const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+    const settings = useSiteSettings()
 
     const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
 
@@ -491,6 +493,8 @@ export default function VideoFeed() {
         setActiveGreatJobId(null);
     };
 
+    if (!settings) return null
+
     return (
         <div>
 
@@ -911,19 +915,21 @@ export default function VideoFeed() {
                                         <hr className="post-divider" />
 
                                         <div className="d-flex mb-3 mt-2">
-                                            {userId && post.user_id !== userId && (
-                                                <button
-                                                    className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
-                                                    onClick={() => openModalCupCoffee(post.id)}
-                                                    style={{
-                                                        backgroundColor: "#A87F50",
-                                                        borderRadius: "10px",
-                                                        color: "#fff",
-                                                    }}
-                                                >
-                                                    <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                                </button>
-                                            )}
+                                            {settings["chck-cup_of_coffee"] === "1" &&
+                                                userId &&
+                                                post.user_id !== userId && (
+                                                    <button
+                                                        className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                        onClick={() => openModalCupCoffee(post.id)}
+                                                        style={{
+                                                            backgroundColor: "#A87F50",
+                                                            borderRadius: "10px",
+                                                            color: "#fff",
+                                                        }}
+                                                    >
+                                                        <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                    </button>
+                                                )}
 
 
                                             {activeCupCoffeeId === post.id && (
@@ -931,14 +937,15 @@ export default function VideoFeed() {
                                             )}
 
 
-                                            {userId && post.user_id !== userId && (
-                                                <button
-                                                    className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
-                                                    onClick={() => openModalGreatJob(post.id)}
-                                                >
-                                                    <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                                </button>
-                                            )}
+                                            {settings["chck-great_job"] === "1" &&
+                                                userId && post.user_id !== userId && (
+                                                    <button
+                                                        className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                                                        onClick={() => openModalGreatJob(post.id)}
+                                                    >
+                                                        <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                    </button>
+                                                )}
 
 
                                             {activeGreatJobId === post.id && (

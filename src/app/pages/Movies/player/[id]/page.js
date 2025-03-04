@@ -7,6 +7,7 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import { use } from "react";
 import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "@/app/pages/Modals/ModuleUnavailable";
 
 export default function MovieDetailPage({ params }) {
   const router = useRouter();
@@ -58,19 +59,13 @@ export default function MovieDetailPage({ params }) {
     );
   }
 
-
   if (!movie) {
     return <div className="text-center text-white movie-bg vh-100 d-flex align-items-center justify-content-center fs-2">Movie not found</div>;
   }
 
-  if (settings["chck-movies"] !== "1") return (
-    <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Loading...</span>
-      </div>
-    </div>
-  );
-
+  if (settings["chck-movies"] !== "1")  {
+    return <ModuleUnavailable />;
+}
   return (
     <div className="movie-details-page">
       {/* Backdrop */}

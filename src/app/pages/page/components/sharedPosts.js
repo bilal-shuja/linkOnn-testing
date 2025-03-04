@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
@@ -12,22 +11,19 @@ import React, { useState, useEffect } from "react";
 import PageImagesLayout from "../myPageTimeline/[myPageTimeline]/pageImagesLayout";
 
 export default function SharedPosts({ sharedPost, posts, setPosts }) {
-    if (!sharedPost) return null;
-    const api = createAPI();
-
     const router = useRouter();
-    const [pollData, setPollData] = useState(sharedPost.poll);
-
+    const api = createAPI();
+    
+    // Initialize all hooks unconditionally at the top level
+    const [pollData, setPollData] = useState(sharedPost?.poll || null);
     const [donate, setDonate] = useState("");
     const [loading, setLoading] = useState(false);
-
-    const [localDonation, setLocalDonation] = useState(sharedPost.donation);
-
+    const [localDonation, setLocalDonation] = useState(sharedPost?.donation || null);
     const [donationModal, setDonationModal] = useState(false);
     const [donationID, setDonationID] = useState("");
 
-
-
+    // If there's no sharedPost, return null after declaring all hooks
+    if (!sharedPost) return null;
 
     const colorMap = {
         '23jo': '#FFFFFF',
@@ -50,8 +46,9 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
         return colorMap[code] || code;
     };
 
-
-
+    const handleClick = (userId) => {
+        router.push(`/pages/UserProfile/timeline/${userId}`);
+    };
 
     const handleVote = async (optionId, pollId, postId) => {
         try {
@@ -86,7 +83,6 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
             toast.error("An error occurred while voting. Please try again.");
         }
     };
-
 
     const donateAmount = (e) => {
         setDonate(e.target.value);
@@ -131,21 +127,16 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                 setDonate("");
             } else {
                 toast.error(response.data.message);
-                setDonate("")
+                setDonate("");
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
             toast.error("Error while donating Fund.");
-            setDonate("")
-
+            setDonate("");
         } finally {
             setLoading(false);
         }
     };
-
-
-
-
 
     return (
         <>

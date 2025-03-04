@@ -10,6 +10,8 @@ import { toast } from "react-toastify";
 import useConfirmationToast from "../Modals/useConfirmationToast";
 import Link from "next/link";
 import { Modal, Spinner } from "react-bootstrap";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
 
 export default function Events() {
 
@@ -26,6 +28,8 @@ export default function Events() {
   const [modalAction, setModalAction] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(false);
+  const settings = useSiteSettings()
+
 
 
   const fetchAllEvents = async (page) => {
@@ -168,6 +172,12 @@ export default function Events() {
       setShowModal(false);
     }
   };
+
+  if (!settings) return null
+
+  if (settings["chck-events"] !== "1")  {
+    return <ModuleUnavailable />;
+}
 
   return (
     <div>

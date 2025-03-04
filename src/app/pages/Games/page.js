@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
 
 export default function GamesPage() {
 
@@ -40,13 +41,9 @@ export default function GamesPage() {
 
     if (!settings) return null
     
-    if (settings["chck-games"] !== "1") return (
-        <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-            <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    );;
+    if (settings["chck-games"] !== "1")  {
+        return <ModuleUnavailable />;
+    }
 
 
     return (

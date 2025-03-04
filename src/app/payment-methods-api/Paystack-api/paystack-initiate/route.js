@@ -10,13 +10,14 @@ export async function POST(req) {
             return NextResponse.json({ error: "Email and amount are required" }, { status: 400 });
         }
 
-        // ✅ Fetch site settings dynamically (server-side)
         const settings = await getSiteSettings();
         if (!settings || !settings.paystack_secret_key) {
             return NextResponse.json({ error: "Paystack secret key not found in settings" }, { status: 500 });
         }
 
-        const secretKey = settings.paystack_secret_key; // ✅ Use dynamically fetched key
+        const secretKey = settings.paystack_secret_key;
+
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
         const response = await axios.post(
             "https://api.paystack.co/transaction/initialize",
@@ -24,7 +25,7 @@ export async function POST(req) {
                 email: email,
                 amount: amount * 100, // Convert to kobo/cents
                 currency: "ZAR", // South African Rand
-                callback_url: `http://localhost:3000/pages/Wallet/success/paystack-success`,
+                callback_url: `${baseUrl}/pages/Wallet/success/paystack-success`,
                 metadata: {
                     custom_fields: [
                         {

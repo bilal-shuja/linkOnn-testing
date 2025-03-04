@@ -8,6 +8,8 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import moment from "moment";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
 
 export default function JobsPage() {
   const [jobCategory, setJobCategory] = useState([]);
@@ -19,6 +21,7 @@ export default function JobsPage() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const settings = useSiteSettings()
 
   const handleJobDelete = (jobId) => {
     showConfirmationToast(jobId);
@@ -207,6 +210,12 @@ export default function JobsPage() {
   }, [activeTab, isClient]);
 
   if (!isClient) return null;
+
+  if (!settings) return null
+
+  if (settings["chck-job_system"] !== "1")  {
+    return <ModuleUnavailable />;
+}
 
   return (
     <div>

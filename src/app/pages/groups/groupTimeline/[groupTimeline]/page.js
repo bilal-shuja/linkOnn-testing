@@ -26,6 +26,8 @@ import SharedPosts from "@/app/pages/components/sharedPosts";
 import GroupProfilecard from "../../components/group-card";
 import RightNavbar from "../../components/right-navbar";
 import { ReactionBarSelector } from '@charkour/react-reactions';
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "@/app/pages/Modals/ModuleUnavailable";
 import ReadMoreLess from 'react-read-more-less';
 import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
 
@@ -84,6 +86,7 @@ export default function GroupTimeline({ params }) {
     const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
+    const settings = useSiteSettings()
 
     const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
 
@@ -777,9 +780,11 @@ export default function GroupTimeline({ params }) {
         return colorMap[code] || code;
     };
 
+    if (!settings) return null
 
-
-
+    if (settings["chck-groups"] !== "1") {
+        return <ModuleUnavailable />;
+    }
     return (
         <>
 
@@ -1056,13 +1061,15 @@ export default function GroupTimeline({ params }) {
                                             Location
                                         </button>
 
-                                        <button
-                                            className="btn btn-light text-secondary align-items-center mt-2"
-                                            onClick={() => router.push("/pages/Events/create-event")}
-                                        >
-                                            <i className="bi bi-calendar-event text-danger pe-1"></i>{" "}
-                                            Event
-                                        </button>
+                                        {settings["chck-events"] === "1" && (
+                                            <button
+                                                className="btn btn-light text-secondary align-items-center mt-2"
+                                                onClick={() => router.push("/pages/Events/create-event")}
+                                            >
+                                                <i className="bi bi-calendar-event text-danger pe-1"></i>{" "}
+                                                Event
+                                            </button>
+                                        )}
 
                                         <div>
                                             <button className="btn btn-light text-secondary align-items-center mt-2" onClick={() => setPollModal(!pollModal)}>
@@ -1767,34 +1774,36 @@ export default function GroupTimeline({ params }) {
 
                                     <div className="d-flex mb-3 mt-2">
 
-                                        {userId && post.user_id !== userId && (
-                                            <button
-                                                className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
-                                                onClick={() => openModalCupCoffee(post.id)}
-                                                style={{
-                                                    backgroundColor: "#A87F50",
-                                                    borderRadius: "10px",
-                                                    color: "#fff",
-                                                }}
-                                            >
-                                                <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                            </button>
-                                        )}
+                                        {settings["chck-cup_of_coffee"] === "1" &&
+                                            userId &&
+                                            post.user_id !== userId && (
+                                                <button
+                                                    className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                    onClick={() => openModalCupCoffee(post.id)}
+                                                    style={{
+                                                        backgroundColor: "#A87F50",
+                                                        borderRadius: "10px",
+                                                        color: "#fff",
+                                                    }}
+                                                >
+                                                    <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                </button>
+                                            )}
 
 
                                         {activeCupCoffeeId === post.id && (
                                             <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
                                         )}
 
-
-                                        {userId && post.user_id !== userId && (
-                                            <button
-                                                className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
-                                                onClick={() => openModalGreatJob(post.id)}
-                                            >
-                                                <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                            </button>
-                                        )}
+                                        {settings["chck-great_job"] === "1" &&
+                                            userId && post.user_id !== userId && (
+                                                <button
+                                                    className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                                                    onClick={() => openModalGreatJob(post.id)}
+                                                >
+                                                    <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                </button>
+                                            )}
 
 
                                         {activeGreatJobId === post.id && (
