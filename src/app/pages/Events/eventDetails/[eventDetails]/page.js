@@ -1,27 +1,21 @@
 "use client"
 
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
-   
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from 'react';
 import { use } from "react";
 import Image from "next/image";
+import { toast } from "react-toastify";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "@/app/pages/Modals/ModuleUnavailable";
 
-export default function EventDetails({params}) {
+export default function EventDetails({ params }) {
 
-      
-
+    const settings = useSiteSettings()
     const api = createAPI();
-
     const userid = localStorage.getItem("userid");
-
-    const {eventDetails} = use(params)
-
-    // const searchParams = useSearchParams();
-    // const eveID = searchParams.get('id');
-
-
+    const { eventDetails } = use(params)
     const [specificEventDetails, setSpecificEventDetails] = useState();
     const [eventSection, setEventSection] = useState();
 
@@ -45,15 +39,20 @@ export default function EventDetails({params}) {
 
     }
 
-
-
     useEffect(() => {
         fetchSpecificEvent();
     }, [])
 
+    if (!settings) return null
+
+    if (settings["chck-events"] !== "1")  {
+        return <ModuleUnavailable />;
+    }
+
+
     return (
         <>
-              
+
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -76,25 +75,25 @@ export default function EventDetails({params}) {
                                     </div>
                                 </div>
                                 <div className="card-body">
-                                    {userid === specificEventDetails?.user_id ? 
-                                    (
-                                        <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
-                                        <li className="nav-item" role="presentation">
-                                            <button className="nav-link active bg-light" id="event-detail-tab" data-bs-toggle="tab" data-bs-target="#event-detail" type="button" role="tab" aria-controls="event-detail" aria-selected="true">Event Detail</button>
-                                        </li>
-                                        <li className="nav-item" role="presentation">
-                                            <button className="nav-link" id="interested-tab" data-bs-toggle="tab" data-bs-target="#interested" type="button" role="tab" aria-controls="interested" aria-selected="false" tabIndex={-1}>Interested</button>
-                                        </li>
-                                        <li className="nav-item" role="presentation">
-                                            <button className="nav-link" id="going-tab" data-bs-toggle="tab" data-bs-target="#going" type="button" role="tab" aria-controls="going" aria-selected="false" tabIndex={-1}>Going</button>
-                                        </li>
-                                    </ul>
-                                    )
+                                    {userid === specificEventDetails?.user_id ?
+                                        (
+                                            <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
+                                                <li className="nav-item" role="presentation">
+                                                    <button className="nav-link active bg-light" id="event-detail-tab" data-bs-toggle="tab" data-bs-target="#event-detail" type="button" role="tab" aria-controls="event-detail" aria-selected="true">Event Detail</button>
+                                                </li>
+                                                <li className="nav-item" role="presentation">
+                                                    <button className="nav-link" id="interested-tab" data-bs-toggle="tab" data-bs-target="#interested" type="button" role="tab" aria-controls="interested" aria-selected="false" tabIndex={-1}>Interested</button>
+                                                </li>
+                                                <li className="nav-item" role="presentation">
+                                                    <button className="nav-link" id="going-tab" data-bs-toggle="tab" data-bs-target="#going" type="button" role="tab" aria-controls="going" aria-selected="false" tabIndex={-1}>Going</button>
+                                                </li>
+                                            </ul>
+                                        )
 
                                         :
                                         null
-                                        
-                                        }
+
+                                    }
                                     <div className="tab-content" id="myTabContent">
                                         <div className="tab-pane fade active show" id="event-detail" role="tabpanel" aria-labelledby="event-detail-tab">
                                             <div className="ed-main-wrap">
@@ -144,7 +143,7 @@ export default function EventDetails({params}) {
                                                             />
                                                         </div>
                                                     </div>
-                                                 
+
                                                 </div>
 
                                                 <h4 className='mt-4'><i className="bi bi-text-paragraph"></i> Event Description</h4>
@@ -162,7 +161,7 @@ export default function EventDetails({params}) {
                                                             </>
                                                         ) : null
                                                     }
-                                              
+
                                                 </div>
                                             </div>
                                         </div>

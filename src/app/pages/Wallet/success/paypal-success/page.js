@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../payment-success.css';
 
-export default function PayPalSuccess() {
+function PayPalComponent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const paymentId = searchParams.get("paymentId");
@@ -20,16 +20,18 @@ export default function PayPalSuccess() {
         if (status === "success") {
             setSuccess(true);
             setLoading(false);
-            setTimeout(() => {
-                router.push("/pages/Wallet");
-            }, 3000);
+
+            if (typeof window !== "undefined") {
+                setTimeout(() => {
+                    router.push("/pages/Wallet");
+                }, 3000);
+            }
             return;
         }
 
         if (paymentId && PayerID) {
             const verifyPayPalPayment = async () => {
                 try {
-                    
                     const paypalResponse = await fetch(`/api/paypal/execute-payment?paymentId=${paymentId}&PayerID=${PayerID}`);
                     const paypalData = await paypalResponse.json();
 
@@ -44,11 +46,14 @@ export default function PayPalSuccess() {
                         transaction_id: transactionId,
                     });
 
-                    if (response.data.status == '200') {
+                    if (response.data.status === '200') {
                         setSuccess(true);
-                        setTimeout(() => {
-                            router.push("/pages/Wallet");
-                        }, 3000);
+
+                        if (typeof window !== "undefined") {
+                            setTimeout(() => {
+                                router.push("/pages/Wallet");
+                            }, 3000);
+                        }
                     } else {
                         setSuccess(false);
                     }
@@ -107,5 +112,14 @@ export default function PayPalSuccess() {
                 )}
             </div>
         </div>
+    );
+}
+
+// Wrap in Suspense to handle `useSearchParams`
+export default function PayPalSuccess() {
+    return (
+        <Suspense fallback={<div className="text-center">Loading...</div>}>
+            <PayPalComponent />
+        </Suspense>
     );
 }

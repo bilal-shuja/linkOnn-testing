@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../payment-success.css';
 
-export default function FlutterwaveSuccess() {
+function FlutterwaveComponent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const transactionId = searchParams.get("transaction_id");
@@ -49,9 +49,12 @@ export default function FlutterwaveSuccess() {
 
                 if (response.data.status === '200') {
                     setSuccess(true);
-                    setTimeout(() => {
-                        router.push("/pages/Wallet");
-                    }, 3000);
+
+                    if (typeof window !== "undefined") {
+                        setTimeout(() => {
+                            router.push("/pages/Wallet");
+                        }, 3000);
+                    }
                 } else {
                     setSuccess(false);
                 }
@@ -106,5 +109,14 @@ export default function FlutterwaveSuccess() {
                 )}
             </div>
         </div>
+    );
+}
+
+// Wrap in Suspense to handle `useSearchParams`
+export default function FlutterwaveSuccess() {
+    return (
+        <Suspense fallback={<div className="text-center">Loading...</div>}>
+            <FlutterwaveComponent />
+        </Suspense>
     );
 }

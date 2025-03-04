@@ -6,6 +6,8 @@ import createAPI from "@/app/lib/axios";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
 
 export default function FriendsPage() {
   const api = createAPI();
@@ -26,6 +28,7 @@ export default function FriendsPage() {
   const [suggrelation, setSuggRelation] = useState("");
   const [sugggender, setSuggGender] = useState("");
   const [suggsearches, setSuggSearches] = useState([]);
+  const settings = useSiteSettings()
 
   const resetSearchValues = () => {
     setFriendKeyword("");
@@ -247,6 +250,12 @@ export default function FriendsPage() {
       toast.error("Catch error occurred");
     }
   };
+
+  if (!settings) return null
+
+  if (settings["is_friend_system"] !== "1")  {
+    return <ModuleUnavailable />;
+}
 
   return (
     <div>

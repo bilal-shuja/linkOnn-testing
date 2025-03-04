@@ -5,13 +5,15 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import moment from "moment";
 import Image from "next/image";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
 
 export default function Blogs() {
   const [error, setError] = useState(null);
   const [blogs, setBlogs] = useState([]);
   const [recentBlogs, setRecentBlogs] = useState([]);
   const [recentTags, setRecentTags] = useState([]);
-
+  const settings = useSiteSettings()
   const api = createAPI();
 
   const fetchRecentBlogs = async () => {
@@ -63,9 +65,14 @@ export default function Blogs() {
     fetchRecentTags();
   }, []);
 
+  if (!settings) return null
+
+  if (settings["chck-blogs"] !== "1")  {
+    return <ModuleUnavailable />;
+}
+
   return (
     <div className="container mt-5">
-      {error && <div className="alert alert-danger">{error}</div>}
       <div className="row">
         {/* Main Blog Section */}
         <div className="col-md-8 mt-5">

@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
-   
- 
+
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Select from 'react-select';
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 export default function TransferAmount() {
-    
+
   const router = useRouter();
   const [balance, setBalance] = useState(null);
   const [amount, setAmount] = useState("");
@@ -94,9 +94,12 @@ export default function TransferAmount() {
   };
 
   const loadingSpinner = (
-    <div className="spinner-grow" role="status">
-      <span className="visually-hidden">Loading...</span>
+    <div className="d-flex justify-content-center align-items-center">
+      <div className="spinner-border" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
     </div>
+
   );
 
   if (loading) {
@@ -110,7 +113,7 @@ export default function TransferAmount() {
 
   return (
     <div>
-        
+
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">

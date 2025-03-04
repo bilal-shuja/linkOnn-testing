@@ -3,17 +3,17 @@
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-   
- 
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Image from "next/image";
 
 export default function Depositamount() {
-      
+
     const [error, setError] = useState(null);
     const [balance, setBalance] = useState(null);
     const [loading, setLoading] = useState(true);
     const api = createAPI();
+    const settings = useSiteSettings()
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -38,9 +38,12 @@ export default function Depositamount() {
     }, []);
 
     const loadingSpinner = (
-        <div className="spinner-grow" role="status">
-            <span className="visually-hidden">Loading...</span>
+        <div className="d-flex justify-content-center align-items-center">
+            <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </div>
         </div>
+
     );
 
     if (loading) {
@@ -59,9 +62,13 @@ export default function Depositamount() {
         );
     }
 
+    if (!settings) return null;
+
+
+
     return (
         <div>
-              
+
             <div className="container-fluid bg-light">
                 <div className="container mt-3 pt-5">
                     <div className="row">
@@ -75,7 +82,7 @@ export default function Depositamount() {
                                         <div>
                                             <h5 className="text-dark fw-bold">Total Balance</h5>
                                             <h4 className="text-dark fw-bold">
-                                            {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
+                                                {balance === null ? loadingSpinner : `$${(Number(balance) || 0).toFixed(2)}`}
                                             </h4>
                                         </div>
                                     </div>
@@ -117,73 +124,85 @@ export default function Depositamount() {
                                     <hr />
                                     <div className="row justify-content-evenly">
 
-                                        <div className="col-md-2 col-6 text-center mb-3">
-                                            <Link href="/pages/Wallet/deposit-amount/deposit-via-stripe" className="text-decoration-none">
-                                                <div className="btn btn-outline-primary rounded-3 p-3 w-100 d-flex flex-column align-items-center">
+                                        {settings["chck-stripe"] === "1" && (
+                                            <div className="col-md-2 col-6 text-center mb-3">
+                                                <Link href="/pages/Wallet/deposit-amount/deposit-via-stripe" className="text-decoration-none">
+                                                    <div className="btn btn-outline-primary rounded-3 p-3 w-100 d-flex flex-column align-items-center">
 
-                                                    <Image
-                                                        src="/assets/images/stripe.jpeg"
-                                                        alt="Stripe"
-                                                        width={150}
-                                                        height={50}
-                                                        className="mb-2"
-                                                        style={{ objectFit: 'contain' }}
-                                                    />
-                                                    <span className="fw-semibold">Stripe</span>
-                                                </div>
-                                            </Link>
-                                        </div>
+                                                        <Image
+                                                            src="/assets/images/stripe.jpeg"
+                                                            alt="Stripe"
+                                                            width={150}
+                                                            height={50}
+                                                            className="mb-2"
+                                                            style={{ objectFit: 'contain' }}
+                                                        />
+                                                        <span className="fw-semibold">Stripe</span>
+                                                    </div>
+                                                </Link>
+                                            </div>
+                                        )}
 
-                                        <div className="col-md-2 col-6 text-center mb-3">
-                                            <Link href="/pages/Wallet/deposit-amount/deposit-via-paypal" className="text-decoration-none">
-                                                <div className="btn btn-outline-primary rounded-3 p-3 w-100 d-flex flex-column align-items-center">
 
-                                                    <Image
-                                                        src="/assets/images/paypal.jpg"
-                                                        alt="PayPal"
-                                                        width={150}
-                                                        height={50}
-                                                        className="mb-2"
-                                                        style={{ objectFit: 'contain' }}
-                                                    />
-                                                    <span className="fw-semibold">PayPal</span>
-                                                </div>
-                                            </Link>
-                                        </div>
+                                        {/* {settings["chck-paypal"] === "1" && (
+                                            <div className="col-md-2 col-6 text-center mb-3">
+                                                <Link href="/pages/Wallet/deposit-amount/deposit-via-paypal" className="text-decoration-none">
+                                                    <div className="btn btn-outline-primary rounded-3 p-3 w-100 d-flex flex-column align-items-center">
 
-                                        <div className="col-md-2 col-6 text-center mb-3">
-                                            <Link href="/pages/Wallet/deposit-amount/deposit-via-paystack" className="text-decoration-none">
-                                                <div className="btn btn-outline-info rounded-3 p-3 w-100 d-flex flex-column align-items-center">
+                                                        <Image
+                                                            src="/assets/images/paypal.jpg"
+                                                            alt="PayPal"
+                                                            width={150}
+                                                            height={50}
+                                                            className="mb-2"
+                                                            style={{ objectFit: 'contain' }}
+                                                        />
+                                                        <span className="fw-semibold">PayPal</span>
+                                                    </div>
+                                                </Link>
+                                            </div>
+                                        )} */}
 
-                                                    <Image
-                                                        src="/assets/images/paystack.webp"
-                                                        alt="Paystack"
-                                                        width={150}
-                                                        height={50}
-                                                        className="mb-2"
-                                                        style={{ objectFit: 'contain' }}
-                                                    />
-                                                    <span className="fw-semibold">Paystack</span>
-                                                </div>
-                                            </Link>
-                                        </div>
 
-                                        <div className="col-md-2 col-6 text-center mb-3">
-                                            <Link href="/pages/Wallet/deposit-amount/deposit-via-flutterwave" className="text-decoration-none">
-                                                <div className="btn btn-outline-success rounded-3 p-3 w-100 d-flex flex-column align-items-center">
+                                        {settings["chck-paystack"] === "1" && (
+                                            <div className="col-md-2 col-6 text-center mb-3">
+                                                <Link href="/pages/Wallet/deposit-amount/deposit-via-paystack" className="text-decoration-none">
+                                                    <div className="btn btn-outline-info rounded-3 p-3 w-100 d-flex flex-column align-items-center">
 
-                                                    <Image
-                                                        src="/assets/images/flutterwave.png"
-                                                        alt="Flutter"
-                                                        width={150}
-                                                        height={50}
-                                                        className="mb-2"
-                                                        style={{ objectFit: 'contain' }}
-                                                    />
-                                                    <span className="fw-semibold">Flutterwave</span>
-                                                </div>
-                                            </Link>
-                                        </div>
+                                                        <Image
+                                                            src="/assets/images/paystack.webp"
+                                                            alt="Paystack"
+                                                            width={150}
+                                                            height={50}
+                                                            className="mb-2"
+                                                            style={{ objectFit: 'contain' }}
+                                                        />
+                                                        <span className="fw-semibold">Paystack</span>
+                                                    </div>
+                                                </Link>
+                                            </div>
+                                        )}
+
+
+                                        {settings["chck-flutterwave"] === "1" && (
+                                            <div className="col-md-2 col-6 text-center mb-3">
+                                                <Link href="/pages/Wallet/deposit-amount/deposit-via-flutterwave" className="text-decoration-none">
+                                                    <div className="btn btn-outline-success rounded-3 p-3 w-100 d-flex flex-column align-items-center">
+
+                                                        <Image
+                                                            src="/assets/images/flutterwave.png"
+                                                            alt="Flutter"
+                                                            width={150}
+                                                            height={50}
+                                                            className="mb-2"
+                                                            style={{ objectFit: 'contain' }}
+                                                        />
+                                                        <span className="fw-semibold">Flutterwave</span>
+                                                    </div>
+                                                </Link>
+                                            </div>
+                                        )}
+
                                     </div>
                                 </div>
                             </div>

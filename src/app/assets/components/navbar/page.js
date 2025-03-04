@@ -29,7 +29,6 @@ export default function Navbar() {
 
 
 
-
   const fetchNotifications = async () => {
     try {
       setLoadingNotifications(true);
@@ -48,9 +47,13 @@ export default function Navbar() {
 
   useEffect(() => {
     fetchNotifications();
+    
+    const intervalId = setInterval(() => {
+      fetchNotifications();
+    }, 5000);
+    
+    return () => clearInterval(intervalId);
   }, []);
-
-
 
   const fetchChats = async () => {
     try {
@@ -127,7 +130,25 @@ export default function Navbar() {
     }
   };
 
-  if (!settings) return null;
+  if (!settings) {
+    return (
+      <nav className="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm py-1">
+        <div className="container">
+          <div className="navbar-brand bg-light placeholder-wave rounded" style={{ width: "140px", height: "45px" }}></div>
+          <div className="collapse navbar-collapse">
+            <div className="d-flex flex-column flex-lg-row align-items-center justify-content-center w-75">
+              <div className="form-control ps-5 bg-light placeholder-wave border-0 rounded-3" style={{ height: "38px", width: "75%" }}></div>
+            </div>
+            <div className="d-flex align-items-center">
+              <div className="bg-light placeholder-wave rounded-circle me-3" style={{ width: "24px", height: "24px" }}></div>
+              <div className="bg-light placeholder-wave rounded-circle me-3" style={{ width: "24px", height: "24px" }}></div>
+              <div className="bg-light placeholder-wave rounded-circle me-3" style={{ width: "40px", height: "40px" }}></div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <>
@@ -344,13 +365,15 @@ export default function Navbar() {
                   </li>
 
                   {/* Upgrade to Pro */}
+                  {settings["chck-point_level_system"] === "1" && (
                   <li>
                     <Link className="dropdown-item py-2 d-flex align-items-center" href="/pages/Packages">
                       <i className="bi bi-currency-dollar pe-3 text-warning"></i> Upgrade to Pro
                     </Link>
                   </li>
+                  )}
 
-                  {/* Dark Mode Toggle */}
+                  {/* Dark Mode Toggle
                   <li>
                     <div className="dropdown-item d-flex align-items-center py-2">
                       <i className="bi bi-moon-stars pe-3 text-secondary"></i>
@@ -359,7 +382,7 @@ export default function Navbar() {
                         <label className="form-check-label ms-2" htmlFor="darkModeSwitch">Dark Mode</label>
                       </div>
                     </div>
-                  </li>
+                  </li> */}
 
                   <hr className="dropdown-divider mx-3" />
 
@@ -411,7 +434,7 @@ export default function Navbar() {
 
           {chats.length > 0 ? (
 
-            
+
             chats?.map((chat) => (
 
 
@@ -419,7 +442,7 @@ export default function Navbar() {
                 key={chat.id}
                 className="d-flex align-items-center p-2 bg-light rounded-3 mb-2"
                 style={{ cursor: "pointer" }}
-                onClick={() => toggleChatWindow(chat , chat.id)}
+                onClick={() => toggleChatWindow(chat, chat.id)}
               >
                 <Image
                   src={chat.avatar || "/assets/images/userplaceholder.png"}
@@ -445,7 +468,7 @@ export default function Navbar() {
                       className="text-truncate mb-0"
                       style={{ maxWidth: "75%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}
                     >
-                      {chat?.last_message === "" ? "Empty message": chat?.last_message}
+                      {chat?.last_message === "" ? "Empty message" : chat?.last_message}
                     </p>
                   </div>
                   <span className="text-muted ms-2 text-nowrap" style={{ fontSize: "13px", minWidth: "fit-content" }}>
@@ -462,7 +485,7 @@ export default function Navbar() {
         </div>
       </div>
       {selectedChat && (
-        <ChatWindow chat={selectedChat} chatID = {selectedChatID} onClose={() => setSelectedChat(null)} />
+        <ChatWindow chat={selectedChat} chatID={selectedChatID} onClose={() => setSelectedChat(null)} />
       )}
     </>
   );

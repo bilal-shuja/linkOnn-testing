@@ -3,16 +3,17 @@
 import createAPI from "@/app/lib/axios";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-
-
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 import Rightnav from "@/app/assets/components/rightnav/page";
 import { toast } from "react-toastify";
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
 
 export default function Wallet() {
 
   const [balance, setBalance] = useState(null);
   const [earnings, setEarnings] = useState({});
   const [loading, setLoading] = useState(true);
+  const settings = useSiteSettings()
 
   const api = createAPI();
 
@@ -48,9 +49,12 @@ export default function Wallet() {
   ];
 
   const loadingSpinner = (
-    <div className="spinner-grow" role="status">
-      <span className="visually-hidden">Loading...</span>
+    <div className="d-flex justify-content-center align-items-center">
+      <div className="spinner-border" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
     </div>
+
   );
 
   if (loading) {
@@ -60,6 +64,12 @@ export default function Wallet() {
       </div>
     );
   }
+
+  if (!settings) return null
+
+  if (settings["chck-wallet"] !== "1")  {
+    return <ModuleUnavailable />;
+}
 
   return (
     <div>

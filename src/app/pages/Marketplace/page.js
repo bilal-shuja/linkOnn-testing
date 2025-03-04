@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import Link from "next/link";
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
+
 
 export default function MarketPlace() {
     const api = createAPI();
@@ -46,6 +48,10 @@ export default function MarketPlace() {
     };
 
     if (!settings) return null;
+
+    if (settings["chck-product"] !== "1")  {
+        return <ModuleUnavailable />;
+    }
 
     return error ? (
         <div className="alert alert-danger text-center mt-4">{error}</div>

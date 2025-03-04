@@ -17,6 +17,7 @@ import UserImagesLayout from "../components/userImagesLayout";
 import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
 import SharedPosts from "../components/sharedPosts";
 import { useRouter } from "next/navigation";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 export default function Savedposts() {
 
@@ -50,7 +51,7 @@ export default function Savedposts() {
     const api = createAPI();
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
-
+    const settings = useSiteSettings()
 
 
     const reactionEmojis = {
@@ -496,6 +497,8 @@ export default function Savedposts() {
         return colorMap[code] || code;
     };
 
+    if (!settings) return null
+
     return (
         <div>
 
@@ -909,7 +912,7 @@ export default function Savedposts() {
                                                                     <div className="col-md-3 text-end">
                                                                         <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
                                                                             <button className="btn btn-primary rounded-pill px-3 py-2">
-                                                                            {userId === post.user_id ? "Edit Product" : "Buy Product"}
+                                                                                {userId === post.user_id ? "Edit Product" : "Buy Product"}
                                                                             </button>
                                                                         </Link>
                                                                     </div>
@@ -1117,19 +1120,21 @@ export default function Savedposts() {
 
                                         <div className="d-flex mb-3 mt-2">
 
-                                            {userId && post.user_id !== userId && (
-                                                <button
-                                                    className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
-                                                    onClick={() => openModalCupCoffee(post.id)}
-                                                    style={{
-                                                        backgroundColor: "#A87F50",
-                                                        borderRadius: "10px",
-                                                        color: "#fff",
-                                                    }}
-                                                >
-                                                    <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                                </button>
-                                            )}
+                                            {settings["chck-cup_of_coffee"] === "1" &&
+                                                userId &&
+                                                post.user_id !== userId && (
+                                                    <button
+                                                        className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                        onClick={() => openModalCupCoffee(post.id)}
+                                                        style={{
+                                                            backgroundColor: "#A87F50",
+                                                            borderRadius: "10px",
+                                                            color: "#fff",
+                                                        }}
+                                                    >
+                                                        <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                    </button>
+                                                )}
 
 
                                             {activeCupCoffeeId === post.id && (
@@ -1137,14 +1142,15 @@ export default function Savedposts() {
                                             )}
 
 
-                                            {userId && post.user_id !== userId && (
-                                                <button
-                                                    className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
-                                                    onClick={() => openModalGreatJob(post.id)}
-                                                >
-                                                    <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                                </button>
-                                            )}
+                                            {settings["chck-great_job"] === "1" &&
+                                                userId && post.user_id !== userId && (
+                                                    <button
+                                                        className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                                                        onClick={() => openModalGreatJob(post.id)}
+                                                    >
+                                                        <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                    </button>
+                                                )}
 
 
                                             {activeGreatJobId === post.id && (

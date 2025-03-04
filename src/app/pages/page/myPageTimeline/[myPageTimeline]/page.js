@@ -37,8 +37,13 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 // import EnableDisableCommentsModal from "../../Modal/EnableDisableCommentsModal";
 import EnableDisableCommentsModal from "@/app/pages/Modals/EnableDisableCommentsModal";
 
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "@/app/pages/Modals/ModuleUnavailable";
 
 export default function MyPageTimeline({ params }) {
+
+    const settings = useSiteSettings()
+
     const router = useRouter();
     const api = createAPI();
     const userID = localStorage.getItem('userid');
@@ -896,6 +901,12 @@ export default function MyPageTimeline({ params }) {
         }
     }, []);
 
+    if (!settings) return null
+
+    if (settings["chck-pages"] !== "1") {
+        return <ModuleUnavailable />;
+    }
+
     return (
         <>
             <div className="container-fluid bg-light">
@@ -1189,11 +1200,15 @@ export default function MyPageTimeline({ params }) {
                                                                 <i className="bi bi-geo-alt-fill text-danger pe-2" /> Location
                                                             </button>
                                                         </li>
-                                                        <li className="nav-item">
-                                                            <Link href={'/pages/Events/create-event'} className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
-                                                                <i className="bi bi-calendar2-event-fill text-danger pe-2" /> Event
-                                                            </Link>
-                                                        </li>
+
+                                                        {settings["chck-events"] === "1" && (
+                                                            <li className="nav-item">
+                                                                <Link href={'/pages/Events/create-event'} className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted">
+                                                                    <i className="bi bi-calendar2-event-fill text-danger pe-2" /> Event
+                                                                </Link>
+                                                            </li>
+                                                        )}
+
                                                         <li className="nav-item">
                                                             <button className="nav-link event_link bg-light py-1 px-2 mb-0 text-muted" onClick={() => setPollModal(!pollModal)}>
                                                                 <i className="fas fa-poll text-info pe-1" /> Poll
@@ -1211,17 +1226,17 @@ export default function MyPageTimeline({ params }) {
                                                 </div>
 
                                                 <div className="d-flex justify-content-between mt-3">
-                                        
-                                                        <button className={`btn w-100 ${styles.btnSuccessPost}`}
+
+                                                    <button className={`btn w-100 ${styles.btnSuccessPost}`}
                                                         onClick={uploadPost}
                                                         disabled={postLoadingState}
                                                     >
-                                                      Post <i className="bi bi-send me-2"></i>
+                                                        Post <i className="bi bi-send me-2"></i>
                                                     </button>
-                                                 
-                                                            
 
-                                        
+
+
+
                                                 </div>
                                             </div>
 
@@ -1936,40 +1951,44 @@ export default function MyPageTimeline({ params }) {
                                                 <hr className="my-1" />
 
 
-                                                {
-                                                    userID && post?.user?.id === userID ?
-                                                        null
-                                                        :
+                                                <div className="d-flex mb-3 mt-2">
 
-                                                        <div className="d-flex mb-3 mt-2">
+                                                    {settings["chck-cup_of_coffee"] === "1" &&
+                                                        userId &&
+                                                        post.user_id !== userId && (
                                                             <button
-                                                                className="btn me-2 d-flex align-items-center rounded-1"
+                                                                className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                                onClick={() => openModalCupCoffee(post.id)}
                                                                 style={{
-                                                                    backgroundColor: "#C19A6B",
+                                                                    backgroundColor: "#A87F50",
                                                                     borderRadius: "10px",
                                                                     color: "#fff",
                                                                 }}
-                                                                onClick={() => openModalCupCoffee(post.id)}
                                                             >
                                                                 <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
                                                             </button>
+                                                        )}
 
-                                                            {activeCupCoffeeId === post.id && (
-                                                                <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
-                                                            )}
 
-                                                            <button className="btn btn-danger d-flex align-items-center rounded-1"
+                                                    {activeCupCoffeeId === post.id && (
+                                                        <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                                    )}
+
+                                                    {settings["chck-great_job"] === "1" &&
+                                                        userId && post.user_id !== userId && (
+                                                            <button
+                                                                className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
                                                                 onClick={() => openModalGreatJob(post.id)}
                                                             >
                                                                 <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
                                                             </button>
-                                                            {activeGreatJobId === post.id && (
-                                                                <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
-                                                            )}
-                                                        </div>
+                                                        )}
 
 
-                                                }
+                                                    {activeGreatJobId === post.id && (
+                                                        <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                                    )}
+                                                </div>
 
 
                                                 {

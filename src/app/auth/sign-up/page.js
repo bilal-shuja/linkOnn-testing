@@ -285,16 +285,16 @@ export default function SignUp() {
               </div>
 
               <div className="text-center mt-4">
-                <Link href="/LINKS" className="text-decoration-none me-3 text-muted">
+                <Link href="/aboutapp/terms" className="text-decoration-none me-3 text-muted">
                   Terms
                 </Link>
-                <Link href="/LINKS" className="text-decoration-none me-3 text-muted">
+                <Link href="/aboutapp/about" className="text-decoration-none me-3 text-muted">
                   About
                 </Link>
-                <Link href="/LINKS" className="text-decoration-none me-3 text-muted">
+                <Link href="/aboutapp/privacy" className="text-decoration-none me-3 text-muted">
                   Privacy
                 </Link>
-                <Link href="/LINKS" className="text-decoration-none text-muted">
+                <Link href="/aboutapp/data" className="text-decoration-none text-muted">
                   Data Deletion
                 </Link>
               </div>

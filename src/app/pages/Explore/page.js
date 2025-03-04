@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Explore() {
+// Create a client component for handling search params
+function ExploreContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const api = createAPI();
@@ -252,7 +253,6 @@ export default function Explore() {
         <div className="container mt-5">
           <div className="row justify-content-center">
             <div className="col-md-12">
-         
               <div className="card shadow-sm border-0 rounded-3 mb-4">
                 <div className="card-body d-flex justify-content-center">
                   <form className="w-50" onSubmit={handleSearch}>
@@ -273,7 +273,6 @@ export default function Explore() {
                 </div>
               </div>
 
-        
               <div className="card shadow-sm border-0 rounded-3">
                 <div className="card-body bg-light p-3">
                   <ul
@@ -339,5 +338,21 @@ export default function Explore() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function Explore() {
+  return (
+    <Suspense fallback={
+      <div className="text-center my-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-2">Loading...</p>
+      </div>
+    }>
+      <ExploreContent />
+    </Suspense>
   );
 }

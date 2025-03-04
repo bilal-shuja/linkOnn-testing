@@ -15,6 +15,8 @@ export async function POST(req) {
             return new Response(JSON.stringify({ error: "PayPal API keys not found in settings" }), { status: 500 });
         }
 
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
         paypal.configure({
             mode: "sandbox", // Change to "live" in production
             client_id: settings.paypal_public_key,
@@ -25,23 +27,39 @@ export async function POST(req) {
             intent: "sale",
             payer: { payment_method: "paypal" },
             redirect_urls: {
-                return_url: `http://localhost:3000/pages/Wallet/success/paypal-success`,
-                cancel_url: `http://localhost:3000/pages/Wallet/deposit-amount`,
+                return_url: `${baseUrl}/pages/Wallet/success/paypal-success`,
+                cancel_url: `${baseUrl}/pages/Wallet/deposit-amount`,
             },
-            transactions: [{ 
-                amount: { total: amount, currency: "USD" }, 
-                description: "Wallet Deposit" 
-            }],
+            transactions: [
+                {
+                    amount: { total: amount, currency: "USD" },
+                    description: "Wallet Deposit",
+                },
+            ],
         };
 
         return new Promise((resolve, reject) => {
             paypal.payment.create(paymentJson, (error, payment) => {
                 if (error) {
                     console.error("PayPal error:", error);
-                    return resolve(new Response(JSON.stringify({ error: "Error creating PayPal payment" }), { status: 500 }));
+                    return resolve(
+                        new Response(
+                            JSON.stringify({ error: "Error creating PayPal payment" }),
+                            { status: 500 }
+                        )
+                    );
                 }
 
                 const approvalUrl = payment.links.find(link => link.rel === "approval_url");
+                if (!approvalUrl) {
+                    return resolve(
+                        new Response(
+                            JSON.stringify({ error: "Approval URL not found in PayPal response" }),
+                            { status: 500 }
+                        )
+                    );
+                }
+
                 resolve(new Response(JSON.stringify({ approvalUrl: approvalUrl.href }), { status: 200 }));
             });
         });

@@ -5,6 +5,7 @@ import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import { useEffect, useState } from "react";
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
 
 export default function Packages() {
     const settings = useSiteSettings();
@@ -28,7 +29,7 @@ export default function Packages() {
 
     const handleConfirmUpgrade = async () => {
         if (!selectedPackage) return;
-        
+
         try {
             setLoading(true);
             const response = await api.post("/api/upgrade-to-pro", {
@@ -58,7 +59,7 @@ export default function Packages() {
             setLoading(false);
             setShowModal(false);
         }
-        
+
     };
 
     if (!settings || !settings.packages) return null;
@@ -74,19 +75,23 @@ export default function Packages() {
 
     const getButtonClass = (packageId) => {
         const baseClass = "btn w-100 rounded-pill ";
-        
+
         if (isPackageSelected(packageId)) {
 
             if (packageId === "1") return baseClass + "btn-primary";
             if (packageId === "2") return baseClass + "btn-success";
             return baseClass + "btn-danger";
         } else {
-      
+
             if (packageId === "1") return baseClass + "btn-outline-primary";
             if (packageId === "2") return baseClass + "btn-outline-success";
             return baseClass + "btn-outline-danger";
         }
     };
+
+    if (settings["chck-point_level_system"] !== "1")  {
+        return <ModuleUnavailable />;
+    }
 
     return (
         <div>
@@ -147,13 +152,16 @@ export default function Packages() {
                                                             </li>
                                                         </ul>
 
-                                                        <button
-                                                            className={getButtonClass(pkg.id)}
-                                                            onClick={() => handleSelectPackage(pkg)}
-                                                            disabled={isPackageSelected(pkg.id)}
-                                                        >
-                                                            {getButtonText(pkg.id)}
-                                                        </button>
+                                                        {settings["chck-upgrade_to_pro_system"] === "1" && (
+                                                            <button
+                                                                className={getButtonClass(pkg.id)}
+                                                                onClick={() => handleSelectPackage(pkg)}
+                                                                disabled={isPackageSelected(pkg.id)}
+                                                            >
+                                                                {getButtonText(pkg.id)}
+                                                            </button>
+                                                        )}
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -167,22 +175,22 @@ export default function Packages() {
             </div>
 
             {/* Confirmation Modal */}
-            <div className={`modal fade ${showModal ? 'show' : ''}`} 
-                 id="confirmUpgradeModal" 
-                 tabIndex="-1" 
-                 aria-labelledby="confirmUpgradeModalLabel" 
-                 aria-hidden={!showModal}
-                 style={{ display: showModal ? 'block' : 'none' }}>
+            <div className={`modal fade ${showModal ? 'show' : ''}`}
+                id="confirmUpgradeModal"
+                tabIndex="-1"
+                aria-labelledby="confirmUpgradeModalLabel"
+                aria-hidden={!showModal}
+                style={{ display: showModal ? 'block' : 'none' }}>
                 <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title" id="confirmUpgradeModalLabel">
                                 Confirm Package Upgrade
                             </h5>
-                            <button 
-                                type="button" 
-                                className="btn-close" 
-                                onClick={() => setShowModal(false)} 
+                            <button
+                                type="button"
+                                className="btn-close"
+                                onClick={() => setShowModal(false)}
                                 aria-label="Close">
                             </button>
                         </div>
@@ -195,24 +203,24 @@ export default function Packages() {
                             )}
                         </div>
                         <div className="modal-footer">
-                            <button 
-                                type="button" 
-                                className="btn btn-secondary" 
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
                                 onClick={() => setShowModal(false)}>
                                 Cancel
                             </button>
-                            <button 
-                                type="button" 
-                                className="btn btn-primary" 
+                            <button
+                                type="button"
+                                className="btn btn-primary"
                                 onClick={handleConfirmUpgrade}>
-                                           {loading ? (
-                                        <>
-                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                            Upgrading...
-                                        </>
-                                    ) : (
-                                        "Confirm Upgrade"
-                                    )}
+                                {loading ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Upgrading...
+                                    </>
+                                ) : (
+                                    "Confirm Upgrade"
+                                )}
                             </button>
                         </div>
                     </div>

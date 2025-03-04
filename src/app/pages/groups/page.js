@@ -10,6 +10,7 @@ import { Modal, Spinner } from 'react-bootstrap';
 import { toast } from "react-toastify";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import Link from "next/link";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 export default function Groups() {
 
@@ -27,6 +28,7 @@ export default function Groups() {
   const [groupToJoin, setGroupToJoin] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loadingJoin, setLoadingJoin] = useState(false);
+  const settings = useSiteSettings()
 
   const fetchSuggestedGroups = async (page) => {
     const offset = (page - 1) * itemsPerPage;
@@ -165,6 +167,20 @@ export default function Groups() {
   const suggestedTotalPages = totalSuggested ? Math.ceil(totalSuggested / itemsPerPage) : 0;
   const myGroupsTotalPages = totalMyGroups ? Math.ceil(totalMyGroups / itemsPerPage) : 0;
 
+
+  if (!settings) return null
+
+  if (settings["chck-groups"] !== "1")
+
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+
+
   return (
     <div>
 
@@ -224,7 +240,7 @@ export default function Groups() {
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4>All Groups</h4>
                         <div className="d-flex align-items-center">
-                        
+
                           <button
                             className="btn btn-primary"
                             onClick={() => router.push("/pages/createGroup")}

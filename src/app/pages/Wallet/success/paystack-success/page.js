@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import createAPI from "@/app/lib/axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../payment-success.css';
- 
-export default function PaystackSuccess() {
+
+function PaystackComponent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const reference = searchParams.get("reference");
@@ -48,9 +48,13 @@ export default function PaystackSuccess() {
 
                 if (response.data.status === '200') {
                     setSuccess(true);
-                    setTimeout(() => {
-                        router.push("/pages/Wallet");
-                    }, 3000);
+
+                    // Ensure `window` exists before using `router.push()`
+                    if (typeof window !== "undefined") {
+                        setTimeout(() => {
+                            router.push("/pages/Wallet");
+                        }, 3000);
+                    }
                 } else {
                     setSuccess(false);
                 }
@@ -105,5 +109,14 @@ export default function PaystackSuccess() {
                 )}
             </div>
         </div>
+    );
+}
+
+// Wrap in Suspense to handle `useSearchParams`
+export default function PaystackSuccess() {
+    return (
+        <Suspense fallback={<div className="text-center">Loading...</div>}>
+            <PaystackComponent />
+        </Suspense>
     );
 }

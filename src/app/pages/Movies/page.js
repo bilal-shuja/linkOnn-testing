@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useSiteSettings } from "@/context/SiteSettingsContext"
 import { toast } from "react-toastify"
 import createAPI from "@/app/lib/axios"
+import ModuleUnavailable from "../Modals/ModuleUnavailable"
 
 export default function MoviesPage() {
   const api = createAPI()
@@ -62,7 +63,9 @@ export default function MoviesPage() {
 
   if (!settings) return null
 
-  if (settings["chck-movies"] !== "1") return null;
+  if (settings["chck-movies"] !== "1")  {
+    return <ModuleUnavailable />;
+}
 
   return (
     <div className="movies-page bg-light">
