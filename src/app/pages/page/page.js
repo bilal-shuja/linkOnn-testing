@@ -139,7 +139,7 @@ export default function Pages() {
   return (
     <div>
 
-      <div className="container-fluid bg-light">
+      <div className="container-fluid">
         <div className="container mt-3 pt-5">
           <div className="row">
             <div className="col-md-3 p-3 rounded">
@@ -196,7 +196,7 @@ export default function Pages() {
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4>All Pages</h4>
                         <div className="d-flex align-items-center">
-                       
+
                           <button
                             className="btn btn-primary"
                             onClick={() => router.push("/pages/createPage")}
@@ -236,7 +236,7 @@ export default function Pages() {
                               {pages.map((page) => (
                                 <div key={page.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
-                                    <Image
+                                    {/* <Image
                                       src={page.avatar || "/assets/images/placeholder-image.png"}
                                       alt="Profile"
                                       className="card-img-top mx-auto mt-3"
@@ -245,6 +245,16 @@ export default function Pages() {
                                       style={{
                                         objectFit: "cover",
                                       }}
+                                    /> */}
+
+
+                                    <Image
+                                      src={page.avatar || "/assets/images/placeholder-image.png"}
+                                      alt="Page Image"
+                                      className="d-block mx-auto mt-1 rounded-circle mt-2"
+                                      width={150}
+                                      height={150}
+                                    // style={{ objectFit: "cover" }}
                                     />
 
                                     <div className="card-body">
@@ -330,7 +340,8 @@ export default function Pages() {
                             myPages.map((page) => (
                               <div key={page.id} className="col-md-4 mb-4">
                                 <div className="card text-center">
-                                  <Image
+
+                                  {/* <Image
                                     src={page.avatar || "/assets/images/placeholder-image.png"}
                                     alt="Page Image"
                                     className="card-img-top mx-auto mt-3"
@@ -339,6 +350,16 @@ export default function Pages() {
                                     style={{
                                       objectFit: "cover",
                                     }}
+                                  /> */}
+
+
+                                  <Image
+                                    src={page.avatar || "/assets/images/placeholder-image.png"}
+                                    alt="Page Image"
+                                    className="d-block mx-auto mt-1 rounded-circle mt-2"
+                                    width={150}
+                                    height={150}
+                                  // style={{ objectFit: "cover" }}
                                   />
 
                                   <div className="card-body">

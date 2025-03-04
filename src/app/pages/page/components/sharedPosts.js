@@ -257,7 +257,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
     
                     {sharedPost.video && (
                         <div className="media-container mt-2">
-                            <video controls width="100%" style={{ borderRadius: "5px" }}>
+                            <video controls width="100%" style={{ maxHeight: '400px', objectFit: 'contain' }}>
                                 <source src={sharedPost.video.media_path} type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>

@@ -1713,8 +1713,8 @@ export default function UserProfileCard({ params }) {
 
                                                 {/* Video Section */}
                                                 {post.video && (
-                                                    <div className="w-100 mt-3">
-                                                        <video controls className="w-100 rounded">
+                                                    <div className="w-100">
+                                                        <video controls className="w-100 rounded" style={{ maxHeight: '400px', objectFit: 'contain' }}>
                                                             <source src={post.video.media_path} type="video/mp4" />
                                                             Your browser does not support the video tag.
                                                         </video>
