@@ -140,7 +140,7 @@ export default function EditMyPage({ params }) {
     return (
         <>
             <Navbar />
-            <div className="container-fluid bg-light">
+            <div className="container-fluid">
                 <div className="container mt-3 pt-5">
                     <div className="row">
                         <div className="col-md-3 p-3 rounded">

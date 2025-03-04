@@ -12,7 +12,7 @@ export default function Blood() {
     return (
         <div>
               
-            <div className="container-fluid bg-light">
+            <div className="container-fluid ">
                 <div className="container mt-5 pt-5">
                     <div className="row">
                         <div className="col-md-3">

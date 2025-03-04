@@ -36,6 +36,7 @@ import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 // import EnableDisableCommentsModal from "../../Modal/EnableDisableCommentsModal";
 import EnableDisableCommentsModal from "@/app/pages/Modals/EnableDisableCommentsModal";
+import ReadMoreLess from 'react-read-more-less';
 
 
 export default function MyPageTimeline({ params }) {
@@ -900,7 +901,7 @@ export default function MyPageTimeline({ params }) {
 
     return (
         <>
-            <div className="container-fluid bg-light">
+            <div className="container-fluid">
                 <div className="container mt-3 pt-2">
                     <div className="row">
 
@@ -1712,16 +1713,13 @@ export default function MyPageTimeline({ params }) {
 
                                                             {post?.video && (
                                                                 <div
-                                                                    className="media-container mt-1"
-                                                                    style={{ width: "100%", height: "auto" }}
+                                                                    className="media-container w-100 mt-1"
+                                                                  
                                                                 >
                                                                     <video
                                                                         controls
-                                                                        style={{
-                                                                            objectFit: "cover",
-                                                                            width: "100%",
-                                                                            height: "auto",
-                                                                        }}
+                                                                         className="w-100 rounded"
+                                                                        style={{ maxHeight: '400px', objectFit: 'contain' }}
                                                                     >
                                                                         <source
                                                                             src={post.video.media_path}
@@ -1843,7 +1841,7 @@ export default function MyPageTimeline({ params }) {
                                                                 />
                                                             </div>
                                                         )}
-                                                    
+
                                                     </div>
 
                                                     <button
@@ -2193,16 +2191,16 @@ export default function MyPageTimeline({ params }) {
                                                 }
 
 
-                                                {
+                                                {/* {
                                                     userID === post?.user_id ? null :
                                                         <>
                                                             <hr />
 
                                                             <div className="text-center">
                                                                 <button className="btn btn-outline-primary" onClick={() => {
-                                                                        setShowAdvertismentModal(true)
-                                                                        setPostID(post.id)
-                                                                    }
+                                                                    setShowAdvertismentModal(true)
+                                                                    setPostID(post.id)
+                                                                }
                                                                 }>
                                                                     <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
                                                                 </button>
@@ -2211,7 +2209,64 @@ export default function MyPageTimeline({ params }) {
                                                         </>
 
 
+                                                        
+                                                } */}
+
+
+
+                                                <hr />
+
+                                                {
+                                                    post?.post_advertisement ? (
+                                                        <div className="card mb-3 mt-4 p-2 border-secondary">
+                                                            <div className="row g-0">
+                                                                <div className="col-md-4 advertisment-image">
+                                                                    <Image src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"} width={200} height={100} className="img-fluid rounded-4 mt-1 p-0" alt="adv-img" style={{ objectFit: "cover" }} />
+                                                                </div>
+                                                                <div className="col-md-8 d-flex justify-content-start align-items-start ">
+                                                                    <div className="card-body advertistment-details p-1">
+                                                                        <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none" target="_blank">{post?.post_advertisement.link}</a>
+                                                                        <h5 className="card-title">{post?.post_advertisement.title}</h5>
+                                                                        <div className="card-text">
+                                                                            {post?.post_advertisement.body ? (
+                                                                                <span>
+                                                                                    <ReadMoreLess
+                                                                                        charLimit={50}
+                                                                                        readMoreText="read more"
+                                                                                        readLessText="read less"
+                                                                                    >
+                                                                                        {post?.post_advertisement.body}
+                                                                                    </ReadMoreLess>
+                                                                                </span>
+                                                                            ) : null}
+                                                                        </div>
+                                                                        <p className="card-text"><small className="text-body-secondary">{post?.post_advertisement.created_at.split(' ')[0]}</small></p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : null
                                                 }
+
+                                                {
+                                                    userID !== post?.user_id && (
+                                                        <>
+                                                            {/* <hr /> */}
+                                                            <div className="text-center mt-2">
+                                                                <button
+                                                                    className="btn btn-outline-primary"
+                                                                    onClick={() => {
+                                                                        setShowAdvertismentModal(true);
+                                                                        setPostID(post.id);
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    )
+                                                }
+
 
 
 

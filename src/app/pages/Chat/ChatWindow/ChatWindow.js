@@ -449,7 +449,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
             }
         } catch (err) {
             if (!navigator.onLine) {
-                toast.error(`${<i className="bi bi-wifi-off"></i>} No internet connection. Please check your network.`);
+                toast.error(` No internet connection. Please check your network.`);
             }
             else{
                 toast.error("Error fetching chats. Please try again in a while.");

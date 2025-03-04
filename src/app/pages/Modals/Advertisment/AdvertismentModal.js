@@ -64,8 +64,6 @@ export default function AdvertismentModal({ postID, showAdvertismentModal, setSh
             try {
                 const response = await api.post("/api/post/add-advertisement", formdata);
 
-                console.log(response.data)
-
                 if (response.data.code == "200") {
 
                     toast.success(response.data.message);

@@ -26,12 +26,17 @@ import SharedPosts from "@/app/pages/components/sharedPosts";
 import GroupProfilecard from "../../components/group-card";
 import RightNavbar from "../../components/right-navbar";
 import { ReactionBarSelector } from '@charkour/react-reactions';
+import ReadMoreLess from 'react-read-more-less';
+import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
 
 
 export default function GroupTimeline({ params }) {
 
     const { groupTimeline } = use(params);
     const api = createAPI();
+
+    const userID = localStorage.getItem('userid');
+
     const router = useRouter();
     const [userId, setUserId] = useState(null);
     const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
@@ -79,6 +84,9 @@ export default function GroupTimeline({ params }) {
     const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
+
+    const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
+
 
 
     const reactionEmojis = {
@@ -1560,7 +1568,7 @@ export default function GroupTimeline({ params }) {
 
                                                                 <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
                                                                     <button className="btn btn-primary rounded-pill px-3 py-2">
-                                                                    {userId === post.user_id ? "Edit Product" : "Buy Product"}
+                                                                        {userId === post.user_id ? "Edit Product" : "Buy Product"}
                                                                     </button>
                                                                 </Link>
                                                             </div>
@@ -1570,8 +1578,8 @@ export default function GroupTimeline({ params }) {
 
                                                 {/* Video Section */}
                                                 {post.video && (
-                                                    <div className="w-100 mt-3">
-                                                        <video controls className="w-100 rounded">
+                                                    <div className="w-100">
+                                                        <video controls className="w-100 rounded" style={{ maxHeight: '400px', objectFit: 'contain' }}>
                                                             <source src={post.video.media_path} type="video/mp4" />
                                                             Your browser does not support the video tag.
                                                         </video>
@@ -2013,6 +2021,63 @@ export default function GroupTimeline({ params }) {
                                     }
 
 
+
+
+                                    <hr />
+
+                                    {
+                                        post?.post_advertisement ? (
+                                            <div className="card mb-3 mt-4 p-2 border-secondary">
+                                                <div className="row g-0">
+                                                    <div className="col-md-4 advertisment-image">
+                                                        <Image src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"} width={200} height={100} className="img-fluid rounded-4 mt-1 p-0" alt="adv-img" style={{ objectFit: "cover" }} />
+                                                    </div>
+                                                    <div className="col-md-8 d-flex justify-content-start align-items-start ">
+                                                        <div className="card-body advertistment-details p-1">
+                                                            <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none" target="_blank">{post?.post_advertisement.link}</a>
+                                                            <h5 className="card-title">{post?.post_advertisement.title}</h5>
+                                                            <div className="card-text">
+                                                                {post?.post_advertisement.body ? (
+                                                                    <span>
+                                                                        <ReadMoreLess
+                                                                            charLimit={50}
+                                                                            readMoreText="read more"
+                                                                            readLessText="read less"
+                                                                        >
+                                                                            {post?.post_advertisement.body}
+                                                                        </ReadMoreLess>
+                                                                    </span>
+                                                                ) : null}
+                                                            </div>
+                                                            <p className="card-text"><small className="text-body-secondary">{post?.post_advertisement.created_at.split(' ')[0]}</small></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : null
+                                    }
+
+                                    {
+                                        userID !== post?.user_id && (
+                                            <>
+                                                {/* <hr /> */}
+                                                <div className="text-center mt-2">
+                                                    <button
+                                                        className="btn btn-outline-primary"
+                                                        onClick={() => {
+                                                            setShowAdvertismentModal(true);
+                                                            setPostID(post.id);
+                                                        }}
+                                                    >
+                                                        <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )
+                                    }
+
+
+
                                 </div>
                             </div>
                         ))}
@@ -2125,6 +2190,18 @@ export default function GroupTimeline({ params }) {
                         postID={postID}
                     />
                 )
+            }
+
+            {
+                showAdvertismentModal && (
+
+                    <AdvertismentModal
+                        showAdvertismentModal={showAdvertismentModal}
+                        setShowAdvertismentModal={setShowAdvertismentModal}
+                        postID={postID}
+                    />
+                )
+
             }
 
         </>
