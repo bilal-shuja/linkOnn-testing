@@ -15,7 +15,7 @@ export async function POST(req) {
             return new Response(JSON.stringify({ error: "PayPal API keys not found in settings" }), { status: 500 });
         }
 
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const baseUrl = process.env.NEXT_PUBLIC_URL;
 
         paypal.configure({
             mode: "sandbox", // Change to "live" in production

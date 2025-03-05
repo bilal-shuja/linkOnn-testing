@@ -73,7 +73,7 @@ export default function GamesPage() {
                                 width={50}
                                 height={50}
                                 className="rounded rounded-5"
-                                loader={({ src }) => src}
+                                // loader={({ src }) => src}
 
                               />
                             </td>

@@ -700,9 +700,9 @@ export default function VideoFeed() {
                                                                         <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
                                                                     </button>
                                                                 ) : (
-                                                                    <button className="text-decoration-none dropdown-item text-secondary">
+                                                                    <Link className="text-decoration-none dropdown-item text-secondary" href={`/pages/Fundingslist/${post.id}`}>
                                                                         <i className="bi bi-cash fa-fw pe-2"></i> Fundings
-                                                                    </button>
+                                                                    </Link>
                                                                 )}
                                                             </li>
 
@@ -742,7 +742,7 @@ export default function VideoFeed() {
                                                 >
                                                     <video
                                                         controls
-                                                         className="w-100 rounded"
+                                                        className="w-100 rounded"
                                                         style={{ maxHeight: '400px', objectFit: 'contain' }}
                                                     >
                                                         <source

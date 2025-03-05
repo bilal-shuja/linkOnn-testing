@@ -58,7 +58,7 @@ const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
               }`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               fill
-              loader={({ src }) => src}
+              // loader={({ src }) => src}
             />
             {index === 5  && remainingCount > 0 && (
               <div className={styles.remainingCount}>
@@ -96,7 +96,7 @@ const remainingCount = post?.images?.length > 6 ? post?.images?.length - 6 : 0;
                     fill
                     className={`img-fluid position-absolute ${styles.carouselImage}`}
                     sizes="90vw"
-                    loader={({ src }) => src}
+                    // loader={({ src }) => src}
                   />
                 </div>
               </Carousel.Item>

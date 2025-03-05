@@ -9,8 +9,8 @@ import { useRouter } from "next/navigation";
 import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 export default function Leftnav() {
-  // const [blogs, setBlogs] = useState([]);
-  // const [loadingBlogs, setLoadingBlogs] = useState(false);
+  const [blogs, setBlogs] = useState([]);
+  const [loadingBlogs, setLoadingBlogs] = useState(false);
   const [people, setPeople] = useState([]);
   const [loadingPeople, setLoadingPeople] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -22,21 +22,21 @@ export default function Leftnav() {
     setIsClient(true);
   }, []);
 
-  // const fetchArticlesBlogs = useCallback(async () => {
-  //   setLoadingBlogs(true);
-  //   try {
-  //     const response = await api.post("/api/recent-blogs");
-  //     if (response.data.code === "200") {
-  //       setBlogs(response.data.data);
-  //     } else {
-  //       toast.error(response.data.message);
-  //     }
-  //   } catch (error) {
-  //     toast.error("Error fetching blogs");
-  //   } finally {
-  //     setLoadingBlogs(false);
-  //   }
-  // }, []);
+  const fetchArticlesBlogs = useCallback(async () => {
+    setLoadingBlogs(true);
+    try {
+      const response = await api.post("/api/recent-blogs");
+      if (response.data.code === "200") {
+        setBlogs(response.data.data);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("Error fetching blogs");
+    } finally {
+      setLoadingBlogs(false);
+    }
+  }, []);
 
   const fetchPeopleRecommendations = useCallback(async () => {
     setLoadingPeople(true);
@@ -71,7 +71,7 @@ export default function Leftnav() {
 
   useEffect(() => {
     if (isClient) {
-      // fetchArticlesBlogs();
+      fetchArticlesBlogs();
       fetchPeopleRecommendations();
     }
   }, [isClient]);
@@ -147,7 +147,7 @@ export default function Leftnav() {
         </div>
       )}
 
-      {/* {settings["chck-blogs"] === "1" && (
+      {settings["chck-blogs"] === "1" && (
         <div className="card mb-4 custom-shadow border-0 rounded-4">
           <div className="card-body">
             <div className="d-flex align-items-center justify-content-between">
@@ -168,7 +168,7 @@ export default function Leftnav() {
                 {blogs.map((blog) => (
                   <div key={blog.id}>
                     <div className="mt-3 mx-2">
-                      <Link className="text-decoration-none fw-bold text-dark hover-text blog-title" href={`/pages/blogs/blogdetails/${blog.id}`}>
+                      <Link className="text-decoration-none fw-bold text-dark hover-text blog-title" href={`/pages/Blogs/details/${blog.id}`}>
                         {blog.title}
                       </Link>
 
@@ -188,7 +188,7 @@ export default function Leftnav() {
             </Link>
           </div>
         </div>
-      )} */}
+      )}
 
       <style jsx>{`
         /* Responsive styles for the left navigation */
