@@ -123,6 +123,8 @@ export default function MyPageTimeline({ params }) {
     const endpoint = "/api/post/create";
 
 
+
+
     const reactionEmojis = {
         satisfaction: "👍",
         love: "❤️",
@@ -2246,7 +2248,11 @@ export default function MyPageTimeline({ params }) {
                                                                         <p className="card-text"><small className="text-body-secondary">{post?.post_advertisement.created_at.split(' ')[0]}</small></p>
                                                                     </div>
                                                                 </div>
+                                                                ///
                                                             </div> */}
+
+
+
 
                                                 {
                                                     post?.post_advertisement ? (
