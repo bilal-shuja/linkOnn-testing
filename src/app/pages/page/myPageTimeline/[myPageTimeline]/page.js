@@ -2210,28 +2210,7 @@ export default function MyPageTimeline({ params }) {
                                                 }
 
 
-                                                {/* {
-                                                    userID === post?.user_id ? null :
-                                                        <>
-                                                            <hr />
-
-                                                            <div className="text-center">
-                                                                <button className="btn btn-outline-primary" onClick={() => {
-                                                                    setShowAdvertismentModal(true)
-                                                                    setPostID(post.id)
-                                                                }
-                                                                }>
-                                                                    <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
-                                                                </button>
-
-                                                            </div>
-                                                        </>
-
-
-                                                        
-                                                } */}
-
-
+                                    
 
                                                 <hr />
 
