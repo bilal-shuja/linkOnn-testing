@@ -62,7 +62,7 @@ export default function About() {
                                             <h5 className="mb-0">Contact Us</h5>
                                         </div>
                                         <p className="mb-0">
-                                            If you have any questions about the data deletion process, please don't hesitate to reach out to our support team.
+                                            If you have any questions about the data deletion process, please do not hesitate to reach out to our support team.
                                         </p>
                                     </div>
                                 </div>

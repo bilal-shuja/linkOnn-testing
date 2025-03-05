@@ -21,7 +21,6 @@ import ReadMoreLess from 'react-read-more-less';
 
 
 export default function VideoFeed() {
-    const userID = localStorage.getItem('userid');
 
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -1209,7 +1208,7 @@ export default function VideoFeed() {
                                         }
 
                                         {
-                                            userID !== post?.user_id && (
+                                            userId !== post?.user_id && (
                                                 <>
                                                     {/* <hr /> */}
                                                     <div className="text-center mt-2">

@@ -1,5 +1,6 @@
 "use client";
 
+import ReadMoreLess from 'react-read-more-less';
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
@@ -20,10 +21,10 @@ import SharedPosts from "../components/sharedPosts";
 import { useRouter } from "next/navigation";
 import { useSiteSettings } from "@/context/SiteSettingsContext"
 
+
 export default function Savedposts() {
 
     const router = useRouter();
-    const userID = localStorage.getItem('userid');
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -1411,7 +1412,7 @@ export default function Savedposts() {
                                         }
 
                                         {
-                                            userID !== post?.user_id && (
+                                            userId !== post?.user_id && (
                                                 <>
                                                     {/* <hr /> */}
                                                     <div className="text-center mt-2">
