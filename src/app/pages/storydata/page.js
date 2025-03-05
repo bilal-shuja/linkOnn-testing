@@ -36,8 +36,6 @@ export default function Storyform() {
                     const allStories = response.data.data.flatMap(user => user.stories);
                     setStories(allStories);
                     setError("");
-    
-                    // toast.success("Stories loaded successfully");
                 } else {
                     toast.error("Failed to load stories");
                 }

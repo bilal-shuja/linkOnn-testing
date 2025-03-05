@@ -742,9 +742,9 @@ export default function OpenPostInNewTab({ params }) {
                                                                         <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
                                                                     </button>
                                                                 ) : (
-                                                                    <button className="text-decoration-none dropdown-item text-secondary">
+                                                                    <Link className="text-decoration-none dropdown-item text-secondary" href={`/pages/Fundingslist/${post.id}`}>
                                                                         <i className="bi bi-cash fa-fw pe-2"></i> Fundings
-                                                                    </button>
+                                                                    </Link>
                                                                 )}
                                                             </li>
 

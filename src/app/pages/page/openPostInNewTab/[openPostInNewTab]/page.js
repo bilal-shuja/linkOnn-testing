@@ -848,7 +848,7 @@ export default function OpenPostInNewTab({ params }) {
                                                                 style={{
                                                                     objectFit: "cover",
                                                                 }}
-                                                                loader={({ src }) => src}
+                                                                // loader={({ src }) => src}
                                                             />
     
                                                             <div className="card-body text-center">
@@ -861,7 +861,7 @@ export default function OpenPostInNewTab({ params }) {
                                                                         style={{
                                                                             objectFit: "cover",
                                                                         }}
-                                                                        loader={({ src }) => src}
+                                                                        // loader={({ src }) => src}
                                                                     />
                                                                 </div>
                                                                 <div className="card-body text-center">

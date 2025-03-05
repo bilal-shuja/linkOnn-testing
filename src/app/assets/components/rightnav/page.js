@@ -237,7 +237,7 @@ export default function Leftnav() {
                   )}
 
                   {/* Blogs */}
-                  {/* {settings["chck-blogs"] === "1" && (
+                  {settings["chck-blogs"] === "1" && (
                     <Link
                       className="list-group-item list-group-item-action text-decoration-none"
                       href="/pages/Blogs"
@@ -250,7 +250,7 @@ export default function Leftnav() {
                       />
                       <span className="ms-3">Blogs/Articles</span>
                     </Link>
-                  )} */}
+                  )}
 
                   {/* Poke */}
                   <Link

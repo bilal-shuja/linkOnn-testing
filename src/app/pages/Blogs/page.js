@@ -78,7 +78,7 @@ export default function Blogs() {
         <div className="col-md-8 mt-5">
           <div className="card shadow-lg border-0 p-4">
             <div className="card-body">
-              <h3 className="mb-4 fw-bold text-center text-primary">Latest Blogs</h3>
+              <h3 className="mb-4 fw-bold text-center text-primary">Blogs</h3>
               {blogs.map((blog) => (
                 <div key={blog.id} className="col-md-12 mb-4">
                   <div className="d-flex align-items-start shadow-sm p-3 rounded bg-light">
@@ -131,7 +131,7 @@ export default function Blogs() {
           {/* Recent Posts */}
           <div className="card shadow-lg border-0 p-3">
             <div className="card-body">
-              <h5 className="fw-bold text-dark">Recent Posts</h5>
+              <h5 className="fw-bold text-dark">Recent Blogs</h5>
               <ul className="list-group list-group-flush">
                 {recentBlogs.map((blog) => (
                   <li key={blog.id} className="list-group-item">
@@ -149,7 +149,7 @@ export default function Blogs() {
           </div>
 
           {/* Tags Section */}
-          <div className="card shadow-lg border-0 mt-4 p-3">
+          {/* <div className="card shadow-lg border-0 mt-4 p-3">
             <div className="card-body">
               <h5 className="fw-bold text-dark">Popular Tags</h5>
               <div className="d-flex flex-wrap">
@@ -164,7 +164,7 @@ export default function Blogs() {
                 ))}
               </div>
             </div>
-          </div>
+          </div> */}
 
         </div>
       </div>

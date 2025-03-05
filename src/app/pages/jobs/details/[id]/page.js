@@ -26,7 +26,6 @@ export default function JobDetailPage({ params }) {
                     toast.error("Failed to fetch job details");
                 }
             } catch (error) {
-                console.error("Error fetching job details:", error);
                 toast.error("An error occurred while fetching job details");
             } finally {
                 setLoading(false);

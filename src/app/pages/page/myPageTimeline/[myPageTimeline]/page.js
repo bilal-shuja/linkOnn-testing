@@ -1395,18 +1395,23 @@ export default function MyPageTimeline({ params }) {
 
                                                                             </button>
                                                                         </li>
-                                                                        <li>
-                                                                        </li><li className=" align-items-center d-flex">
-                                                                            <button
-                                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                                onClick={() => {
-                                                                                    setShowEditPostModal(true)
-                                                                                    setPostID({ id: post.id, post_text: post.post_text })
 
-                                                                                }}
-                                                                            >
-                                                                                <i className="bi bi-pencil-fill"></i> Edit Post
-                                                                            </button>
+                                                                        <li className="align-items-center d-flex">
+                                                                            {post.post_type !== "donation" ? (
+                                                                                <button
+                                                                                    className="text-decoration-none dropdown-item text-secondary"
+                                                                                    onClick={() => {
+                                                                                        setShowEditPostModal(true);
+                                                                                        setPostID({ id: post.id, post_text: post.post_text });
+                                                                                    }}
+                                                                                >
+                                                                                    <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
+                                                                                </button>
+                                                                            ) : (
+                                                                                <Link className="text-decoration-none dropdown-item text-secondary" href={`/pages/Fundingslist/${post.id}`}>
+                                                                                    <i className="bi bi-cash fa-fw pe-2"></i> Fundings
+                                                                                </Link>
+                                                                            )}
                                                                         </li>
                                                                     </>
                                                                     :
@@ -1610,7 +1615,7 @@ export default function MyPageTimeline({ params }) {
                                                                     style={{
                                                                         objectFit: "cover",
                                                                     }}
-                                                                    loader={({ src }) => src}
+                                                                // loader={({ src }) => src}
                                                                 />
 
                                                                 <div className="card-body text-center">
@@ -1686,7 +1691,7 @@ export default function MyPageTimeline({ params }) {
                                                                             style={{
                                                                                 objectFit: "cover",
                                                                             }}
-                                                                            loader={({ src }) => src}
+                                                                        // loader={({ src }) => src}
                                                                         />
 
                                                                         <h5 className="fw-bold mt-2">{post.event.name}</h5>
@@ -2006,7 +2011,7 @@ export default function MyPageTimeline({ params }) {
                                                                                 style={{
                                                                                     objectFit: "cover",
                                                                                 }}
-                                                                                loader={({ src }) => src}
+                                                                            // loader={({ src }) => src}
                                                                             />
 
                                                                             <div className="mb-3">
@@ -2082,7 +2087,7 @@ export default function MyPageTimeline({ params }) {
                                                                                                     style={{
                                                                                                         objectFit: "cover",
                                                                                                     }}
-                                                                                                    loader={({ src }) => src}
+                                                                                                // loader={({ src }) => src}
                                                                                                 />
 
                                                                                                 <div className="mb-3">
@@ -2189,7 +2194,7 @@ export default function MyPageTimeline({ params }) {
                                                                 className="rounded-5"
                                                                 width={40}
                                                                 height={40}
-                                                                loader={({ src }) => src}
+                                                            // loader={({ src }) => src}
                                                             />
                                                             <form className="position-relative w-100 ms-2">
                                                                 <input

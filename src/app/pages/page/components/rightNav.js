@@ -59,7 +59,7 @@ export default function RightNav({ pageTimelineData }) {
                 width={50}
                 height={50}
                 style={{ objectFit: 'cover', height: '50px', width: '50px' }}
-                loader={({ src }) => src}
+                // loader={({ src }) => src}
               />
               <Link
                 className='suggested-pages-info text-decoration-none text-black'

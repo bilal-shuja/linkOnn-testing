@@ -108,7 +108,6 @@ export default function ApproveRejectAdvModal({ advID, showApproveRejectAdvModal
                                     alt="ad Img"
                                     style={{ objectFit: "cover" }}
                                 // loader={({ src }) => src}
-
                                 />
                             </div>
                         </div>
