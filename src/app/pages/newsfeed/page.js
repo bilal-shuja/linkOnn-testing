@@ -87,8 +87,6 @@ export default function Newsfeed() {
   const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
 
 
-  const userID = localStorage.getItem('userid');
-
 
   const fileImageRef = useRef(null);
 
@@ -2217,7 +2215,7 @@ export default function Newsfeed() {
                     }
 
                     {
-                      userID !== post?.user_id && (
+                      userId !== post?.user_id && (
                         <>
                         {/* <hr/> */}
                          <div className="text-center mt-2">
