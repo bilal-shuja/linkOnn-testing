@@ -20,14 +20,17 @@ import SharePostTimelineModal from "../../Modals/SharePostTimelineModal";
 import { useRouter } from "next/navigation";
 import SharedPosts from "@/app/pages/components/sharedPosts";
 import { ReactionBarSelector } from '@charkour/react-reactions';
-import { useSiteSettings } from "@/context/SiteSettingsContext"
+import { useSiteSettings } from "@/context/SiteSettingsContext";
+import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
+import ReadMoreLess from 'react-read-more-less';
+
 
 export default function OpenPostInNewTab({ params }) {
     const settings = useSiteSettings()
     const router = useRouter();
     const api = createAPI();
     const { openPostInNewTab } = use(params)
-    const userId = localStorage.getItem('userid');
+    const [userId, setUserId] = useState(null);
     const [userdata, setUserData] = useState(null);
     const [posts, setPosts] = useState([]);
     const [comments, setComments] = useState({});
@@ -50,6 +53,8 @@ export default function OpenPostInNewTab({ params }) {
     const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
+
+    const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
 
 
     const reactionEmojis = {
@@ -497,6 +502,14 @@ export default function OpenPostInNewTab({ params }) {
         return colorMap[code] || code;
     };
 
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUserId = localStorage.getItem("userid");
+            setUserId(storedUserId);
+        }
+    }, []);
+
     if (!settings) return null
 
     return (
@@ -767,9 +780,9 @@ export default function OpenPostInNewTab({ params }) {
                                                 <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                                                     style={{
                                                         background: getDisplayColor(post.bg_color),
-                                                        backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
-                                                        backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
-                                                        backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                                        backgroundSize: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'cover' : 'auto',
+                                                        backgroundRepeat: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'no-repeat' : 'repeat',
+                                                        backgroundPosition: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'center' : 'unset',
                                                         padding: "220px 27px",
                                                     }}
                                                 >
@@ -1448,6 +1461,75 @@ export default function OpenPostInNewTab({ params }) {
                                             )
                                         }
 
+
+
+                                        <hr />
+
+                                        {
+                                            post?.post_advertisement ? (
+
+
+
+                                                <div className="card mb-3 mt-4 p-2 border-secondary">
+                                                    <div className="d-flex flex-column flex-md-row  align-items-center align-items-md-start">
+                                                        <div className="flex-shrink-0 mb-3 mb-md-0 align-self-center">
+                                                            <Image
+                                                                src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"}
+                                                                width={200}
+                                                                height={100}
+                                                                className="img-fluid rounded-4"
+                                                                alt="adv-img"
+                                                                style={{ objectFit: "conatin", }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex-grow-1 ms-md-3 align-self-center">
+                                                            <div className="card-body advertistment-details">
+                                                                <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none " target="_blank">{post?.post_advertisement.link}</a>
+                                                                <h5 className="card-title mb-lg-3">{post?.post_advertisement.title}</h5>
+                                                                <div className="card-text mb-lg-2">
+                                                                    {post?.post_advertisement.body ? (
+                                                                        <span>
+                                                                            <ReadMoreLess
+                                                                                charLimit={70}
+                                                                                readMoreText="read more"
+                                                                                readLessText="read less"
+                                                                            >
+                                                                                {post?.post_advertisement.body}
+                                                                            </ReadMoreLess>
+                                                                        </span>
+                                                                    ) : null}
+                                                                </div>
+                                                                <p className="card-text"><small className="text-body-secondary">{post?.post_advertisement.created_at.split(' ')[0]}</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+                                            ) : null
+                                        }
+
+                                        {
+                                            userId !== post?.user_id && (
+                                                <>
+                                                    {/* <hr /> */}
+                                                    <div className="text-center mt-2">
+                                                        <button
+                                                            className="btn btn-outline-primary"
+                                                            onClick={() => {
+                                                                setShowAdvertismentModal(true);
+                                                                setPostID(post.id);
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+
+
+
                                     </div>
                                 </div>
                             ))}
@@ -1527,6 +1609,19 @@ export default function OpenPostInNewTab({ params }) {
                             postID={postID}
                         />
                     )
+                }
+
+
+                {
+                    showAdvertismentModal && (
+
+                        <AdvertismentModal
+                            showAdvertismentModal={showAdvertismentModal}
+                            setShowAdvertismentModal={setShowAdvertismentModal}
+                            postID={postID}
+                        />
+                    )
+
                 }
 
             </div>
