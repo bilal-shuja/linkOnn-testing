@@ -97,10 +97,6 @@ export default function Groups({ params }) {
     useEffect(() => {
         fetchSpecificGroup();
         
-        // Debug the group categories from settings
-        if (settings && settings.group_categories) {
-            console.log("Available categories:", settings.group_categories);
-        }
     }, [settings]);
 
     if (!settings) return null;

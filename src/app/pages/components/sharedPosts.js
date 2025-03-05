@@ -259,9 +259,9 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                         <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                             style={{
                                 background: getDisplayColor(sharedPost.bg_color),
-                                backgroundSize: sharedPost.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
-                                backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
-                                backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                                backgroundSize: sharedPost.bg_color?.startsWith('_2j8') || sharedPost.bg_color?.startsWith('_2j9')? 'cover' : 'auto',
+                                backgroundRepeat: sharedPost.bg_color?.startsWith('_2j8') || sharedPost.bg_color?.startsWith('_2j9') ? 'no-repeat' : 'repeat',
+                                backgroundPosition: sharedPost.bg_color?.startsWith('_2j8') || sharedPost.bg_color?.startsWith('_2j9') ? 'center' : 'unset',
                                 padding: "220px 27px",
                             }}
                         >

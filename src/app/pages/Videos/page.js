@@ -742,7 +742,7 @@ export default function VideoFeed() {
                                                 >
                                                     <video
                                                         controls
-                                                         className="w-100 rounded"
+                                                        className="w-100 rounded"
                                                         style={{ maxHeight: '400px', objectFit: 'contain' }}
                                                     >
                                                         <source
@@ -1177,20 +1177,29 @@ export default function VideoFeed() {
 
                                         {
                                             post?.post_advertisement ? (
+
+
                                                 <div className="card mb-3 mt-4 p-2 border-secondary">
-                                                    <div className="row g-0">
-                                                        <div className="col-md-4 advertisment-image">
-                                                            <Image src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"} width={200} height={100} className="img-fluid rounded-4 mt-1 p-0" alt="adv-img" style={{ objectFit: "cover" }} />
+                                                    <div className="d-flex flex-column flex-md-row  align-items-center align-items-md-start">
+                                                        <div className="flex-shrink-0 mb-3 mb-md-0 align-self-center">
+                                                            <Image
+                                                                src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"}
+                                                                width={200}
+                                                                height={100}
+                                                                className="img-fluid rounded-4"
+                                                                alt="adv-img"
+                                                                style={{ objectFit: "conatin", }}
+                                                            />
                                                         </div>
-                                                        <div className="col-md-8 d-flex justify-content-start align-items-start ">
-                                                            <div className="card-body advertistment-details p-1">
-                                                                <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none" target="_blank">{post?.post_advertisement.link}</a>
-                                                                <h5 className="card-title">{post?.post_advertisement.title}</h5>
-                                                                <div className="card-text">
+                                                        <div className="flex-grow-1 ms-md-3 align-self-center">
+                                                            <div className="card-body advertistment-details">
+                                                                <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none " target="_blank">{post?.post_advertisement.link}</a>
+                                                                <h5 className="card-title mb-lg-3">{post?.post_advertisement.title}</h5>
+                                                                <div className="card-text mb-lg-2">
                                                                     {post?.post_advertisement.body ? (
                                                                         <span>
                                                                             <ReadMoreLess
-                                                                                charLimit={50}
+                                                                                charLimit={70}
                                                                                 readMoreText="read more"
                                                                                 readLessText="read less"
                                                                             >
@@ -1204,6 +1213,7 @@ export default function VideoFeed() {
                                                         </div>
                                                     </div>
                                                 </div>
+
                                             ) : null
                                         }
 

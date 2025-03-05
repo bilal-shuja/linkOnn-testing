@@ -443,6 +443,8 @@ export default function Newsfeed() {
 
   const uploadPost = async (donationData = {}) => {
     try {
+
+      setUploadPLoading(true);
       const formData = new FormData();
       const combinedText = donationData.donationTitle
         ? `${postText} ${donationData.donationTitle}`
@@ -486,12 +488,20 @@ export default function Newsfeed() {
         setaudio([]);
         setvideo([]);
         setShowLocation(false);
+        setIsOpenColorPalette(false);
+        // setUploadPLoading(false);
+
+
       } else {
         toast.error("Error from server: " + response.data.message)
         setSuccess("");
+        // setUploadPLoading(false);
+
       }
     } catch (error) {
       toast.error(error.response.data.message)
+      setUploadPLoading(false);
+
     } finally {
       setUploadPLoading(false);
     }
@@ -808,7 +818,7 @@ export default function Newsfeed() {
   const getDisplayColor = (code) => {
     return colorMap[code] || code;
   };
-  
+
   if (!settings) return null
 
   return (
@@ -916,8 +926,10 @@ export default function Newsfeed() {
                       value={postText}
                       onChange={handlePostTextChange}
                       style={{
-                        height: "150px", background: getDisplayColor(color)
+                        background: `${getDisplayColor(color)} no-repeat center/cover`,
+                        resize: "none"
                       }}
+                      rows={8}
                     />
 
                     <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "25px", top: "100px" }}>😊</button>
@@ -1196,10 +1208,11 @@ export default function Newsfeed() {
                   </div>
                   <div className="d-flex justify-content-center">
                     <button
-                      className="btn btn-outline-success mt-3 w-100 d-flex align-items-center justify-content-center"
-                      disabled={uploadPloading}
+                      className="btn btn-success-post mt-3 w-100"
                       onClick={uploadPost}
+                      disabled={uploadPloading}
                     >
+                      {/* Post <i className="bi bi-send me-2"></i> */}
                       {!uploadPloading && <i className="bi bi-send me-2"></i>}
                       {uploadPloading ? (
                         <Spinner
@@ -1493,9 +1506,9 @@ export default function Newsfeed() {
                         <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
                           style={{
                             background: getDisplayColor(post.bg_color),
-                            backgroundSize: post.bg_color?.startsWith('_2j8') ? 'cover' : 'auto',
-                            backgroundRepeat: post.bg_color?.startsWith('_2j8') ? 'no-repeat' : 'repeat',
-                            backgroundPosition: post.bg_color?.startsWith('_2j8') ? 'center' : 'unset',
+                            backgroundSize: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'cover' : 'auto',
+                            backgroundRepeat: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'no-repeat' : 'repeat',
+                            backgroundPosition: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'center' : 'unset',
                             padding: "220px 27px",
                           }}
                         >
@@ -2184,20 +2197,28 @@ export default function Newsfeed() {
 
                     {
                       post?.post_advertisement ? (
+
                         <div className="card mb-3 mt-4 p-2 border-secondary">
-                          <div className="row g-0">
-                            <div className="col-md-4 advertisment-image">
-                              <Image src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"} width={200} height={100} className="img-fluid rounded-4 mt-1 p-0" alt="adv-img" style={{ objectFit: "cover" }} />
+                          <div className="d-flex flex-column flex-md-row  align-items-center align-items-md-start">
+                            <div className="flex-shrink-0 mb-3 mb-md-0 align-self-center">
+                              <Image
+                                src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"}
+                                width={200}
+                                height={100}
+                                className="img-fluid rounded-4"
+                                alt="adv-img"
+                                style={{ objectFit: "conatin"}}
+                              />
                             </div>
-                            <div className="col-md-8 d-flex justify-content-start align-items-start ">
-                              <div className="card-body advertistment-details p-1">
-                                <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none" target="_blank">{post?.post_advertisement.link}</a>
-                                <h5 className="card-title">{post?.post_advertisement.title}</h5>
-                                <div className="card-text">
+                            <div className="flex-grow-1 ms-md-3 align-self-center">
+                              <div className="card-body advertistment-details">
+                                <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none " target="_blank">{post?.post_advertisement.link}</a>
+                                <h5 className="card-title mb-lg-3">{post?.post_advertisement.title}</h5>
+                                <div className="card-text mb-lg-2">
                                   {post?.post_advertisement.body ? (
                                     <span>
                                       <ReadMoreLess
-                                        charLimit={50}
+                                        charLimit={70}
                                         readMoreText="read more"
                                         readLessText="read less"
                                       >
@@ -2211,26 +2232,29 @@ export default function Newsfeed() {
                             </div>
                           </div>
                         </div>
-                      ) : null
+                      )
+                        :
+
+                        null
                     }
 
                     {
                       userId !== post?.user_id && (
                         <>
-                        {/* <hr/> */}
-                         <div className="text-center mt-2">
-                          <button
-                            className="btn btn-outline-primary"
-                            onClick={() => {
-                              setShowAdvertismentModal(true);
-                              setPostID(post.id);
-                            }}
-                          >
-                            <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
-                          </button>
-                        </div>
+                          {/* <hr/> */}
+                          <div className="text-center mt-2">
+                            <button
+                              className="btn btn-outline-primary"
+                              onClick={() => {
+                                setShowAdvertismentModal(true);
+                                setPostID(post.id);
+                              }}
+                            >
+                              <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                            </button>
+                          </div>
                         </>
-                       
+
                       )
                     }
 

@@ -61,10 +61,13 @@ export default function RightNav({ pageTimelineData }) {
                 style={{ objectFit: 'cover', height: '50px', width: '50px' }}
                 loader={({ src }) => src}
               />
-              <div className='suggested-pages-info'>
+              <Link
+                className='suggested-pages-info text-decoration-none text-black'
+                href={`/pages/page/myPageTimeline/${items.id}`}
+              >
                 <h6>{items.page_title}</h6>
                 <small className="mb-0 small text-truncate">2 Members</small>
-              </div>
+              </Link>
             </div>
 
           </div>
@@ -95,8 +98,8 @@ export default function RightNav({ pageTimelineData }) {
               setThumbsClick={setThumbsClick}
             />
           )
-            
-      
+
+
 
         }
 
@@ -168,10 +171,6 @@ export default function RightNav({ pageTimelineData }) {
         </div>
 
       </div>
-
-
-
-
 
 
 

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import Modal from "react-bootstrap/Modal";
-import Spinner from "react-bootstrap/Spinner"; // Import Bootstrap Spinner
+import Spinner from "react-bootstrap/Spinner"; 
 
 export default function EnableDisableCommentsModal({ postID, posts, setPosts, showEnableDisableCommentsModal, setShowEnableDisableCommentsModal }) {
     const [loading, setLoading] = useState(false); // Loading state

@@ -15,7 +15,7 @@ import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
 import EnableDisableCommentsModal from '../../Modal/EnableDisableCommentsModal';
 // import PageImagesLayout from "../../myPageTimeline/[myPageTimeline]/pageImagesLayout";
-import SharedPosts from "../../components/SharedPosts";
+import SharedPosts from "@/app/pages/components/sharedPosts";
 import UserImagesLayout from "@/app/pages/components/userImagesLayout";
 import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
 import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";

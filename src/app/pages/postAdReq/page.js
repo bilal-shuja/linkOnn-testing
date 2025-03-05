@@ -38,7 +38,7 @@ export default function GamesPage() {
 
   return (
     <div>
-      <div className="container-fluid bg-light">
+      <div className="container-fluid">
         <div className="container mt-5 pt-5">
           <div className="row">
             <div className="col-md-3">
@@ -81,10 +81,10 @@ export default function GamesPage() {
                             <td>{ad.title}</td>
                             <td>
                               <button className="btn btn-sm btn-outline-primary" onClick={()=>{
-                                setAdvID(ad)
+                                setAdvID(ad.id)
                                 setShowApproveRejectAdvModal(true)
                               }}>
-                                <i className="bi bi-folder2-open"></i>
+                                <i className="bi bi-eye"></i>
                               </button>
                             </td>
                           </tr>
@@ -100,6 +100,7 @@ export default function GamesPage() {
                     advID = {advID}
                     showApproveRejectAdvModal = {showApproveRejectAdvModal}
                     setShowApproveRejectAdvModal = {setShowApproveRejectAdvModal}
+                    fetchPostsReq = {fetchPostsReq}
                     />
                   )
                 
