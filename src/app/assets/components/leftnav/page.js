@@ -16,7 +16,7 @@ export default function Leftnav() {
   const [isClient, setIsClient] = useState(false);
   const api = createAPI();
   const router = useRouter();
-  const settings = useSiteSettings()
+  const settings = useSiteSettings();
 
   useEffect(() => {
     setIsClient(true);
