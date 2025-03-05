@@ -808,7 +808,7 @@ export default function Newsfeed() {
   const getDisplayColor = (code) => {
     return colorMap[code] || code;
   };
-  
+
   if (!settings) return null
 
   return (
@@ -1453,9 +1453,9 @@ export default function Newsfeed() {
                                     <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
                                   </button>
                                 ) : (
-                                  <button className="text-decoration-none dropdown-item text-secondary">
+                                  <Link className="text-decoration-none dropdown-item text-secondary" href={`/pages/Fundingslist/${post.id}`}>
                                     <i className="bi bi-cash fa-fw pe-2"></i> Fundings
-                                  </button>
+                                  </Link>
                                 )}
                               </li>
 
@@ -2217,20 +2217,20 @@ export default function Newsfeed() {
                     {
                       userId !== post?.user_id && (
                         <>
-                        {/* <hr/> */}
-                         <div className="text-center mt-2">
-                          <button
-                            className="btn btn-outline-primary"
-                            onClick={() => {
-                              setShowAdvertismentModal(true);
-                              setPostID(post.id);
-                            }}
-                          >
-                            <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
-                          </button>
-                        </div>
+                          {/* <hr/> */}
+                          <div className="text-center mt-2">
+                            <button
+                              className="btn btn-outline-primary"
+                              onClick={() => {
+                                setShowAdvertismentModal(true);
+                                setPostID(post.id);
+                              }}
+                            >
+                              <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                            </button>
+                          </div>
                         </>
-                       
+
                       )
                     }
 

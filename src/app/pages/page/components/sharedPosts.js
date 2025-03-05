@@ -335,7 +335,7 @@ export default function SharedPosts({ sharedPost, posts, setPosts }) {
                                 style={{
                                     objectFit: "cover",
                                 }}
-                                loader={({ src }) => src}
+                                // loader={({ src }) => src}
                             />
     
                             <div className="card-body text-center">

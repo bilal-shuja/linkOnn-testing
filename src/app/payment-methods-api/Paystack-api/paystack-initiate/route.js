@@ -17,7 +17,7 @@ export async function POST(req) {
 
         const secretKey = settings.paystack_secret_key;
 
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const baseUrl = process.env.NEXT_PUBLIC_URL;
 
         const response = await axios.post(
             "https://api.paystack.co/transaction/initialize",

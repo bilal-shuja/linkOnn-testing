@@ -23,9 +23,9 @@ export default function MovieDetailPage({ params }) {
 
     const fetchMovie = async () => {
       try {
-        const response = await api.post("/api/all-movies");
-        if (response.data.code === "200") {
-          const movieData = response.data.data.find(m => m.id === id);
+        const response = await api.post("/api/movie-details",{movie_id: id});
+        if (response.data.status == "200") {
+          const movieData = response.data.data
           if (movieData) {
             setMovie(movieData);
           } else {
@@ -66,6 +66,7 @@ export default function MovieDetailPage({ params }) {
   if (settings["chck-movies"] !== "1")  {
     return <ModuleUnavailable />;
 }
+
   return (
     <div className="movie-details-page">
       {/* Backdrop */}

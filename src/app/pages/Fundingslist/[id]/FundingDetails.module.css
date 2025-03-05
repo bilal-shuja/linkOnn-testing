@@ -1,0 +1,106 @@
+
+.fundingCard {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.fundingCard:hover {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+.fundingTitle {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.fundingDate {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.fundingImage {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+}
+
+.fundingImage:hover {
+    transform: scale(1.02);
+}
+
+.fundingDescription {
+    color: #34495e;
+    line-height: 1.6;
+    margin: 20px 0;
+}
+
+.fundingAmount {
+    color: #2980b9;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.usersTable {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    margin-top: 20px;
+}
+
+.usersTableHeader {
+    background-color: #f1f3f5;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.userRow {
+    transition: background-color 0.3s ease;
+}
+
+.userRow:hover {
+    background-color: #f8f9fa;
+}
+
+.userAvatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.loaderContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+}
+
+.spinnerCustom {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.25em;
+    color: #3498db;
+}
+
+@media (max-width: 768px) {
+    .fundingCard, .usersTable {
+        padding: 15px;
+    }
+    
+    .fundingImage {
+        height: 200px;
+    }
+}

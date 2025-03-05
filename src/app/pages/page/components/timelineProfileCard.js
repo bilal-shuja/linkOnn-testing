@@ -53,7 +53,7 @@ export default function TimelineProfileCard({pageTimelineID}) {
                                         width={800}
                                         height={400}
                                         style={{ objectFit: 'cover', height: '200px' }}
-                                        loader={({ src }) => src}
+                                        // loader={({ src }) => src}
 
                                     />
                                     <div
@@ -73,7 +73,7 @@ export default function TimelineProfileCard({pageTimelineID}) {
                                                 console.error('Image load error:', e);
                                                 e.target.src = '/assets/images/placeholder-image.png';
                                             }}
-                                            loader={({ src }) => src}
+                                            // loader={({ src }) => src}
                                         />
                                     </div>
                                 </div>
@@ -84,7 +84,7 @@ export default function TimelineProfileCard({pageTimelineID}) {
                                             <h5 className="text-dark">
                                                 {pageTimelineData?.page_title}
                                             </h5>
-                                            <span className="small text-muted">@{pageTimelineData?.website}</span>
+                                            <span className="small text-muted">@{pageTimelineData?.page_username}</span>
                                         </div>
                                         {
                                             userID === pageTimelineData.user_id ?

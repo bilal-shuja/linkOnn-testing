@@ -17,7 +17,7 @@ export async function POST(req) {
 
         const stripe = new Stripe(settings.stripe_secret_key);
 
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const baseUrl = process.env.NEXT_PUBLIC_URL;
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],

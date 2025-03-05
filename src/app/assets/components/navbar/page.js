@@ -457,7 +457,7 @@ export default function Navbar() {
                     height: '40px',
                     flexShrink: "0 !important"
                   }}
-                  loader={({ src }) => src}
+                  // loader={({ src }) => src}
                 />
 
                 <div className="d-flex justify-content-between w-100 overflow-hidden">

@@ -195,7 +195,7 @@ const GroupProfilecard = ({ group_id, setGroupData }) => {
                         alt="Cover Photo"
                         width={800}
                         height={400}
-                        loader={({ src }) => src}
+                        // loader={({ src }) => src}
                         style={{ objectFit: 'cover', height: '200px', cursor: 'pointer' }}
                         onClick={() => handleImageClick(group.cover)}
                     />

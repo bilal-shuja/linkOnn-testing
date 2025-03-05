@@ -875,7 +875,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                             width={30}
                             height={30}
                             style={{ objectFit: 'cover' }}
-                            loader={({ src }) => src}
+                            // loader={({ src }) => src}
                             alt="user-img"
                         />
                         <h6 className="mt-2 fw-light">{chat?.first_name}</h6>
@@ -1031,7 +1031,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                                                             width={25}
                                                             height={25}
                                                             style={{ objectFit: "cover" }}
-                                                            loader={({ src }) => src}
+                                                            // loader={({ src }) => src}
                                                             alt="user-img"
                                                         />
                                                     )}
@@ -1051,7 +1051,7 @@ const ChatWindow = ({ chat, chatID, onClose }) => {
                                                                         width={25}
                                                                         height={25}
                                                                         style={{ objectFit: "contain" }}
-                                                                        loader={({ src }) => src}
+                                                                        // loader={({ src }) => src}
                                                                         alt="chat-img"
                                                                     />
                                                                     :
