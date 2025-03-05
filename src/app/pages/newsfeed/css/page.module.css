@@ -40,48 +40,43 @@
 }
 
 /* Color Toggle Button */
-.colorToggleButton {
-  background-color: #00a859;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease-in-out;
+.optionsContainer {
+  position: relative;
 }
 
-.colorToggleButton.active {
-  background-color: #007f63;
+.toggleButton {
+
+  color: #4f9ef8;
+  background-color: rgba(79, 158, 248, 0.1);
 }
 
-/* Color Options */
 .colorOptions {
   display: flex;
   flex-wrap: wrap;
   overflow: hidden;
   max-height: 0;
   transition: max-height 0.5s ease-in-out;
-  margin-left: 10px;
 }
 
 .colorOptions.open {
-  max-height: 200px;
+  max-height: 200px; 
 }
 
-/* Color Option */
 .colorOption {
-  width: 25px;
-  height: 25px;
+  width: 20px;
+  height: 20px;
   margin: 5px;
+  margin-top: 10px;
   border-radius: 50%;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
-  box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.55);
 }
 
 .colorOption:hover {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
+
 
 
 
