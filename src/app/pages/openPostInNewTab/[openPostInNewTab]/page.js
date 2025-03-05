@@ -529,6 +529,8 @@ export default function OpenPostInNewTab({ params }) {
                             <Rightnav />
                         </div>
 
+
+                    
                         <div className="col-md-9 p-3 mt-2">
 
 
