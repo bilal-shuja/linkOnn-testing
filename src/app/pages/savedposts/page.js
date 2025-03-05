@@ -19,6 +19,8 @@ import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
 import SharedPosts from "../components/sharedPosts";
 import { useRouter } from "next/navigation";
 import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ReadMoreLess from 'react-read-more-less';
+
 
 export default function Savedposts() {
 
