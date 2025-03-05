@@ -290,7 +290,7 @@ export default function Pages() {
                                         </div>
                                         <div className="text-center">
                                           <p className="fs-5 text-dark fw-semibold mb-2">
-                                            {page.posts_count || 0}
+                                            {page.post_count || 0}
                                           </p>
                                           <p className=" mb-0">Posts</p>
                                         </div>
