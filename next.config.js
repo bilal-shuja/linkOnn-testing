@@ -4,14 +4,14 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: process.env.NEXT_PUBLIC_API_BASE_URL.replace("https://", ""), // Extract hostname dynamically
-        pathname: "/uploads/photos/**", // Allow images from this path
+        hostname: process.env.NEXT_PUBLIC_API_BASE_URL.replace("https://", ""),
+        pathname: "/uploads/photos/**",
       },
     ],
-    domains: [process.env.NEXT_PUBLIC_API_BASE_URL.replace("https://", "")], // Extract domain dynamically
-    minimumCacheTTL: 60, // Optional: Reduce caching issues
+    domains: [process.env.NEXT_PUBLIC_API_BASE_URL.replace("https://", "")],
+    minimumCacheTTL: 60,
   },
-  reactStrictMode: true, // Ensure best practices
+  reactStrictMode: true,
 };
 
 module.exports = nextConfig;

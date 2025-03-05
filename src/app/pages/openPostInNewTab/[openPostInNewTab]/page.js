@@ -118,6 +118,14 @@ export default function OpenPostInNewTab({ params }) {
 
     }, []);
 
+    useEffect(() => {
+
+        const storedUserId = localStorage.getItem('userid');
+        if (storedUserId) {
+            setUserId(storedUserId);
+        }
+    }, []);
+
 
     const handlePostDelete = (postId) => {
         showConfirmationToast(postId);

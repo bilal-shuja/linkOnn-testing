@@ -30,7 +30,6 @@ import ReadMoreLess from 'react-read-more-less';
 import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
 
 
-
 export default function UserProfileCard({ params }) {
 
     const { profileId } = use(params);
@@ -85,10 +84,6 @@ export default function UserProfileCard({ params }) {
     const [postReactions, setPostReactions] = useState({});
     const [activeReactionPost, setActiveReactionPost] = useState(null);
     const settings = useSiteSettings()
-
-
-    const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
-
 
 
 
@@ -2360,20 +2355,6 @@ export default function UserProfileCard({ params }) {
                     />
                 )
             }
-
-
-            {
-                showAdvertismentModal && (
-
-                    <AdvertismentModal
-                        showAdvertismentModal={showAdvertismentModal}
-                        setShowAdvertismentModal={setShowAdvertismentModal}
-                        postID={postID}
-                    />
-                )
-
-            }
-
 
         </>
     );
