@@ -27,7 +27,7 @@ export default function OpenPostInNewTab({ params }) {
     const router = useRouter();
     const api = createAPI();
     const { openPostInNewTab } = use(params)
-    const userId = localStorage.getItem('userid');
+    const [userId, setUserId] = useState(null);
     const [userdata, setUserData] = useState(null);
     const [posts, setPosts] = useState([]);
     const [comments, setComments] = useState({});
@@ -111,6 +111,14 @@ export default function OpenPostInNewTab({ params }) {
             setUserData(JSON.parse(_userData));
         }
 
+    }, []);
+
+    useEffect(() => {
+
+        const storedUserId = localStorage.getItem('userid');
+        if (storedUserId) {
+            setUserId(storedUserId);
+        }
     }, []);
 
 
