@@ -1,21 +1,25 @@
 "use client"
 import { use } from "react";
 import React, { useState, useEffect } from 'react';
-import RightNav from '../../components/RightNav';
-import TimelineProfileCard from '../../components/TimelineProfileCard';
+import RightNav from '@/app/pages/page/components/rightNav';
+import TimelineProfileCard from '@/app/pages/page/components/timelineProfileCard';
 
 export default function About({ params }) {
   const { About } = use(params);
-  const [pageTimelineData, setPageTimelineData] = useState(null);
+  const [pageTimelineData, setPageTimelineData] = useState('');
 
   useEffect(() => {
-    const data = localStorage.getItem('_pagesInfo');
+    const data = localStorage.getItem('_pageData');
     if (data) {
       setPageTimelineData(JSON.parse(data));
-      localStorage.removeItem('_pagesInfo');
+      // localStorage.removeItem('_pagesInfo');
     }
   }, []);
 
+
+
+  const createdAt = pageTimelineData?.created_at;  
+  const dateOnly = createdAt ? createdAt.split(" ")[0] : ""; 
 
   return (
     <>
@@ -34,34 +38,34 @@ export default function About({ params }) {
                   <div className="d-flex align-items-center justify-content-between">
                     <h6>Overview</h6>
                   </div>
-                  <p> Cupidatat deserunt tempora eu beatae iste autem tempora quibusdam a aut nobis veniam </p>
+                  <p> {pageTimelineData?.page_description} </p>
                 </div>
                 <div className="row g-4">
                   <div className="col-6">
                     <div className="d-flex align-items-center rounded border px-3 py-2">
                       <p className="mb-0">
-                        <i className="bi bi-people fa-fw me-2 text-primary" /> Followers Count: <strong> 1</strong>
+                        <i className="bi bi-people fa-fw me-2 text-primary" /> Followers like Count: <strong>{pageTimelineData?.likes_count}</strong>
                       </p>
                     </div>
                   </div>
                   <div className="col-6">
                     <div className="d-flex align-items-center rounded border px-3 py-2">
                       <p className="mb-0">
-                        <i className="bi bi-shield-lock fa-fw me-2 text-primary" /> Facebook: <strong></strong>
+                        <i className="bi bi-share-fill fa-fw me-2 text-primary" /> {pageTimelineData?.website} <strong></strong>
                       </p>
                     </div>
                   </div>
                   <div className="col-6">
                     <div className="d-flex align-items-center rounded border px-3 py-2">
                       <p className="mb-0">
-                        <i className="bi bi-card-checklist fa-fw me-2 text-primary" /> Category: <strong> Health &amp; Wellness</strong>
+                        <i className="bi bi-card-checklist fa-fw me-2 text-primary" /> Category: <strong> {pageTimelineData?.page_category}</strong>
                       </p>
                     </div>
                   </div>
                   <div className="col-6">
                     <div className="d-flex align-items-center rounded border px-3 py-2">
                       <p className="mb-0">
-                        <i className="bi bi-calendar fa-fw me-2 text-primary" /> Created on: <strong> Jan 21, 2025 </strong>
+                        <i className="bi bi-calendar fa-fw me-2 text-primary" /> Created on: <strong> {dateOnly} </strong>
                       </p>
                     </div>
                   </div>

@@ -9,7 +9,10 @@ import React, { useState, useEffect } from 'react'
 export default function RightNav({ pageTimelineData }) {
 
   const api = createAPI();
-  const [suggestedPages, setSuggestedPages] = useState([])
+
+  const pageID = pageTimelineData?.id;
+  const [suggestedPages, setSuggestedPages] = useState([]);
+  const [followersList, setFollowersList] = useState([]);
 
 
 
@@ -19,20 +22,45 @@ export default function RightNav({ pageTimelineData }) {
       .then((res) => {
         if (res.data.code == "200") {
           setSuggestedPages(res.data.data);
-
         }
 
       })
       .catch((error) => {
         if (error)
-          toast.error("Error fetching page timeline.");
+          toast.error("Error fetching page information.");
       })
 
   }
 
+
+  const fetchFollowers = async () => {
+    if (!pageID) return;  
+
+    try {
+      const response = await api.post("/api/get-page-followers", { page_id: pageID });
+      if (response.data.code === "200") {
+        setFollowersList(response.data.data);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error fetching page followers");
+    }
+  };
+
   useEffect(() => {
-    fetchAllPages()
+    if (pageID) {
+      fetchFollowers();
+    }
+  }, [pageID]);
+
+  useEffect(() => {
+    fetchAllPages();
+
   }, [])
+
+
 
 
 
@@ -40,7 +68,7 @@ export default function RightNav({ pageTimelineData }) {
 
     const [pageID, setPageID] = useState("")
     const [showPageLikeModal, setShowPageLikeModal] = useState(false);
-    const [thumbsClick, setThumbsClick] = useState(false)
+    const [pageLike, setPageLike] = useState("");
 
 
 
@@ -59,14 +87,14 @@ export default function RightNav({ pageTimelineData }) {
                 width={50}
                 height={50}
                 style={{ objectFit: 'cover', height: '50px', width: '50px' }}
-                // loader={({ src }) => src}
+              // loader={({ src }) => src}
               />
               <Link
                 className='suggested-pages-info text-decoration-none text-black'
                 href={`/pages/page/myPageTimeline/${items.id}`}
               >
                 <h6>{items.page_title}</h6>
-                <small className="mb-0 small text-truncate">2 Members</small>
+                {/* <small className="mb-0 small text-truncate">2 Members</small> */}
               </Link>
             </div>
 
@@ -75,13 +103,13 @@ export default function RightNav({ pageTimelineData }) {
 
             <i
               className={
-                thumbsClick
-                  ? "bi bi-hand-thumbs-up-fill text-primary fs-3"
+                items?.is_liked === true ? "bi bi-hand-thumbs-up-fill text-primary fs-3"
                   : "bi bi-hand-thumbs-up fs-3"
               }
               onClick={() => {
                 setPageID(items.id);
                 setShowPageLikeModal(true);
+                setPageLike(items.is_liked)
               }}
               style={{ cursor: "pointer" }}
             ></i>
@@ -94,8 +122,9 @@ export default function RightNav({ pageTimelineData }) {
               pageID={pageID}
               showPageLikeModal={showPageLikeModal}
               setShowPageLikeModal={setShowPageLikeModal}
-              thumbsClick={thumbsClick}
-              setThumbsClick={setThumbsClick}
+              fetchAllPages={fetchAllPages}
+              pageLike={pageLike}
+
             />
           )
 
@@ -157,12 +186,30 @@ export default function RightNav({ pageTimelineData }) {
               <h5>Followers</h5>
 
               {/* href={`/pages/page/Followers/${}`} */}
-              <a className='btn btn-outline-primary btn-sm'>See All Followers</a>
+              <Link href={`/pages/page/Followers/${pageID}`} className='btn btn-outline-primary btn-sm'>See All Followers</Link>
 
             </div>
 
 
-            <span className="text-muted">No Followers Found!</span>
+            {followersList.length > 0 ? (
+              <div>
+                {followersList.map((follower) => (
+                  <div key={follower.id} className="d-flex align-items-center mb-3">
+                    <Image
+                      src={follower.avatar || "/assets/images/placeholder-image.png"}
+                      className="img-fluid rounded-circle"
+                      width={40}
+                      height={40}
+                      style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                      alt={follower.username}
+                    />
+                    <span className="ms-2">{follower.username}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="text-muted">No Followers Found!</span>
+            )}
 
 
           </div>
