@@ -1,8 +1,8 @@
 "use client";
 import { use } from "react";
-import RightNav from '../../components/RightNav';
+import RightNav from '../../components/rightNav';
 import React, { useState, useEffect } from 'react';
-import TimelineProfileCard from '../../components/TimelineProfileCard';
+import TimelineProfileCard from '../../components/timelineProfileCard';
 
 export default function Followers({ params }) {
     const { Followers } = use(params);
@@ -10,10 +10,10 @@ export default function Followers({ params }) {
     const [pageTimelineData, setPageTimelineData] = useState(null);
 
     useEffect(() => {
-        const data = localStorage.getItem('_pagesInfo');
+        const data = localStorage.getItem('_pageData');
         if (data) {
             setPageTimelineData(JSON.parse(data));
-            localStorage.removeItem('_pagesInfo');
+            // localStorage.removeItem('_pageData');
         }
     }, []);
     return (

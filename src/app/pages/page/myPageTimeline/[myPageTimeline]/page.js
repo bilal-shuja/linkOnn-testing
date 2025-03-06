@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import EmojiPicker from 'emoji-picker-react';
 import styles from '../../css/page.module.css';
-import RightNav from "../../components/RightNav";
+import RightNav from "@/app/pages/page/components/rightNav";
 // import PageImagesLayout from "./pageImagesLayout";
 // import FundingModal from "../../Modal/FundingModal";
 import FundingModal from "@/app/pages/Modals/FundingModal";
@@ -30,7 +30,7 @@ import { ReactionBarSelector } from '@charkour/react-reactions';
 
 import UserImagesLayout from "@/app/pages/components/userImagesLayout";
 import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
-import TimelineProfileCard from "../../components/TimelineProfileCard";
+import TimelineProfileCard from "@/app/pages/page/components/timelineProfileCard";
 // import SharePostTimelineModal from "../../Modal/SharePostTimelineModal";
 import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
 import React, { useState, useEffect, useCallback, useRef } from "react";
@@ -151,18 +151,6 @@ export default function MyPageTimeline({ params }) {
             // [postId]: [{ emoji: reactionEmojis[reaction] || "😊", label: reaction }]
         };
 
-        // const updatedReactions = {
-        //     ...postReactions,
-        //     [postId]: [
-        //         ...(postReactions[postId] || []), 
-        //         {
-        //             emoji: reactionEmojis[reaction],
-        //             label: reaction,
-        //             by: "You" 
-        //         }
-        //     ]
-        // };
-
 
         LikePost(postId, reactionValues[reaction] || 0);
 
@@ -202,13 +190,6 @@ export default function MyPageTimeline({ params }) {
     const getDisplayColor = (code) => {
         return colorMap[code] || code;
     };
-
-    // localStorage.setItem("postReactions", JSON.stringify(updatedReactions));
-
-    // useEffect(() => {
-    //     const storedReactions = JSON.parse(localStorage.getItem("postReactions")) || {};
-    //     setPostReactions(storedReactions);
-    // }, []);
 
     const toggleOptionsColorPalette = () => {
         setIsOpenColorPalette(!isOpenColorPalette);
@@ -743,7 +724,6 @@ export default function MyPageTimeline({ params }) {
             }
         } catch (error) {
             toast.error("An error occurred while adding the comment.")
-            console.error(error);
         } finally {
             setLoading(false);
         }
