@@ -12,6 +12,7 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
   reactStrictMode: true,
+  // output: 'export', 
 };
 
 module.exports = nextConfig;
