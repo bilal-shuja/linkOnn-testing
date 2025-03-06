@@ -281,14 +281,14 @@ export default function Groups() {
                                 <div key={group.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
 
-                                  <Image
-                                    src={group.avatar || "/assets/images/placeholder-image.png"}
-                                    alt="Group Image"
-                                    className="d-block mx-auto mt-1 rounded-circle"
-                                    width={150}
-                                    height={150}
-                                  // style={{ objectFit: "cover" }}
-                                  />
+                                    <Image
+                                      src={group.avatar || "/assets/images/placeholder-image.png"}
+                                      alt="Group Image"
+                                      className="d-block mx-auto mt-1 rounded-circle"
+                                      width={150}
+                                      height={150}
+                                    // style={{ objectFit: "cover" }}
+                                    />
 
 
                                     <div className="card-body">
@@ -300,10 +300,14 @@ export default function Groups() {
                                         <i className="bi bi-globe pe-2"></i>
                                         {group.category}
                                       </p>
-                                      <div className="d-flex justify-content-around align-items-center border-bottom">
+                                      <div className="d-flex justify-content-around align-items-center border-bottom py-2">
                                         <div className="text-center">
-                                          <p className="fs-5 text-dark fw-semibold mb-0">{group.members_count}</p>
-                                          <p className="mb-1">Members</p>
+                                          <p className="fs-6 text-dark fw-semibold mb-0">{group?.members_count || 0}</p>
+                                          <p className="mb-1 text-secondary">Members</p>
+                                        </div>
+                                        <div className="text-center">
+                                          <p className="fs-5 text-dark fw-semibold mb-0">{group?.post_count || 0}</p>
+                                          <p className="mb-1 text-secondary">Posts</p>
                                         </div>
                                       </div>
                                       {group.is_joined === "1" ? (
@@ -415,10 +419,14 @@ export default function Groups() {
                                       <i className="bi bi-globe pe-2 fs-6"></i>
                                       {group.category}
                                     </div>
-                                    <div className="d-flex justify-content-around align-items-center border-bottom">
+                                    <div className="d-flex justify-content-around align-items-center border-bottom py-2">
                                       <div className="text-center">
-                                        <p className="fs-6 text-dark fw-semibold mb-0">{group.members_count}</p>
-                                        <p className="mb-1">Members</p>
+                                        <p className="fs-6 text-dark fw-semibold mb-0">{group?.members_count || 0}</p>
+                                        <p className="mb-1 text-secondary">Members</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="fs-5 text-dark fw-semibold mb-0">{group?.post_count || 0}</p>
+                                        <p className="mb-1 text-secondary">Posts</p>
                                       </div>
                                     </div>
                                     <div className="d-flex justify-content-center mt-3">

@@ -313,8 +313,8 @@ const Profilecard = ({ user_id }) => {
                     <hr className="text-muted" />
 
                     <div className="d-flex justify-content-start gap-4 ms-3">
-                        <Link href={`/pages/UserProfile/timeline/${user_id}`} className={`text-decoration-none ${isActive('timeline')}`}>
-                            Posts
+                        <Link href={`/pages/UserProfile/timeline/${user_id}`} className={`d-flex justify-content-evenly align-items-center text-decoration-none ${isActive('timeline')}`}>
+                            Posts <span className="badge bg-success mx-1">{user.post_count}</span>
                         </Link>
                         <Link href={`/pages/UserProfile/about/${user_id}`} className={`text-decoration-none ${isActive('about')}`}>
                             About
