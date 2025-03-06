@@ -9,7 +9,6 @@ import React, { useState, useEffect } from "react";
 import RightNav from "@/app/pages/page/components/rightNav";
 import TimelineProfileCard from "@/app/pages/page/components/timelineProfileCard";
 
-
 export default function Followers({ params }) {
     const { Followers } = use(params);
     const [pageTimelineData, setPageTimelineData] = useState(null);
