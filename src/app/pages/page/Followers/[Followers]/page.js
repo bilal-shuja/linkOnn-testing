@@ -2,13 +2,12 @@
 
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
-import RightNav from "../../components/RightNav";
+import RightNav from "@/app/pages/page/components/rightNav";
 import React, { useState, useEffect } from "react";
-import TimelineProfileCard from "../../components/TimelineProfileCard";
 import { use } from "react";
 import Image from 'next/image';
 import { useRouter } from "next/navigation";
-
+import TimelineProfileCard from "@/app/pages/page/components/timelineProfileCard";
 
 export default function Followers({ params }) {
     const { Followers } = use(params);
