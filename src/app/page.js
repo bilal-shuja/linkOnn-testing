@@ -1,5 +1,7 @@
 'use client';
 
+// main landing page of app
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
