@@ -17,11 +17,12 @@ export default function Followers({ params }) {
     const api = createAPI();
         const router = useRouter();
 
+
     useEffect(() => {
-        const data = localStorage.getItem("_pagesInfo");
+        const data = localStorage.getItem('_pageData');
         if (data) {
             setPageTimelineData(JSON.parse(data));
-            localStorage.removeItem("_pagesInfo");
+            // localStorage.removeItem('_pageData');
         }
     }, []);
 

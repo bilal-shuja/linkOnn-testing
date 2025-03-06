@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
-export default function ConfirmModal({pageID , showPageLikeModal, setShowPageLikeModal, thumbsClick, setThumbsClick}) {
+export default function ConfirmModal({pageID , showPageLikeModal, setShowPageLikeModal,pageLike, fetchAllPages}) {
 
     const api = createAPI();
 
@@ -18,8 +18,11 @@ export default function ConfirmModal({pageID , showPageLikeModal, setShowPageLik
           if (res.data.code == "200") {
              toast.success(res.data.message);
             //  setThumbsClick(prevState => !prevState)
-            setThumbsClick(res.data.data === 1);
+            console.log(res.data.data)
+
+            // setThumbsClick(res.data.data === 1);
              setShowPageLikeModal(!showPageLikeModal)
+             fetchAllPages()
           }
   
         })
@@ -36,7 +39,7 @@ export default function ConfirmModal({pageID , showPageLikeModal, setShowPageLik
         <Modal.Header >
           <Modal.Title> Are you sure? <i className="bi bi-file-earmark-fill text-warning"></i></Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to  {thumbsClick ? "unlike" : "like"} this page?</Modal.Body>
+        <Modal.Body>Are you sure you want to  {pageLike === true ? "unlike" : "like"} this page?</Modal.Body>
         <Modal.Footer>
 
         <Button variant="primary" onClick={likeDislikePage}>

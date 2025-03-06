@@ -16,9 +16,10 @@ export default function TimelineProfileCard({ pageTimelineID }) {
 
 
     const handlePagesInfo = () => {
-        localStorage.setItem('_pagesInfo', JSON.stringify(pageTimelineData));
+        localStorage.setItem('_pageData', JSON.stringify(pageTimelineData));
     }
 
+    
 
     function fetchSpecificMyPageTimline() {
 
