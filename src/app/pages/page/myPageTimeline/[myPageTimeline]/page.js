@@ -1827,7 +1827,7 @@ export default function MyPageTimeline({ params }) {
 
                                                     <div style={{ position: "relative", display: "inline-block" }}>
                                                         <button
-                                                            className="btn border-0 d-flex align-items-center"
+                                                            className="btn border-0 d-flex align-items-center post-action-btn"
                                                             onMouseEnter={() => setActiveReactionPost(post.id)}
                                                             onMouseLeave={() => setActiveReactionPost(null)}
                                                             onClick={() => {
@@ -1869,7 +1869,7 @@ export default function MyPageTimeline({ params }) {
                                                     </div>
 
                                                     <button
-                                                        className="btn border-0 d-flex align-items-center"
+                                                        className="btn border-0 d-flex align-items-center post-action-btn"
                                                         onClick={() => handleCommentToggle(post.id)}
                                                     >
                                                         <i className="bi bi-chat me-2"></i> Comments
@@ -1877,7 +1877,7 @@ export default function MyPageTimeline({ params }) {
 
                                                     <div className="dropdown">
                                                         <button
-                                                            className="btn border-0"
+                                                            className="btn border-0 post-action-btn"
                                                             type="button"
                                                             id="dropdownMenuButton3"
                                                             data-bs-toggle="dropdown"
