@@ -6,6 +6,8 @@ import createAPI from "@/app/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ModuleUnavailable from "../Modals/ModuleUnavailable";
 
 export default function GamesPage() {
 
@@ -13,6 +15,7 @@ export default function GamesPage() {
     const [gameloading, setGameloading] = useState(true);
     const [error, setError] = useState(null);
     const api = createAPI();
+    const settings = useSiteSettings()
 
     const fetchGames = async () => {
         setGameloading(true);
@@ -35,6 +38,13 @@ export default function GamesPage() {
     useEffect(() => {
         fetchGames();
     }, []);
+
+    if (!settings) return null
+    
+    if (settings["chck-games"] !== "1")  {
+        return <ModuleUnavailable />;
+    }
+
 
     return (
         <div>
@@ -66,7 +76,7 @@ export default function GamesPage() {
                                                 <div key={game.id} className="col-md-4 mb-4">
                                                     <div className="card h-100 d-flex">
                                                         <Image
-                                                            src={game.image}
+                                                            src={game.image || "/assets/images/placeholder-image.png"}
                                                             alt={game.name}
                                                             className="card-img-top"
                                                             width={300}

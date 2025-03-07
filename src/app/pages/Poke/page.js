@@ -94,7 +94,7 @@ export default function Poke() {
                                         <div className="card-body">
                                             <div className="d-flex align-items-center">
                                                 <Image
-                                                    src={poke.avatar}
+                                                    src={poke.avatar || "/assets/images/userplaceholder.png"}
                                                     alt={poke.username}
                                                     width={50}
                                                     height={50}

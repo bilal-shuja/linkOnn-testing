@@ -7,7 +7,8 @@ import Link from "next/link";
 import Image from "next/image";
 import Cookies from 'js-cookie';
 import { toast } from "react-toastify";
-
+import ChatWindow from "@/app/pages/Chat/ChatWindow/ChatWindow";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function Navbar() {
 
@@ -19,47 +20,59 @@ export default function Navbar() {
   const [loadingChats, setLoadingChats] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChatID, setSelectedChatID] = useState(null);
 
+  const settings = useSiteSettings();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        setLoadingNotifications(true);
-        const response = await api.post(`/api/notifications/new`);
-        if (response.data.code === "200") {
-          setNotifications(response.data.data);
-        } else {
-          setError(response.data.message);
-        }
-      } catch (error) {
-        setError("Error fetching notifications");
-      } finally {
-        setLoadingNotifications(false);
-      }
-    };
 
+
+  const fetchNotifications = async () => {
+    try {
+      setLoadingNotifications(true);
+      const response = await api.post(`/api/notifications/new`);
+      if (response.data.code === "200") {
+        setNotifications(response.data.data);
+      } else {
+        setError(response.data.message);
+      }
+    } catch (error) {
+      setError("Error fetching notifications");
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  useEffect(() => {
     fetchNotifications();
+    
+    const intervalId = setInterval(() => {
+      fetchNotifications();
+    }, 5000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        setLoadingChats(true);
-        const response = await api.post("/api/chat/get-all-chats");
+  const fetchChats = async () => {
+    try {
+      setLoadingChats(true);
+      const response = await api.post("/api/chat/get-all-chats");
 
-        if (response.data.status === "200") {
-          setChats(response.data.data);
-        } else {
-          setError("Failed to load chats.");
-        }
-      } catch (err) {
-        setError("Error fetching chats. Please try again later.");
-      } finally {
-        setLoadingChats(false);
+      if (response.data.status === "200") {
+        setChats(response.data.data);
+      } else {
+        setError("Failed to load chats.");
       }
-    };
+    } catch (err) {
+      setError("Error fetching chats. Please try again later.");
+    } finally {
+      setLoadingChats(false);
+    }
+  };
 
+  useEffect(() => {
     fetchChats();
   }, []);
 
@@ -81,7 +94,15 @@ export default function Navbar() {
     }
   };
 
+
   const toggleOffcanvas = () => {
+    setIsOffcanvasOpen(!isOffcanvasOpen);
+    fetchChats();
+  };
+
+  const toggleChatWindow = (chat, chatID) => {
+    setSelectedChat(chat);
+    setSelectedChatID(chatID)
     setIsOffcanvasOpen(!isOffcanvasOpen);
   };
 
@@ -101,16 +122,44 @@ export default function Navbar() {
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/pages/Explore?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+    }
+  };
+
+  if (!settings) {
+    return (
+      <nav className="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm py-1">
+        <div className="container">
+          <div className="navbar-brand bg-light placeholder-wave rounded" style={{ width: "140px", height: "45px" }}></div>
+          <div className="collapse navbar-collapse">
+            <div className="d-flex flex-column flex-lg-row align-items-center justify-content-center w-75">
+              <div className="form-control ps-5 bg-light placeholder-wave border-0 rounded-3" style={{ height: "38px", width: "75%" }}></div>
+            </div>
+            <div className="d-flex align-items-center">
+              <div className="bg-light placeholder-wave rounded-circle me-3" style={{ width: "24px", height: "24px" }}></div>
+              <div className="bg-light placeholder-wave rounded-circle me-3" style={{ width: "24px", height: "24px" }}></div>
+              <div className="bg-light placeholder-wave rounded-circle me-3" style={{ width: "40px", height: "40px" }}></div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm py-1">
         <div className="container">
           <Link href="/pages/newsfeed" className="navbar-brand">
             <Image
-              src="/assets/images/linkON.png"
+              src={settings.site_logo || "/assets/images/placeholder-image.png"}
               alt="Logo"
-              width={150}
-              height={40}
+              width={140}
+              height={45}
               unoptimized={true}
             />
           </Link>
@@ -130,13 +179,16 @@ export default function Navbar() {
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNav">
+
             <div className="d-flex flex-column flex-lg-row align-items-center justify-content-center w-75">
-              <form className="position-relative mb-3 mb-lg-0 py-0 w-75">
+              <form className="position-relative mb-3 mb-lg-0 py-0 w-75" onSubmit={handleSearch}>
                 <input
                   className="form-control ps-5 bg-light border-0 rounded-3"
                   type="search"
-                  placeholder="Search people and pages"
+                  placeholder="Search for people, pages, groups, and events"
                   aria-label="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <button
                   className="btn bg-transparent position-absolute top-50 start-0 translate-middle-y border-0"
@@ -146,6 +198,7 @@ export default function Navbar() {
                 </button>
               </form>
             </div>
+
             <div className="d-flex align-items-center justify-content-between">
               <button
                 className="btn mx-3"
@@ -204,10 +257,10 @@ export default function Navbar() {
                       <li key={notification.id} className={`dropdown-item ${notifications.length > 0 ? 'bg-light' : ''}`} style={{ width: "350px" }}>
                         <div className="d-flex align-items-center">
                           <Image
-                            src={notification.notifier.avatar}
+                            src={notification.notifier.avatar || "/assets/images/userplaceholder.png"}
                             alt={notification.notifier.first_name}
-                            width={50}
-                            height={50}
+                            width={40}
+                            height={40}
                             className="rounded-circle me-2"
                             unoptimized={true}
                           />
@@ -259,11 +312,12 @@ export default function Navbar() {
                 />
               </Link>
 
-              <div className="dropstart mx-3">
+              <div className="dropdown position-relative mx-3">
+                {/* Profile Avatar Dropdown Toggle */}
                 <Image
-                  src={userdata.data.avatar}
+                  src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                   alt="Profile"
-                  className="rounded-2"
+                  className="rounded-circle profile-avatar shadow-sm"
                   height={40}
                   width={40}
                   role="button"
@@ -271,83 +325,77 @@ export default function Navbar() {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 />
-                <ul className="dropdown-menu my-2 p-3 shadow-lg rounded-3 border-0">
-                  <li>
-                    <div className="d-flex align-items-center mt-2 mx-3 mb-3">
-                      <Image
-                        src={userdata.data.avatar}
-                        alt="User Avatar"
-                        className="rounded-3"
-                        width={40}
-                        height={40}
-                        unoptimized={true}
-                      />
-                      <div className="mx-3">
-                        <Link
-                          href="#"
-                          className="text-decoration-none text-dark fw-bold"
-                        >
-                          {userdata.data.first_name} {userdata.data.last_name}
-                        </Link>
-                        <small className="text-muted"> @{userdata.data.username} </small>
-                      </div>
+
+                {/* Dropdown Menu - Responsive & Fully Adaptable */}
+                <ul className="dropdown-menu dropdown-menu-end dropdown-custom">
+
+                  {/* User Info Section */}
+                  <li className="d-flex align-items-center mt-2 mx-3 mb-3">
+                    <Image
+                      src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
+                      alt="User Avatar"
+                      className="rounded-circle border border-2 border-light shadow-sm"
+                      width={50}
+                      height={50}
+                      unoptimized={true}
+                    />
+                    <div className="ms-3">
+                      <Link href="#" className="text-decoration-none text-dark fw-bold dropdown-username">
+                        {userdata.data.first_name} {userdata.data.last_name}
+                      </Link>
+                      <small className="text-muted d-block">@{userdata.data.username}</small>
                     </div>
                   </li>
 
-                  <li className="d-flex justify-content-center my-2 align-items-center">
-
-                    <button className="btn btn-outline-primary border border-1" style={{ width: '200px' }}
+                  {/* View Profile Button */}
+                  <li className="d-flex justify-content-center my-2">
+                    <button
+                      className="btn btn-outline-primary fw-semibold rounded-pill w-100"
                       onClick={() => router.push(`/pages/UserProfile/timeline/${userdata.data.id}`)}
                     >
-                      View Profile
-
+                      <i className="bi bi-person-circle me-2"></i> View Profile
                     </button>
-
                   </li>
 
+                  {/* Settings & Privacy */}
                   <li>
-                    <Link
-                      className="dropdown-item align-items-center d-flex py-2"
-                      href="/pages/settings/general-settings"
-                    >
-                      <i className="bi bi-gear pe-3"></i> Settings & Privacy
+                    <Link className="dropdown-item py-2 d-flex align-items-center" href="/pages/settings/general-settings">
+                      <i className="bi bi-gear pe-3 text-primary"></i> Settings & Privacy
                     </Link>
                   </li>
 
+                  {/* Upgrade to Pro */}
+                  {settings["chck-point_level_system"] === "1" && (
                   <li>
-                    <Link className="dropdown-item py-2" href="/pages/Packages">
-                      <i className="bi bi-currency-dollar pe-3"></i>
-                      Upgrade to Pro
+                    <Link className="dropdown-item py-2 d-flex align-items-center" href="/pages/Packages">
+                      <i className="bi bi-currency-dollar pe-3 text-warning"></i> Upgrade to Pro
                     </Link>
                   </li>
+                  )}
 
+                  {/* Dark Mode Toggle
                   <li>
-                    <Link className="dropdown-item py-2" href="#">
-                      <div className="form-check form-switch d-flex align-items-center">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id="flexSwitchCheckDefault"
-                        />
-                        <label className="form-check-label ms-2">Dark Theme</label>
+                    <div className="dropdown-item d-flex align-items-center py-2">
+                      <i className="bi bi-moon-stars pe-3 text-secondary"></i>
+                      <div className="form-check form-switch">
+                        <input className="form-check-input" type="checkbox" id="darkModeSwitch" />
+                        <label className="form-check-label ms-2" htmlFor="darkModeSwitch">Dark Mode</label>
                       </div>
-                    </Link>
-                  </li>
+                    </div>
+                  </li> */}
 
-                  <hr />
+                  <hr className="dropdown-divider mx-3" />
 
+                  {/* Sign Out */}
                   <li>
-                    <Link
-                      className="dropdown-item mx-2 py-2"
-                      href="/auth/sign-in"
-                      onClick={handleLogout}
-                    >
-                      <i className="bi bi-box-arrow-right pe-3"></i>
-                      Sign out
+                    <Link className="dropdown-item py-2 d-flex align-items-center text-danger" href="/auth/sign-in" onClick={handleLogout}>
+                      <i className="bi bi-box-arrow-right pe-3"></i> Sign Out
                     </Link>
                   </li>
+
                 </ul>
               </div>
+
 
             </div>
           </div>
@@ -385,37 +433,60 @@ export default function Navbar() {
           )}
 
           {chats.length > 0 ? (
-            chats.map((chat) => (
+
+
+            chats?.map((chat) => (
+
+
               <div
                 key={chat.id}
                 className="d-flex align-items-center p-2 bg-light rounded-3 mb-2"
+                style={{ cursor: "pointer" }}
+                onClick={() => toggleChatWindow(chat, chat.id)}
               >
                 <Image
-                  src={chat.avatar}
+                  src={chat.avatar || "/assets/images/userplaceholder.png"}
                   alt={`${chat.first_name} ${chat.last_name} Avatar`}
                   className="rounded-circle me-3"
                   width={40}
                   height={40}
-                  unoptimized={true}
+                  style={{
+                    objectFit: 'cover',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    flexShrink: "0 !important"
+                  }}
+                  // loader={({ src }) => src}
                 />
-                <div className="d-flex justify-content-between w-100">
-                  <div className="flex-grow-1">
-                    <h6>
-                      {chat.first_name} {chat.last_name}
-                    </h6>
-                    <p>{chat.last_message}</p>
+
+                <div className="d-flex justify-content-between w-100 overflow-hidden">
+
+                  <div className="flex-grow-1" style={{ minWidth: "0" }}>
+                    <h6 className="mb-0">{chat?.first_name}</h6>
+                    <p
+                      className="text-truncate mb-0"
+                      style={{ maxWidth: "75%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}
+                    >
+                      {chat?.last_message === "" ? "Empty message" : chat?.last_message}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-muted">{chat.last_time}</p>
-                  </div>
+                  <span className="text-muted ms-2 text-nowrap" style={{ fontSize: "13px", minWidth: "fit-content" }}>
+                    {chat?.time_ago}
+                  </span>
                 </div>
               </div>
             ))
-          ) : (
-            <div>No chats available.</div>
-          )}
+          )
+            :
+            (
+              <div>No chats available.</div>
+            )}
         </div>
       </div>
+      {selectedChat && (
+        <ChatWindow chat={selectedChat} chatID={selectedChatID} onClose={() => setSelectedChat(null)} />
+      )}
     </>
   );
 }

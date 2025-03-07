@@ -1,12 +1,11 @@
 "use client"
-import  { useState, useEffect } from "react";
 import { use } from "react";
- 
+import { toast } from "react-toastify";
+import createAPI from "@/app/lib/axios";
+import { useRouter } from 'next/navigation';
+import  { useState, useEffect } from "react";
 import Rightnav from "@/app/assets/components/rightnav/page";
    
-import createAPI from "@/app/lib/axios";
-import { toast } from "react-toastify";
-import { useRouter } from 'next/navigation';
 
 export default function EditEvent({params}) {
       
@@ -112,13 +111,13 @@ export default function EditEvent({params}) {
 
 
   return (
-   <div>
+   <>
 
            
          <div className="container-fluid bg-light">
            <div className="container mt-3 pt-5">
              <div className="row">
-               <div className="col-md-3 p-3 rounded">
+               <div className="col-md-3 p-3">
                  <Rightnav />
                </div>
 
@@ -231,7 +230,7 @@ export default function EditEvent({params}) {
          </div>
 
 
-       </div>
+       </>
        
   )
 }

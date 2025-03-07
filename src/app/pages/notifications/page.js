@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
    
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import { toast } from 'react-toastify';
 
 export default function Notifications() {
@@ -135,7 +135,7 @@ export default function Notifications() {
                           <div className="d-flex justify-content-between align-items-center mt-4">
                             <div className="d-flex align-items-center">
                               <Image
-                                src={notification.notifier?.avatar || '/default-avatar.png'}
+                                src={notification.notifier?.avatar || "/assets/images/userplaceholder.png"}
                                 alt={notification.notifier?.first_name || 'Unknown'}
                                 width={40}
                                 height={40}

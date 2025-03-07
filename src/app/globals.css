@@ -74,22 +74,6 @@
   margin-bottom: 1rem;
 }
 
-.carousel {
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  scrollbar-width: thin;
-}
-
-.story-img-container:hover .card-img-top {
-  transform: scale(1.05);
-  transition: transform 0.3s ease;
-}
-
-
-.story-img-container:hover .rounded-circle {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
 
 .chat-container {
   background-color: #f8f9fa;
@@ -140,5 +124,364 @@
     left: 50% !important;
     transform: translateX(-50%) !important;
     right: auto !important;
+  }
+}
+
+.friend-avatar {
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.friend-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.friend-name {
+  transition: color 0.3s ease;
+}
+
+.friend-name:hover {
+  color: #007bff;
+}
+
+.about-card {
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+  background: linear-gradient(to right, #ffffff, #f8f9fa);
+}
+
+.about-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.about-text {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #6c757d;
+}
+
+
+/* Dropdown Menu Styling */
+.dropdown-custom {
+  min-width: 250px;
+  padding: 12px 16px !important;
+  /* Medium padding */
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+/* User Info Section */
+.dropdown-custom li:first-child {
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dropdown-custom li {
+  padding: 8px 0;
+  /* Medium spacing between items */
+}
+
+/* Profile Avatar */
+.profile-avatar {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dropdown Items */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease-in-out;
+  border-radius: 6px;
+}
+
+.dropdown-item i {
+  font-size: 1.1rem;
+  margin-right: 8px;
+}
+
+/* View Profile Button */
+.btn-profile {
+  width: 100%;
+  padding: 8px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.btn-profile:hover {
+  transform: scale(1.02);
+}
+
+/* Sign Out Styling */
+.text-danger {
+  font-weight: bold;
+}
+
+.text-danger:hover {
+  background-color: rgba(255, 0, 0, 0.08);
+  border-radius: 6px;
+}
+
+/* Dark Mode Toggle */
+.form-check-input {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.form-check-input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+/* Medium Responsive Dropdown for Mobile */
+@media (max-width: 768px) {
+  .dropdown-menu {
+    width: 90% !important;
+    left: 5% !important;
+    transform: none !important;
+  }
+
+  .dropdown-item {
+    font-size: 0.95rem;
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown-menu {
+    width: 95%;
+    left: 2.5%;
+  }
+
+  .dropdown-item {
+    font-size: 0.9rem;
+    text-align: center;
+  }
+}
+
+.custom-shadow {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-gradient {
+  background: linear-gradient(to right, #007bff, #6610f2);
+  color: white !important;
+  border: none;
+  border-radius: 30px;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(to right, #6610f2, #007bff);
+  transform: scale(1.05);
+}
+
+.hover-effect {
+  transition: all 0.3s ease-in-out;
+}
+
+.hover-effect:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.hover-text:hover {
+  color: #007bff !important;
+}
+
+
+
+
+/* 📌 Ensure Everything Stays in One Line */
+.post-card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px 10;
+  /* Adjust padding */
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+/* 📌 Reactions Section */
+.post-card-reactions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.post-card-reaction-count {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0d6efd;
+}
+
+/* 📌 Stats Section (Views, Comments, Shares) */
+.post-card-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  /* Consistent spacing */
+  color: #6c757d;
+  font-size: 14px;
+}
+
+/* 📌 Each Stat Item */
+.post-card-stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* 📌 Icons */
+.post-card-icon {
+  font-size: 18px;
+  color: #5a5a5a;
+}
+
+.reaction-icon {
+  font-size: 17px;
+  color: #0d6efd;
+}
+
+/* 📌 Hover Effect */
+.post-card-stat:hover {
+  color: #343a40;
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.pages-comment-section:hover {
+  color: #343a40;
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
+}
+
+
+
+/* 📌 Soft Divider */
+.post-divider {
+  margin: 6px 0;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* 📌 Post Actions (Reaction, Comment, Share) */
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+/* 📌 Individual Action Buttons */
+.post-action-btn {
+  border: none;
+  background: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: #5a5a5a;
+  padding: 8px 15px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+/* 📌 Button Hover Effect */
+.post-action-btn:hover {
+  color: #0d6efd;
+  transform: scale(1.05);
+}
+
+/* 📌 Icons inside Buttons */
+.post-action-btn i {
+  font-size: 18px;
+}
+
+/* 📌 Dropdown Styling */
+.post-dropdown {
+  position: relative;
+}
+
+.post-dropdown-menu {
+  background-color: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 8px 0;
+  list-style: none;
+  min-width: 220px;
+  border: 1px solid #e0e0e0;
+  transform: scale(0.95);
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+/* 📌 Dropdown Item */
+.post-dropdown-item {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  transition: background 0.2s ease-in-out;
+}
+
+/* 📌 Hover Effect for Dropdown */
+.post-dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.02);
+}
+
+/* 📌 Dropdown Divider */
+.post-dropdown-divider {
+  margin: 5px 0;
+  border-top: 1px solid #e0e0e0;
+}
+
+
+.btn-success-post {
+  color: #0cbc87 !important;
+  border: 1px solid !important;
+  background-color: rgba(12, 188, 135, 0.1) !important;
+}
+
+.btn-success-post:hover {
+  color: white !important;
+  background-color: #0cbc87 !important;
+}
+
+
+/* .advertisment-image {
+  display: block;
+} */
+
+@media (max-width: 767px) {
+  .advertisment-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.advertistment-details {
+  margin-left:0;
+
+}
+
+@media (max-width: 767px) {
+  .advertistment-details {
+    margin-top: 1em;
   }
 }

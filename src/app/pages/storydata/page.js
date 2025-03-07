@@ -6,9 +6,8 @@ import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-   
 import { toast } from "react-toastify";
-
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 export default function Storyform() {
       
@@ -21,7 +20,7 @@ export default function Storyform() {
     const [userdata, setUserdata] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
+    const settings = useSiteSettings();
     const api = createAPI();
 
     
@@ -37,8 +36,6 @@ export default function Storyform() {
                     const allStories = response.data.data.flatMap(user => user.stories);
                     setStories(allStories);
                     setError("");
-    
-                    // toast.success("Stories loaded successfully");
                 } else {
                     toast.error("Failed to load stories");
                 }
@@ -172,6 +169,13 @@ export default function Storyform() {
         return;
     }
 
+   
+        if (!settings) return null;
+    
+   
+        if (settings.user_stories !== "1") return null;
+    
+
     return (
         <div>
               
@@ -304,7 +308,7 @@ export default function Storyform() {
 
                                                                         ) : (
                                                                             <Image
-                                                                                src={story.media}
+                                                                                src={story.media || "/assets/images/placeholder-image.png"}
                                                                                 alt="Story media"
                                                                                 className="img-thumbnail"
                                                                                 width={75}

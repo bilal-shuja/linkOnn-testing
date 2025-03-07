@@ -5,7 +5,7 @@ import SettingNavbar from "../settingNav";
 import { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
    
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import { toast } from 'react-toastify';
 
 export default function SessionsSett() {

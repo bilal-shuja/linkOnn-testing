@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import createAPI from "@/app/lib/axios";
 import RightNavbar from "../../components/right-navbar";
 import Image from "next/image";
@@ -9,50 +8,121 @@ import Link from "next/link";
 import EmojiPicker from 'emoji-picker-react';
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
 import Profilecard from "../../components/profile-card";
+import CupofCoffee from "@/app/pages/Modals/CupOfCoffee/CupofCoffee";
+import Greatjob from "@/app/pages/Modals/GreatJob/GreatJob";
+import styles from '../../css/page.module.css';
+import EditPostModal from "@/app/pages/Modals/EditPostModal";
+import EnableDisableCommentsModal from "@/app/pages/Modals/EnableDisableCommentsModal";
+import SavePostModal from "@/app/pages/Modals/SaveUnsavePost";
+import ReportPostModal from "@/app/pages/Modals/ReportPost";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
+import MakeDonationModal from "@/app/pages/Modals/MakeDonationModal";
+import UserImagesLayout from "@/app/pages/components/userImagesLayout";
+import PostPollModal from "@/app/pages/Modals/PostPollModal";
+import FundingModal from "@/app/pages/Modals/FundingModal";
+import SharePostTimelineModal from "@/app/pages/Modals/SharePostTimelineModal";
+import Spinner from 'react-bootstrap/Spinner';
+import SharedPosts from "@/app/pages/components/sharedPosts";
+import { ReactionBarSelector } from '@charkour/react-reactions';
+import { useSiteSettings } from "@/context/SiteSettingsContext";
+import ReadMoreLess from 'react-read-more-less';
+import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
+
 
 export default function UserProfileCard({ params }) {
 
     const { profileId } = use(params);
     const api = createAPI();
     const router = useRouter();
+
+    const [userId, setUserId] = useState(null);
+    const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+    const [activeGreatJobId, setActiveGreatJobId] = useState(null);
     const [page, setPage] = useState(1);
     const [userdata, setUserData] = useState(null);
     const [lastPostId, setLastPostId] = useState(0);
     const [noMorePosts, setNoMorePosts] = useState(false);
     const [user, setUser] = useState(null);
+    const [uploadPloading, setUploadPLoading] = useState(false)
     const [loading, setLoading] = useState(false);
     const [posts, setPosts] = useState([]);
-    const [donate, setDonate] = useState("");
     const [error, setError] = useState(null);
     const [dropdownSelection, setDropdownSelection] = useState("PUBLIC");
     const [success, setSuccess] = useState("");
-    const [options, setOptions] = useState(["", ""]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showLocation, setShowLocation] = useState(false);
     const [showimg, setShowimg] = useState(false);
     const [video, setvideo] = useState([]);
+    const [images, setImages] = useState([]);
     const [comments, setComments] = useState({});
     const [showComments, setShowComments] = useState({});
     const [commentText, setCommentText] = useState({});
-    const [pollText, setPollText] = useState("");
     const [showaudio, setShowaudio] = useState(false);
     const [postText, setPostText] = useState("");
-    const [donationImage, setDonationImage] = useState([]);
     const [privacy, setPrivacy] = useState(0);
     const [locationText, setlocationText] = useState("");
-    const [images, setImages] = useState([]);
     const [showList, setShowList] = useState(false);
     const [showvideo, setShowvideo] = useState(false);
     const [audio, setaudio] = useState([]);
-    const [donationTitle, setDonationTitle] = useState("");
-    const [donationAmount, setDonationAmount] = useState("");
-    const [donationDescription, setDonationDescription] = useState("");
     const [showReplies, setShowReplies] = useState({});
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
     const [repliesData, setRepliesData] = useState({});
+    const [isOpenColorPalette, setIsOpenColorPalette] = useState(false);
+    const [color, setColor] = useState("");
+    const [showEditPostModal, setShowEditPostModal] = useState(false);
+    const [postID, setPostID] = useState("")
+    const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+    const [donationModal, setDonationModal] = useState(false);
+    const [donationID, setDonationID] = useState("");
+    const [fundingModal, setFundingModal] = useState(false);
+    const [pollModal, setPollModal] = useState(false);
+    const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+    const [postReactions, setPostReactions] = useState({});
+    const [activeReactionPost, setActiveReactionPost] = useState(null);
+    const settings = useSiteSettings()
+
+
+
+    const fileImageRef = useRef(null);
+
+    const fileVideoRef = useRef(null);
+
+    const fileAudioRef = useRef(null);
+
+    const reactionEmojis = {
+        satisfaction: "👍",
+        love: "❤️",
+        happy: "😂",
+        surprise: "😮",
+        sad: "😢",
+        angry: "😡"
+    };
+
+    const reactionValues = {
+        satisfaction: 1,
+        love: 2,
+        happy: 3,
+        surprise: 4,
+        sad: 5,
+        angry: 6
+    };
+
+
+    const handleReactionSelect = (reaction, postId) => {
+        const updatedReactions = {
+            ...postReactions,
+            [postId]: reactionEmojis[reaction] || "😊"
+        };
+
+        LikePost(postId, reactionValues[reaction] || 0);
+
+        setPostReactions(updatedReactions);
+        setActiveReactionPost(null);
+    };
 
 
     const handleDelete = useCallback(async (values) => {
@@ -109,6 +179,13 @@ export default function UserProfileCard({ params }) {
         const data = localStorage.getItem("userdata");
         if (data) {
             setUserData(JSON.parse(data));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUserId = localStorage.getItem("userid");
+            setUserId(storedUserId);
         }
     }, []);
 
@@ -240,37 +317,71 @@ export default function UserProfileCard({ params }) {
         setShowimg((prev) => !prev);
     };
 
-    const handlePostTextChange = (e) => { setPostText(e.target.value) };
-    const handlePollTextChange = (e) => { setPollText(e.target.value) };
-    const handleLocationTextChange = (e) => { setlocationText(e.target.value) };
+    const handleImageChange = (event) => {
+        const files = event.target.files;
+        if (!files) return;
 
-    const handleFileChange = (e) => {
-        const files = e.target.files;
-        if (files.length > 0) {
-            setImages(Array.from(files));
+        const newFiles = Array.from(files);
+        if (newFiles.length + images.length > 10) {
+            alert("You can only upload up to 10 images.");
+            toast.info("You can only upload up to 10 images.")
+            return;
         }
-    };
 
-    const handleDonationImage = (e) => {
-        const files = e.target.files;
-        if (files.length > 0) {
-            setDonationImage(Array.from(files));
-        }
-    };
+        const newImages = newFiles.map((file) => ({
+            file,
+            url: URL.createObjectURL(file),
+        }));
 
-    const handleaudioChange = (e) => {
-        const audioFiles = e.target.files;
-        if (audioFiles.length > 0) {
-            setaudio(Array.from(audioFiles));
-        }
+        setImages((prevImages) => [...prevImages, ...newImages]);
     };
 
     const handlevideoChange = (e) => {
         const videoFiles = e.target.files;
-        if (videoFiles.length > 0) {
-            setvideo(Array.from(videoFiles));
+
+        if (videoFiles.length > 1) {
+            alert("You can only upload one video at a time.");
+            toast.info("You can only upload one video at a time.");
+            return;
+        }
+
+        if (videoFiles.length === 1) {
+            const newVideo = {
+                file: videoFiles[0],
+                url: URL.createObjectURL(videoFiles[0]),
+            };
+            setvideo([newVideo]);
         }
     };
+
+
+
+    const removeImage = (index) => {
+        setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    };
+
+
+    const removeVideo = (index) => {
+        setvideo((prevVideos) => prevVideos.filter((_, i) => i !== index));
+    };
+
+    const handleaudioChange = (event) => {
+        const files = Array.from(event.target.files);
+        const newAudio = files.map((file) => ({
+            file,
+            url: URL.createObjectURL(file),
+        }));
+        setaudio((prevFiles) => [...prevFiles, ...newAudio]);
+    };
+
+    const removeAudio = (index) => {
+        const updatedAudios = audio.filter((_, i) => i !== index);
+        setaudio(updatedAudios);
+    };
+
+    const handlePostTextChange = (e) => { setPostText(e.target.value) };
+    const handleLocationTextChange = (e) => { setlocationText(e.target.value) };
+
 
     const handleEmojiButtonClick = () => {
         setShowEmojiPicker((prev) => !prev);
@@ -281,50 +392,38 @@ export default function UserProfileCard({ params }) {
         setShowEmojiPicker(false);
     };
 
-    const handleAddOption = () => {
-        setOptions((prevOptions) => [...prevOptions, ""])
-    };
 
-    const handleRemoveOption = (index) => {
-        if (options.length > 2) {
-            const updatedOptions = [...options];
-            updatedOptions.splice(index, 1);
-            setOptions(updatedOptions);
-        }
-    };
-
-    const handleDonationTitle = (e) => { setDonationTitle(e.target.value) };
-
-    const handleDonationAmount = (e) => { setDonationAmount(e.target.value) };
-
-    const handleDonationDescription = (e) => { setDonationDescription(e.target.value) };
-
-    const uploadPost = async () => {
+    const uploadPost = async (donationData = {}) => {
         try {
             const formData = new FormData();
-            const combinedText = `${postText} ${pollText} ${donationTitle}`;
+            const combinedText = donationData.donationTitle
+                ? `${postText} ${donationData.donationTitle}`
+                : postText;
             formData.append("post_text", combinedText);
-            formData.append("description", donationDescription);
-            formData.append("amount", donationAmount);
-            formData.append("poll_option", options);
+            if (donationData.donationAmount) {
+                formData.append("amount", donationData.donationAmount);
+            }
+            if (donationData.donationDescription) {
+                formData.append("description", donationData.donationDescription);
+            }
+
+            if (donationData.donationImage) formData.append("donation_image", donationData.donationImage);
+            formData.append("bg_color", color);
             formData.append("post_location", locationText);
-            images.forEach((image) => formData.append("images[]", image));
-            donationImage.forEach((image) =>
-                formData.append("donation_image", image)
-            );
-            audio.forEach((audioFile) => formData.append("audio", audioFile));
-            video.forEach((videoFile) => formData.append("video", videoFile));
+            images.forEach((image) => formData.append("images[]", image.file));
+            audio.forEach((audioFile) => formData.append("audio", audioFile.file));
+            video.forEach((videoFile) => formData.append("video", videoFile.file));
 
             let postType = "post";
-            if (pollText) {
-                postType = "poll";
-            } else if (donationAmount) {
+            if (donationData.donationAmount) {
                 postType = "donation";
             }
 
             formData.append("post_type", postType);
 
             formData.append("privacy", privacy);
+
+            setUploadPLoading(true);
 
             const response = await api.post("/api/post/create", formData, {
                 headers: {
@@ -338,21 +437,22 @@ export default function UserProfileCard({ params }) {
                 setPostText("");
                 setError("");
                 setImages([]);
+                setColor("");
+                setShowimg(false);
+                setFundingModal(false);
+                setShowaudio(false);
+                setShowvideo(false);
                 setaudio([]);
                 setvideo([]);
-                setlocationText("");
-                setOptions(["", ""]);
-                setPollText("");
-                setDonationAmount("");
-                setDonationTitle("");
-                setDonationDescription("");
-                setDonationImage([]);
+                setShowLocation(false);
             } else {
                 toast.error("Error from server: " + response.data.message)
                 setSuccess("");
             }
         } catch (error) {
             toast.error(error.response.data.message)
+        } finally {
+            setUploadPLoading(false);
         }
     };
 
@@ -483,16 +583,51 @@ export default function UserProfileCard({ params }) {
         }
     };
 
-    const LikePost = async (postId) => {
+    const LikePost = async (postId, reactionType) => {
+
         try {
             const response = await api.post("/api/post/action", {
                 post_id: postId,
                 action: "reaction",
-                reaction_type: 1,
+                reaction_type: reactionType,
             });
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
+
+            if (response.data.code === "200") {
+                setPosts(prevPosts =>
+                    prevPosts.map(post => {
+                        if (post.id === postId) {
+                            return {
+                                ...post,
+                                reaction: {
+                                    is_reacted: true,
+                                    reaction_type: reactionType,
+                                    count: post.reaction?.is_reacted
+                                        ? post.reaction.count
+                                        : (post.reaction?.count || 0) + 1,
+                                    image: post.reaction?.image || "",
+                                    color: post.reaction?.color || "",
+                                    text: post.reaction?.text || ""
+                                }
+                            };
+                        }
+                        return post;
+                    })
+                );
+
+
+                const reactionKey = Object.keys(reactionValues).find(
+                    key => reactionValues[key] === reactionType
+                );
+
+                if (reactionKey) {
+                    setPostReactions(prevReactions => ({
+                        ...prevReactions,
+                        [postId]: reactionEmojis[reactionKey]
+                    }));
+                }
+            }
+
+            else {
                 toast.error(response.data.message);
             }
         } catch (error) {
@@ -500,25 +635,7 @@ export default function UserProfileCard({ params }) {
         }
     };
 
-    const donateAmount = (e) => {
-        setDonate(e.target.value);
-    };
 
-    const handleDonationsend = async (postDonationId) => {
-        try {
-            const response = await api.post("/api/donate", {
-                fund_id: postDonationId,
-                amount: donate,
-            });
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error("Error while donating Fund.");
-        }
-    };
 
     const handleCommentToggle = async (postId) => {
         setShowList(!showList);
@@ -648,6 +765,64 @@ export default function UserProfileCard({ params }) {
         toast.success("Link copied successfully!");
     };
 
+    // Function to open/close Cup of Coffee modal
+    const openModalCupCoffee = (id) => {
+        setActiveCupCoffeeId(id);
+        setActiveGreatJobId(null); // Ensure other modal closes
+    };
+    const closeModalCupCoffee = () => {
+        setActiveCupCoffeeId(null);
+    };
+
+    // Function to open/close Great Job modal
+    const openModalGreatJob = (id) => {
+        setActiveGreatJobId(id);
+        setActiveCupCoffeeId(null); // Ensure other modal closes
+    };
+    const closeModalGreatJob = () => {
+        setActiveGreatJobId(null);
+    };
+
+    const toggleOptionsColorPalette = () => {
+        setIsOpenColorPalette(!isOpenColorPalette);
+
+    };
+
+
+    const colorMap = {
+        '23jo': '#FFFFFF',
+        '23ju': '#C600FF',
+        '_2j78': '#111111',
+        '_2j79': 'linear-gradient(45deg, rgb(255, 0, 71) 0%, rgb(44, 52, 199) 100%)',
+        '_2j80': 'linear-gradient(45deg, rgb(252, 54, 253) 0%, rgb(93, 63, 218) 100%)',
+        '_2j81': 'linear-gradient(45deg, rgb(93, 99, 116) 0%, rgb(22, 24, 29) 100%)',
+        '_2j82': '#00A859',
+        '_2j83': '#0098DA',
+        '_2j84': '#3E4095',
+        '_2j85': '#4B4F56',
+        '_2j86': '#161616',
+        '_2j87': 'url(https://images.socioon.com/assets/images/post/bgpst1.png)',
+        '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
+        '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
+        '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
+    };
+
+    const reverseColorMap = Object.fromEntries(
+        Object.entries(colorMap).map(([key, value]) => [value, key])
+    );
+
+
+    const handleColorSelect = (colorValue) => {
+        const code = reverseColorMap[colorValue] || encodeURIComponent(colorValue);
+        setColor(code);
+    };
+
+    const getDisplayColor = (code) => {
+        return colorMap[code] || code;
+    };
+
+    if (!settings) return null
+
     return (
         <>
 
@@ -669,7 +844,7 @@ export default function UserProfileCard({ params }) {
                                 <div className="card-body">
                                     <div className="d-flex align-items-center mb-3">
                                         <Image
-                                            src={userdata.data.avatar}
+                                            src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                                             alt="User Avatar"
                                             className="rounded-circle"
                                             height={50}
@@ -740,26 +915,27 @@ export default function UserProfileCard({ params }) {
                                         </div>
                                     </div>
 
-                                    <div className="d-flex" style={{ position: 'relative' }}>
-                                        <input
-                                            className="form-control mb-5 border-0 no-border"
+                                    <div>
+                                        <textarea
+                                            className="form-control mb-2 border-0 no-border"
                                             placeholder="Share your thoughts..."
                                             value={postText}
                                             onChange={handlePostTextChange}
+                                            style={{
+                                                background: `${getDisplayColor(color)} no-repeat center/cover`,
+                                                resize: "none"
+                                            }}
+                                            rows={8}
                                         />
 
-                                        <i
-                                            className="bi bi-emoji-smile text-warning"
-                                            onClick={handleEmojiButtonClick}
-                                            style={{ fontSize: '20px', cursor: 'pointer' }}
-                                        ></i>
+                                        <button type="button" id="emoji-button" onClick={handleEmojiButtonClick} className="p-1 btn btn-light position-absolute trigger" style={{ right: "25px", top: "90px" }}>😊</button>
 
                                         {showEmojiPicker && (
                                             <div
                                                 style={{
                                                     position: 'absolute',
-                                                    top: '50px',
-                                                    left: '100px',
+                                                    top: '-100px',
+                                                    left: '600px',
                                                     zIndex: '1000',
                                                 }}
                                             >
@@ -770,6 +946,25 @@ export default function UserProfileCard({ params }) {
                                                 />
                                             </div>
                                         )}
+
+
+                                        <div className={`d-flex ${styles.optionsContainer} mb-2`}>
+                                            <button className={`btn btn-info ${styles.toggleButton}`} onClick={toggleOptionsColorPalette} >
+                                                <i className="bi bi-palette-fill"></i>
+                                            </button>
+
+                                            <div className={`${styles.colorOptions} ${isOpenColorPalette ? styles.open : ''}`}>
+                                                {Object.values(colorMap).map((color) => (
+                                                    <div
+                                                        key={color}
+                                                        className={styles.colorOption}
+                                                        style={{ background: color }}
+                                                        onClick={() => handleColorSelect(color)}
+                                                    />
+                                                ))}
+                                            </div>
+
+                                        </div>
                                     </div>
 
                                     {showLocation && (
@@ -779,44 +974,170 @@ export default function UserProfileCard({ params }) {
                                             </label>
                                             <input
                                                 type="text"
-                                                className="form-control"
+                                                className="form-control form-control-sm"
                                                 placeholder="Where are you at?"
                                                 value={locationText}
                                                 onChange={handleLocationTextChange}
                                             />
                                         </div>
                                     )}
+
                                     {showimg && (
-                                        <input
-                                            className="form-control w-75 mt-3"
-                                            type="file"
-                                            id="imageFile"
-                                            onChange={handleFileChange}
-                                            accept="image/*"
-                                            multiple
-                                        />
+                                        <div>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    gap: "10px",
+                                                    marginTop: "5px",
+                                                    flexWrap: "wrap",
+                                                }}
+                                            >
+                                                {images.map((img, index) => (
+                                                    <div key={index} style={{ position: "relative", display: "inline-block" }}>
+                                                        <button
+                                                            onClick={() => removeImage(index)}
+                                                            style={{
+                                                                position: "absolute",
+                                                                top: "-5px",
+                                                                right: "-5px",
+                                                                color: "white",
+                                                                border: "none",
+                                                                borderRadius: "50%",
+                                                                backgroundColor: "red",
+                                                                width: "20px",
+                                                                height: "20px",
+                                                                display: "flex",
+                                                                justifyContent: "center",
+                                                                alignItems: "center",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-trash text-light"></i>
+                                                        </button>
+
+                                                        <Image
+                                                            className="mb-3"
+                                                            src={img.url}
+                                                            alt={`Preview ${index}`}
+                                                            width={100}
+                                                            height={100}
+                                                            style={{ objectFit: "cover", borderRadius: "5px" }}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="col-lg-12 mb-3">
+                                                <label className="form-label text-muted">
+                                                    <i className="bi bi-image-fill"></i> Photos
+                                                </label>
+                                                <input
+                                                    className="form-control form-control-sm"
+                                                    type="file"
+                                                    id="formFile"
+                                                    onChange={handleImageChange}
+                                                    ref={fileImageRef}
+                                                    multiple
+                                                    accept="image/*"
+                                                />
+                                            </div>
+                                        </div>
                                     )}
 
-                                    {showaudio && (
-                                        <input
-                                            className="form-control w-75 mt-3"
-                                            type="file"
-                                            id="audiofile"
-                                            onChange={handleaudioChange}
-                                            accept="audio/*"
-                                        />
-                                    )}
 
                                     {showvideo && (
-                                        <input
-                                            className="form-control w-75 mt-3 mb-3"
-                                            type="file"
-                                            id="videofile"
-                                            onChange={handlevideoChange}
-                                            accept="video/*"
-                                            multiple
-                                        />
+                                        <div>
+                                            <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                {video.map((video, index) => (
+                                                    <div key={index} style={{ position: "relative", display: "inline-block" }}>
+
+                                                        <button
+
+                                                            onClick={() => removeVideo(index)}
+                                                            style={{
+                                                                position: "absolute",
+                                                                top: "20px",
+                                                                right: "-15px",
+                                                                color: "white",
+                                                                border: "none",
+                                                                borderRadius: "50%",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-trash text-danger" />
+                                                        </button>
+
+                                                        <video width="150" height="150" controls>
+                                                            <source src={video.url} type={video.file.type} />
+                                                            Your browser does not support the video tag.
+                                                        </video>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="col-lg-12 mb-3">
+                                                <label className="form-label text-muted">
+                                                    <i className="bi bi-camera-reels-fill"></i> Videos
+                                                </label>
+                                                <input
+                                                    className="form-control form-control-sm"
+                                                    type="file"
+                                                    id="videofile"
+                                                    onChange={handlevideoChange}
+                                                    ref={fileVideoRef}
+                                                    accept="video/*"
+                                                    multiple
+                                                />
+                                            </div>
+                                        </div>
                                     )}
+
+
+                                    {showaudio && (
+                                        <div>
+                                            <div style={{ display: "flex", gap: "20px", marginTop: "5px", flexWrap: "wrap" }}>
+                                                {audio.map((audio, index) => (
+                                                    <div key={index} style={{ position: "relative" }}>
+
+                                                        <button
+                                                            onClick={() => removeAudio(index)}
+                                                            style={{
+                                                                position: "absolute",
+                                                                top: "-12px",
+                                                                right: "-10px",
+                                                                color: "white",
+                                                                border: "none",
+                                                                borderRadius: "50%",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-trash text-danger" />
+                                                        </button>
+
+                                                        <audio width="150" height="120" controls>
+                                                            <source src={audio.url} type={audio.file.type} />
+                                                            Your browser does not support the video tag.
+                                                        </audio>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="col-lg-12 mb-3">
+                                                <label className="form-label text-muted">
+                                                    <i className="bi bi-music-note-beamed"></i> Audio
+                                                </label>
+                                                <input
+                                                    className="form-control form-control-sm"
+                                                    type="file"
+                                                    id="audiofile"
+                                                    onChange={handleaudioChange}
+                                                    ref={fileAudioRef}
+                                                    accept="audio/*"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
 
                                     <div className="d-flex flex-wrap justify-content-evenly">
                                         <div>
@@ -868,215 +1189,39 @@ export default function UserProfileCard({ params }) {
                                         </button>
 
                                         <div>
-                                            <button
-                                                className="btn btn-light text-secondary align-items-center mt-2"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#pollModal"
-                                            >
-                                                <i className="bi bi-bar-chart text-primary pe-1"></i>{" "}
-                                                Poll
+                                            <button className="btn btn-light text-secondary align-items-center mt-2" onClick={() => setPollModal(!pollModal)}>
+                                                <i className="fas fa-poll text-info pe-1" /> Poll
                                             </button>
-
-                                            <div
-                                                className="modal fade"
-                                                id="pollModal"
-                                                tabIndex="-1"
-                                                aria-labelledby="pollModalLabel"
-                                                aria-hidden="true"
-                                            >
-                                                <div className="modal-dialog modal-dialog-centered">
-                                                    <div className="modal-content">
-                                                        <div className="modal-header">
-                                                            <h5 className="modal-title" id="pollModalLabel">
-                                                                Create Poll
-                                                            </h5>
-                                                            <button
-                                                                type="button"
-                                                                className="btn-close"
-                                                                data-bs-dismiss="modal"
-                                                                aria-label="Close"
-                                                            ></button>
-                                                        </div>
-
-                                                        <div className="modal-body">
-                                                            <div className="mb-3">
-                                                                <label className="form-label text-muted">
-                                                                    Question
-                                                                </label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="form-control"
-                                                                    placeholder="Enter your question"
-                                                                    value={pollText}
-                                                                    onChange={handlePollTextChange}
-                                                                />
-                                                            </div>
-
-                                                            {options.map((option, index) => (
-                                                                <div
-                                                                    key={index}
-                                                                    className="mb-2 d-flex align-items-center"
-                                                                >
-                                                                    <input
-                                                                        type="text"
-                                                                        className="form-control me-2"
-                                                                        placeholder={`Option ${index + 1}`}
-                                                                        value={option}
-                                                                        onChange={(e) => {
-                                                                            const updatedOptions = [...options];
-                                                                            updatedOptions[index] = e.target.value;
-                                                                            setOptions(updatedOptions);
-                                                                        }}
-                                                                    />
-
-                                                                    {index === 0 && (
-                                                                        <button
-                                                                            className="btn btn-success btn-sm me-2"
-                                                                            onClick={handleAddOption}
-                                                                        >
-                                                                            <i className="bi bi-plus"></i>
-                                                                        </button>
-                                                                    )}
-
-                                                                    {index > 1 && (
-                                                                        <button
-                                                                            className="btn btn-danger btn-sm"
-                                                                            onClick={() => handleRemoveOption(index)}
-                                                                        >
-                                                                            <i className="bi bi-dash"></i>
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        <div className="modal-footer">
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-primary"
-                                                                onClick={uploadPost}
-                                                            >
-                                                                Create Post
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-dark"
-                                                                data-bs-dismiss="modal"
-                                                            >
-                                                                Close
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
                                         </div>
 
                                         <div>
-                                            <div
-                                                className="modal fade"
-                                                id="fundModal"
-                                                tabIndex="-1"
-                                                aria-labelledby="fundModalLabel"
-                                                aria-hidden="true"
-                                            >
-                                                <div className="modal-dialog modal-dialog-centered">
-                                                    <div className="modal-content">
-                                                        <div className="modal-header">
-                                                            <h5 className="modal-title" id="fundModalLabel">
-                                                                Raise Funding
-                                                            </h5>
-                                                            <button
-                                                                type="button"
-                                                                className="btn-close"
-                                                                data-bs-dismiss="modal"
-                                                                aria-label="Close"
-                                                            ></button>
-                                                        </div>
-                                                        <div className="modal-body">
-                                                            <div>
-                                                                <label className="form-label text-muted">
-                                                                    Donation Title
-                                                                </label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="form-control"
-                                                                    value={donationTitle}
-                                                                    onChange={handleDonationTitle}
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className="form-label text-muted">
-                                                                    Donation Image
-                                                                </label>
-                                                                <input
-                                                                    className="form-control"
-                                                                    type="file"
-                                                                    onChange={handleDonationImage}
-                                                                    accept="image/*"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className="form-label text-muted">
-                                                                    Donation Amount
-                                                                </label>
-                                                                <input
-                                                                    type="number"
-                                                                    className="form-control"
-                                                                    value={donationAmount}
-                                                                    onChange={handleDonationAmount}
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className="form-label text-muted">
-                                                                    Donation Description
-                                                                </label>
-                                                                <textarea
-                                                                    type="text"
-                                                                    className="form-control"
-                                                                    rows="2"
-                                                                    value={donationDescription}
-                                                                    onChange={handleDonationDescription}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div className="modal-footer">
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-primary"
-                                                                onClick={uploadPost}
-                                                            >
-                                                                Save changes
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-dark"
-                                                                data-bs-dismiss="modal"
-                                                            >
-                                                                Close
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                className="btn btn-light text-secondary align-items-center mt-2"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#fundModal"
-                                            >
-                                                <i className="bi bi-cash-coin text-success pe-1"></i>
-                                                Raise Funding
+                                            <button className="btn btn-light text-secondary align-items-center mt-2" onClick={() => setFundingModal(!fundingModal)}>
+                                                <i className="fas fa-hand-holding-usd text-success pe-1" /> Raise funding
                                             </button>
                                         </div>
+
                                     </div>
+
                                     <div className="d-flex justify-content-center">
                                         <button
-                                            className="btn btn-outline-success mt-3 w-50"
+                                            className="btn btn-success-post mt-3 w-100"
+                                            disabled={uploadPloading}
                                             onClick={uploadPost}
                                         >
-                                            <i className="bi bi-send"></i> Post
+                                            {!uploadPloading && <i className="bi bi-send me-2"></i>}
+                                            {uploadPloading ? (
+                                                <Spinner
+                                                    as="span"
+                                                    animation="border"
+                                                    role="status"
+                                                    aria-hidden="true"
+                                                />
+                                            ) : (
+                                                "Post"
+                                            )}
                                         </button>
                                     </div>
+
                                 </div>
                             </div>
                         )}
@@ -1084,25 +1229,26 @@ export default function UserProfileCard({ params }) {
                         {posts.map((post, index) => (
                             <div
                                 key={`${post.id}-${index}`}
-                                className="card mb-4 shadow-lg border-0 rounded-1 mt-4"
+                                className="card mb-2 shadow-lg border-0 rounded-1"
                             >
                                 <div className="card-body">
                                     <div className="d-flex align-items-center justify-content-between">
                                         <div className="d-flex align-items-center">
 
-                                            <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                                                onClick={() => handleClick(post.user.id)} >
+                                            <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                onClick={() => handleClick(post.user.id)}
+                                            >
 
-                                                <Link href="#">
-                                                    <Image
-                                                        className="avatar-img rounded-circle"
-                                                        src={post.user.avatar}
-                                                        alt="User Avatar"
-                                                        width={50}
-                                                        height={50}
-                                                        style={{ objectFit: 'cover' }}
-                                                    />
-                                                </Link>
+
+                                                <Image
+                                                    className="avatar-img rounded-circle"
+                                                    src={post.user.avatar || "/assets/images/userplaceholder.png"}
+                                                    alt="User Avatar"
+                                                    width={50}
+                                                    height={50}
+                                                    style={{ objectFit: 'cover' }}
+                                                />
+
 
                                                 {post.user.is_verified === '1' && (
                                                     <div
@@ -1125,21 +1271,56 @@ export default function UserProfileCard({ params }) {
 
                                             <div className="mx-2">
                                                 <h6 className="card-title">
-
                                                     <span
-                                                        style={{ cursor: 'pointer' }}
-                                                        onClick={() => handleClick(post.user.id)}
+                                                        style={{
+                                                            cursor: 'pointer',
+                                                            color: 'inherit',
+                                                            transition: 'color 0.3s ease'
+                                                        }}
+                                                        onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                        onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                        onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
                                                     >
                                                         {post.user.first_name} {post.user.last_name}
                                                     </span>
 
                                                     {post.post_location && post.post_location !== "" && (
                                                         <span className="text-primary">
-                                                            <small className="text-dark"> is in </small>
-                                                            {post.post_location}
+                                                            <small className="text-dark"> is in </small> {post.post_location}
                                                         </span>
                                                     )}
+                                                    {(post.group || post.page) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
+
+                                                    {post.group &&
+                                                        <span
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/groups/groupTimeline/${post.group_id}`)}
+                                                        >
+                                                            {post.group.group_title}
+                                                        </span>
+                                                    }
+
+                                                    {post.page &&
+                                                        <span
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/page/myPageTimeline/${post.page_id}`)}
+                                                        >
+                                                            {post.page.page_title}
+                                                        </span>}
                                                 </h6>
+
                                                 <small className="text-secondary">
                                                     {post.created_human} -
                                                     {post.privacy === '1' && (
@@ -1170,395 +1351,499 @@ export default function UserProfileCard({ params }) {
                                                 <button
                                                     className="btn border-0"
                                                     type="button"
-                                                    id="dropdownMenuButton2"
+                                                    id={`dropdownMenuButton-${post.id}`}
                                                     data-bs-toggle="dropdown"
                                                     aria-expanded="false"
                                                 >
                                                     <i className="bi bi-caret-down"></i>
                                                 </button>
-                                                <ul
-                                                    className="dropdown-menu dropdown-menu-light"
-                                                    aria-labelledby="dropdownMenuButton2"
-                                                >
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-bookmark pe-2"></i> Save
-                                                            post
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <hr className="dropdown-divider" />
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-flag pe-2"></i> Report Post
-                                                        </Link>
-                                                    </li>
-                                                    <li className=" align-items-center d-flex">
-                                                        <Link
-                                                            className="text-decoration-none dropdown-item text-secondary"
-                                                            href="#"
-                                                        >
-                                                            <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                                            Open post in new tab
-                                                        </Link>
-                                                    </li>
-                                                    {post.user.id == userdata.data.id && (
+
+                                                {post.user.id !== userdata.data.id && (
+                                                    <ul
+                                                        className="dropdown-menu dropdown-menu-light"
+                                                        aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                    >
+
+
+                                                        <li className="align-items-center d-flex">
+                                                            <button
+                                                                className="text-decoration-none dropdown-item text-secondary"
+                                                                onClick={() => {
+                                                                    setShowSavePostModal(true);
+                                                                    setPostID(post.id);
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-bookmark pe-2"></i>
+
+                                                                {post.is_saved === false ? "Save Post" : "Unsave Post"}
+
+                                                            </button>
+                                                        </li>
+
+
+
+                                                        <li>
+                                                            <hr className="dropdown-divider" />
+                                                        </li>
+                                                        <li className="align-items-center d-flex">
+                                                            <button className="text-decoration-none dropdown-item text-secondary"
+                                                                onClick={() => {
+                                                                    setShowReportPostModal(true)
+                                                                    setPostID(post.id)
+
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-flag pe-2"></i> Report Post
+                                                            </button>
+                                                        </li>
+                                                        <li className="align-items-center d-flex">
+                                                            <Link
+                                                                href={`/pages/openPostInNewTab/${post.id}`}
+                                                                target="_blank" rel="noopener noreferrer"
+                                                                className="text-decoration-none dropdown-item text-secondary">
+                                                                <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                            </Link>
+                                                        </li>
+                                                    </ul>
+                                                )}
+
+                                                {post.user.id === userdata.data.id && (
+                                                    <ul
+                                                        className="dropdown-menu dropdown-menu-light"
+                                                        aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                    >
+
+                                                        <li className="align-items-center d-flex">
+                                                            <button
+                                                                className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
+                                                                onClick={() => {
+                                                                    setShowEnableDisableCommentsModal(true)
+                                                                    setPostID(post.id)
+
+                                                                }}
+                                                            >
+                                                                {
+                                                                    post.comments_status === '1' ?
+                                                                        <>
+                                                                            <i className="bi bi-chat-left-text pe-2"></i> <span>Disable Comments</span>
+                                                                        </>
+                                                                        :
+                                                                        <>
+                                                                            <i className="bi bi-chat-left-text-fill pe-2"></i> <span>Enable Comments</span>
+                                                                        </>
+
+
+                                                                }
+
+                                                            </button>
+                                                        </li>
+
+
+
+                                                        <li className="align-items-center d-flex">
+                                                            {post.post_type !== "donation" ? (
+                                                                <button
+                                                                    className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowEditPostModal(true);
+                                                                        setPostID({ id: post.id, post_text: post.post_text });
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
+                                                                </button>
+                                                            ) : (
+                                                                <Link className="text-decoration-none dropdown-item text-secondary" href={`/pages/Fundingslist/${post.id}`}>
+                                                                    <i className="bi bi-cash fa-fw pe-2"></i> Fundings
+                                                                </Link>
+                                                            )}
+                                                        </li>
+
                                                         <li className="align-items-center d-flex">
                                                             <button
                                                                 className="btn dropdown-item text-secondary"
                                                                 onClick={() => handlePostDelete(post.id)}
                                                             >
-                                                                <i className="bi bi-trash3 pe-2"></i>
-                                                                Delete Post
+                                                                <i className="bi bi-trash3 pe-2"></i> Delete Post
                                                             </button>
                                                         </li>
-                                                    )}
-                                                </ul>
+
+                                                        <li>
+                                                            <hr className="dropdown-divider" />
+                                                        </li>
+                                                        <li className="align-items-center d-flex">
+                                                            <Link
+                                                                href={`/pages/openPostInNewTab/${post.id}`}
+                                                                target="_blank" rel="noopener noreferrer"
+                                                                className="text-decoration-none dropdown-item text-secondary">
+                                                                <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                            </Link>
+                                                        </li>
+                                                    </ul>
+                                                )}
                                             </div>
                                         </div>
+
                                     </div>
 
-                                    <hr className="my-2 text-muted" />
+                                    <hr className="my-2 post-divider" />
 
-                                    {post.post_type !== "donation" && (
+                                    {
+                                        post.bg_color && (
+                                            <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
+                                                style={{
+                                                    background: getDisplayColor(post.bg_color),
+                                                    backgroundSize: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'cover' : 'auto',
+                                                    backgroundRepeat: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'no-repeat' : 'repeat',
+                                                    backgroundPosition: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'center' : 'unset',
+                                                    padding: "220px 27px",
+                                                }}
+                                            >
+                                                <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
+                                            </div>
+                                        )
+
+                                    }
+
+                                    {post.post_type !== "donation" && !post.bg_color && (
                                         <p
-                                            className="mt-4"
+                                            className="mt-2 mx-2"
                                             dangerouslySetInnerHTML={{ __html: post.post_text }}
                                         />
                                     )}
 
-                                    <div className="d-flex justify-content-center flex-wrap mb-3">
-                                        {post.poll && post.poll.poll_options && (
-                                            <div className="w-100">
-                                                <ul className="list-unstyled">
-                                                    {post.poll.poll_options.map((option) => {
-                                                        const totalVotes =
-                                                            post.poll.poll_total_votes || 0;
-                                                        const percentage =
-                                                            totalVotes > 0
-                                                                ? Math.round(
-                                                                    (option.no_of_votes / totalVotes) * 100
-                                                                )
-                                                                : 0;
+                                    {post.shared_post === null ?
 
-                                                        return (
-                                                            <li key={option.id} className="mb-3 w-100">
-                                                                <div className="d-flex align-items-center justify-content-between">
-                                                                    <div
-                                                                        className="progress flex-grow-1"
-                                                                        style={{
-                                                                            height: "30px",
-                                                                            cursor: "pointer",
-                                                                        }}
-                                                                        onClick={() =>
-                                                                            handleVote(
-                                                                                option.id,
-                                                                                post.poll.id,
-                                                                                post.id
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <div
-                                                                            className="progress-bar"
-                                                                            role="progressbar"
-                                                                            style={{
-                                                                                width: `${percentage}%`,
-                                                                                backgroundColor: "#66b3ff",
-                                                                            }}
-                                                                            aria-valuenow={percentage}
-                                                                            aria-valuemin="0"
-                                                                            aria-valuemax="100"
-                                                                        >
+                                        <>
+                                            <div className="d-flex justify-content-center flex-wrap">
+                                                {post.poll && post.poll.poll_options && (
+                                                    <div className="w-100">
+                                                        <ul className="list-unstyled">
+                                                            {post.poll.poll_options.map((option) => {
+                                                                const totalVotes =
+                                                                    post.poll.poll_total_votes || 0;
+                                                                const percentage =
+                                                                    totalVotes > 0
+                                                                        ? Math.round(
+                                                                            (option.no_of_votes / totalVotes) * 100
+                                                                        )
+                                                                        : 0;
+
+                                                                return (
+                                                                    <li key={option.id} className="mb-4 w-100">
+                                                                        <div className="d-flex align-items-center justify-content-between">
                                                                             <div
-                                                                                className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                                                className="progress flex-grow-1"
                                                                                 style={{
-                                                                                    position: "absolute",
-                                                                                    overflow: "hidden",
-                                                                                    textOverflow: "ellipsis",
-                                                                                    whiteSpace: "nowrap",
+                                                                                    height: "30px",
+                                                                                    cursor: "pointer",
                                                                                 }}
+                                                                                onClick={() =>
+                                                                                    handleVote(
+                                                                                        option.id,
+                                                                                        post.poll.id,
+                                                                                        post.id
+                                                                                    )
+                                                                                }
                                                                             >
-                                                                                {option.option_text}
+                                                                                <div
+                                                                                    className="progress-bar"
+                                                                                    role="progressbar"
+                                                                                    style={{
+                                                                                        width: `${percentage}%`,
+                                                                                        backgroundColor: "#66b3ff",
+                                                                                    }}
+                                                                                    aria-valuenow={percentage}
+                                                                                    aria-valuemin="0"
+                                                                                    aria-valuemax="100"
+                                                                                >
+                                                                                    <div
+                                                                                        className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                                                        style={{
+                                                                                            position: "absolute",
+                                                                                            overflow: "hidden",
+                                                                                            textOverflow: "ellipsis",
+                                                                                            whiteSpace: "nowrap",
+                                                                                        }}
+                                                                                    >
+                                                                                        {option.option_text}
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
+                                                                            <span className="px-3">{percentage}%</span>
                                                                         </div>
-                                                                    </div>
-                                                                    <span className="px-3">{percentage}%</span>
-                                                                </div>
-                                                            </li>
-                                                        );
-                                                    })}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="container mt-5">
-                                        {post.donation && (
-                                            <div>
-                                                <Image
-                                                    src={post.donation.image}
-                                                    alt={post.donation.title}
-                                                    className="img-fluid"
-                                                    width={500}
-                                                    height={300}
-                                                    style={{
-                                                        objectFit: "cover",
-                                                    }}
-                                                />
-
-                                                <div className="card-body text-center">
-                                                    <h5 className="card-title">
-                                                        {post.donation.title}
-                                                    </h5>
-                                                    <p className="card-text">
-                                                        {post.donation.description}
-                                                    </p>
-                                                    <div className="progress mb-3">
-                                                        <div
-                                                            className="progress-bar"
-                                                            role="progressbar"
-                                                            style={{
-                                                                width: `${(post.donation.collected_amount /
-                                                                    post.donation.amount) *
-                                                                    100
-                                                                    }%`,
-                                                            }}
-                                                            aria-valuenow={post.donation.collected_amount}
-                                                            aria-valuemin="0"
-                                                            aria-valuemax={post.donation.amount}
-                                                        ></div>
+                                                                    </li>
+                                                                );
+                                                            })}
+                                                        </ul>
                                                     </div>
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <p className="text-muted">
-                                                            {post.donation.collected_amount} Collected
-                                                        </p>
-                                                        <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
-                                                        <button
-                                                            className="btn btn-primary btn-sm"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#DonateModal"
-                                                        >
-                                                            Donate
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
 
-                                    <div
-                                        className="modal fade"
-                                        id="DonateModal"
-                                        tabIndex="-1"
-                                        aria-labelledby="ModalLabel"
-                                        aria-hidden="true"
-                                    >
-                                        <div className="modal-dialog modal-dialog-centered">
-                                            <div className="modal-content">
-                                                <div className="modal-header">
-                                                    <h5
-                                                        className="modal-title fw-semibold"
-                                                        id="fundModalLabel"
-                                                    >
-                                                        Donate Amount
-                                                    </h5>
-                                                    <button
-                                                        type="button"
-                                                        className="btn-close"
-                                                        data-bs-dismiss="modal"
-                                                        aria-label="Close"
-                                                    ></button>
-                                                </div>
-                                                <div className="modal-body">
+                                            <div className="container mt-1">
+                                                {post.donation && (
                                                     <div>
-                                                        <label className="form-label">Amount</label>
-                                                        <input
-                                                            type="number"
-                                                            className="form-control"
-                                                            value={donate}
-                                                            onChange={donateAmount}
+                                                        <Image
+                                                            src={post.donation.image || "/assets/images/placeholder-image.png"}
+                                                            alt={post.donation.title}
+                                                            width={500}
+                                                            height={300}
+                                                            className="img-fluid rounded"
+                                                            style={{
+                                                                objectFit: "contain",
+                                                                objectPosition: "center",
+                                                                display: "block",
+                                                                margin: "0 auto",
+                                                            }}
                                                         />
+
+
+                                                        <div className="card-body text-center">
+                                                            <h5 className="card-title">
+                                                                {post.donation.title}
+                                                            </h5>
+                                                            <p className="card-text">
+                                                                {post.donation.description}
+                                                            </p>
+                                                            <div className="progress mb-3">
+                                                                <div
+                                                                    className="progress-bar"
+                                                                    role="progressbar"
+                                                                    style={{
+                                                                        width: `${(post.donation.collected_amount /
+                                                                            post.donation.amount) *
+                                                                            100
+                                                                            }%`,
+                                                                    }}
+                                                                    aria-valuenow={post.donation.collected_amount}
+                                                                    aria-valuemin="0"
+                                                                    aria-valuemax={post.donation.amount}
+                                                                ></div>
+                                                            </div>
+                                                            <div className="d-flex align-items-center justify-content-between">
+                                                                <p className="text-muted">
+                                                                    {post.donation.collected_amount} Collected
+                                                                </p>
+                                                                <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+
+                                                                <button
+                                                                    className="btn btn-primary btn-sm"
+                                                                    onClick={() => {
+                                                                        setDonationModal(!donationModal)
+
+                                                                        setDonationID(post.donation.id)
+                                                                    }}
+                                                                >
+                                                                    Donate
+                                                                </button>
+
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="modal-footer">
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-primary"
-                                                        onClick={() =>
-                                                            handleDonationsend(post.donation.id)
-                                                        }
-                                                    >
-                                                        Save changes
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-dark"
-                                                        data-bs-dismiss="modal"
-                                                    >
-                                                        Close
-                                                    </button>
-                                                </div>
+                                                )}
                                             </div>
+
+                                            <div className="d-flex flex-column align-items-center mb-3">
+
+                                                <UserImagesLayout key={`${post.id}-${index}`} post={post} />
+
+                                                {/* Event Section */}
+                                                {post.event && post.event.cover && (
+                                                    <div className="w-100 text-center mt-2">
+                                                        <Image
+                                                            src={post.event.cover || "/assets/images/placeholder-image.png"}
+                                                            alt="Event Cover"
+                                                            width={500}
+                                                            height={300}
+                                                            className="img-fluid rounded"
+                                                            style={{ objectFit: "cover" }}
+                                                        />
+
+                                                        <h5 className="fw-bold mt-2"
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/Events/eventDetails/${post.event_id}`)}
+                                                        >
+                                                            {post.event.name}
+                                                        </h5>
+
+                                                        <span className="badge bg-primary rounded-pill mt-2 px-3 py-2">{post.event.start_date}</span>
+                                                    </div>
+                                                )}
+
+                                                {post.product && post.product.images.length > 0 && (
+                                                    <div className="w-100 mt-4 card shadow-sm border-0 rounded p-3">
+                                                        {/* Product Image */}
+                                                        <div className="text-center">
+                                                            <Image
+                                                                src={post.product.images[0].image || "/assets/images/placeholder-image.png"}
+                                                                alt={post.product.product_name}
+                                                                width={600}
+                                                                height={400}
+                                                                className="img-fluid rounded"
+                                                                style={{ objectFit: "cover", maxHeight: "300px" }}
+                                                            />
+                                                        </div>
+
+                                                        {/* Product Details */}
+                                                        <div className="card-body">
+                                                            <h5 className="fw-bold text-dark">{post.product.product_name}</h5>
+                                                            <hr className="mb-2" />
+
+                                                            <div className="row align-items-center">
+                                                                <div className="col-md-9">
+                                                                    <p className="mb-1"><b>Price:</b> <span className="text-success fw-bold">{post.product.price} {post.product.currency}</span></p>
+                                                                    <p className="mb-1"><b>Category:</b> {post.product.category}</p>
+                                                                    <p className="mb-0 text-primary">
+                                                                        <i className="bi bi-geo-alt-fill"></i> {post.product.location}
+                                                                    </p>
+                                                                </div>
+
+                                                                <div className="col-md-3 text-end">
+                                                                    <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
+                                                                        <button className="btn btn-primary rounded-pill px-3 py-2">
+                                                                            {userId === post.user_id ? "Edit Product" : "Buy Product"}
+                                                                        </button>
+                                                                    </Link>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Video Section */}
+                                                {post.video && (
+                                                    <div className="w-100">
+                                                        <video controls className="w-100 rounded" style={{ maxHeight: '400px', objectFit: 'contain' }}>
+                                                            <source src={post.video.media_path} type="video/mp4" />
+                                                            Your browser does not support the video tag.
+                                                        </video>
+                                                    </div>
+                                                )}
+
+                                                {/* Audio Section */}
+                                                {post.audio && (
+                                                    <div className="w-100 mt-3">
+                                                        <audio controls className="w-100">
+                                                            <source src={post.audio.media_path} />
+                                                            Your browser does not support the audio tag.
+                                                        </audio>
+                                                    </div>
+                                                )}
+
+                                            </div>
+
+                                        </>
+
+                                        :
+
+                                        post.shared_post && <SharedPosts sharedPost={post.shared_post} post={post} posts={posts} setPosts={setPosts} />
+
+                                    }
+
+
+                                    {post.parent_id !== "0" && !post.shared_post && (
+                                        <div className="alert alert-warning" role="alert">
+                                            <strong>This content is not available</strong>
+                                            <p className="mb-0" style={{ fontSize: "14px" }}>
+                                                This content is not available right now. When this happens, it is usually because the owner
+                                                only shared it with a small group of people, changed who can see it, or it is been deleted.
+                                            </p>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    <div className="d-flex justify-content-center flex-wrap mb-3">
-                                        {post.images &&
-                                            post.images.length > 0 &&
-                                            post.images.map((image, index) => (
-                                                <Image
-                                                    key={index}
-                                                    src={image.media_path}
-                                                    alt={`Post image ${index + 1}`}
-                                                    className="img-fluid mt-1"
-                                                    width={600}
-                                                    height={300}
-                                                    style={{
-                                                        objectFit: "cover",
-                                                    }}
-                                                />
-
-                                            ))}
-
-                                        {post.event && post.event.cover && (
-                                            <div>
-                                                <Image
-                                                    src={post.event.cover}
-                                                    alt="Event Cover"
-                                                    className="img-fluid mt-1"
-                                                    width={500}
-                                                    height={300}
-                                                    style={{
-                                                        objectFit: "cover",
-                                                    }}
-                                                />
-
-                                                <h5 className="fw-bold mt-2">{post.event.name}</h5>
-                                                <button className="badge btn-primary rounded-pill mt-3">
-                                                    {post.event.start_date}
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {post.product && (
-                                            <div>
-                                                <Image
-                                                    src={post.product.images[0].image}
-                                                    alt="Product"
-                                                    className="img-fluid"
-                                                    width={600}
-                                                    height={400}
-                                                    style={{
-                                                        objectFit: "cover",
-                                                    }}
-                                                />
-                                                <div className="row mt-3">
-                                                    <div className="col-md-9">
-                                                        <p></p>
-                                                        <h6><b>{post.product.product_name}</b></h6>
-                                                        <span><b>Price: </b>{post.product.price} ({post.product.currency})</span>
-                                                        <br />
-                                                        <span><b>Category: </b>{post.product.category}</span>
-                                                        <br />
-                                                        <span><i className="bi bi-geo-alt-fill text-primary"></i> {post.product.location}</span>
-                                                    </div>
-                                                    <div className="col-md-3 mt-4">
-                                                        <Link href="#" >
-                                                            <button className="btn btn-primary-hover btn-outline-primary rounded-pill">Edit Product</button>
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {post.video && (
-                                            <div
-                                                className="media-container mt-1"
-                                                style={{ width: "100%", height: "auto" }}
-                                            >
-                                                <video
-                                                    controls
-                                                    style={{
-                                                        objectFit: "cover",
-                                                        width: "100%",
-                                                        height: "auto",
-                                                    }}
-                                                >
-                                                    <source
-                                                        src={post.video.media_path}
-                                                        type="video/mp4"
-                                                    />
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                            </div>
-                                        )}
-
-                                        {post.audio && (
-                                            <div className="media-container w-100">
-                                                <audio controls className="w-100">
-                                                    <source src={post.audio.media_path} />
-                                                    Your browser does not support the audio tag.
-                                                </audio>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
-                                        <div className="d-flex align-items-center mb-2 mb-md-0">
-                                            <span className="me-2">
+                                    <div className="post-card-info">
+                                        {/* Reaction Section */}
+                                        <div className="post-card-reactions">
+                                            <span className="post-card-reaction-count">
                                                 {post.reaction ? post.reaction.count || 0 : 0}
                                             </span>
-                                            <i className="bi bi-hand-thumbs-up"></i>
+                                            <i className="bi bi-hand-thumbs-up post-card-icon reaction-icon"></i>
                                         </div>
-                                        <div className="d-flex flex-wrap align-items-center text-muted">
-                                            <span className="me-3 d-flex align-items-center">
-                                                <i className="bi bi-eye me-1"></i>
+
+                                        {/* Post Engagement Stats */}
+                                        <div className="post-card-stats">
+                                            <span className="post-card-stat">
+                                                <i className="bi bi-eye post-card-icon"></i>
                                                 {post.view_count || 0}
                                             </span>
-                                            <span className="me-3 d-flex align-items-center">
-                                                <i className="bi bi-chat-dots me-1"></i>
+                                            <span className="post-card-stat">
+                                                <i className="bi bi-chat-dots post-card-icon"></i>
                                                 {post.comment_count || 0} comments
                                             </span>
-                                            <span className="d-flex align-items-center">
-                                                <i className="bi bi-share me-1"></i>
+                                            <span className="post-card-stat">
+                                                <i className="bi bi-share post-card-icon"></i>
                                                 {post.share_count || 0} Shares
                                             </span>
                                         </div>
                                     </div>
 
-                                    <hr className="my-1" />
 
-                                    <div className="d-flex justify-content-between">
-                                        <button
-                                            className="btn border-0 d-flex align-items-center"
-                                            onClick={() => LikePost(post.id)}
-                                        >
-                                            <i className="bi bi-emoji-smile me-2"></i> Reaction
-                                        </button>
+                                    <hr className="post-divider" />
+
+                                    <div className="post-actions">
+
+                                        <div style={{ position: "relative", display: "inline-block" }}>
+                                            <button
+                                                className="post-action-btn"
+                                                onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                onMouseLeave={() => setActiveReactionPost(null)}
+                                                onClick={() => {
+                                                    setActiveReactionPost(activeReactionPost === post.id ? null : post.id);
+                                                }}
+                                            >
+                                                <span style={{ fontSize: "18px", marginRight: "8px" }}>
+
+                                                    {postReactions[post.id] || (post.reaction?.reaction_type ?
+                                                        reactionEmojis[
+                                                        Object.keys(reactionValues).find(
+                                                            key => reactionValues[key] === Number(post.reaction.reaction_type)
+                                                        )
+                                                        ] : "😊")}
+                                                </span>
+                                                Reaction
+                                            </button>
+
+                                            {activeReactionPost === post.id && (
+                                                <div
+                                                    style={{
+                                                        position: "absolute",
+                                                        bottom: "100%",
+                                                        left: "0",
+                                                        zIndex: 1000,
+                                                        backgroundColor: "white",
+                                                        borderRadius: "5px",
+                                                    }}
+                                                    onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                    onMouseLeave={() => setActiveReactionPost(null)}
+                                                >
+                                                    <ReactionBarSelector
+                                                        onSelect={(reaction) => handleReactionSelect(reaction, post.id)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <button
-                                            className="btn border-0 d-flex align-items-center"
+                                            className="post-action-btn"
                                             onClick={() => handleCommentToggle(post.id)}
                                         >
-                                            <i className="bi bi-chat me-2"></i> Comments
+                                            <i className="bi bi-chat"></i> Comments
                                         </button>
 
-                                        <div className="dropdown">
+                                        <div className="post-dropdown">
                                             <button
-                                                className="btn border-0"
+                                                className="post-action-btn dropdown-toggle"
                                                 type="button"
-                                                id="dropdownMenuButton3"
+                                                id={`dropdownMenuButton-${post.id}`} // UNIQUE ID
                                                 data-bs-toggle="dropdown"
                                                 aria-expanded="false"
                                             >
-                                                <i className="bi bi-share me-2"></i> Share
+                                                <i className="bi bi-share"></i> Share
                                             </button>
 
                                             <ul
@@ -1603,13 +1888,16 @@ export default function UserProfileCard({ params }) {
                                                     <hr className="dropdown-divider" />
                                                 </li>
                                                 <li className=" align-items-center d-flex">
-                                                    <Link
+                                                    <button
                                                         className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                        href="#"
+                                                        onClick={() => {
+                                                            setShareShowTimelineModal(true)
+                                                            setPostID(post.id)
+                                                        }}
                                                     >
                                                         <i className="bi bi-bookmark-check pe-2"></i> Post
                                                         on Timeline
-                                                    </Link>
+                                                    </button>
                                                 </li>
                                                 <li className=" align-items-center d-flex">
                                                     <span
@@ -1620,35 +1908,62 @@ export default function UserProfileCard({ params }) {
                                                     </span>
                                                 </li>
                                             </ul>
+
                                         </div>
+
                                     </div>
 
-                                    <hr className="my-1" />
+                                    <hr className="post-divider" />
+
 
                                     <div className="d-flex mb-3 mt-2">
-                                        <button
-                                            className="btn me-2 d-flex align-items-center rounded-1"
-                                            style={{
-                                                backgroundColor: "#C19A6B",
-                                                borderRadius: "10px",
-                                                color: "#fff",
-                                            }}
-                                        >
-                                            <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                        </button>
-                                        <button className="btn btn-danger d-flex align-items-center rounded-1">
-                                            <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                        </button>
+
+                                        {settings["chck-cup_of_coffee"] === "1" &&
+                                            userId &&
+                                            post.user_id !== userId && (
+                                                <button
+                                                    className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                    onClick={() => openModalCupCoffee(post.id)}
+                                                    style={{
+                                                        backgroundColor: "#A87F50",
+                                                        borderRadius: "10px",
+                                                        color: "#fff",
+                                                    }}
+                                                >
+                                                    <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                </button>
+                                            )}
+
+                                        {activeCupCoffeeId === post.id && (
+                                            <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                        )}
+
+
+                                        {settings["chck-great_job"] === "1" &&
+                                            userId && post.user_id !== userId && (
+                                                <button
+                                                    className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                                                    onClick={() => openModalGreatJob(post.id)}
+                                                >
+                                                    <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                </button>
+                                            )}
+
+
+                                        {activeGreatJobId === post.id && (
+                                            <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                        )}
                                     </div>
 
-                                    {showComments[post.id] && (
+
+                                    {post.comments_status === "1" && showComments[post.id] ? (
                                         <div className="mt-2">
                                             {comments[post.id] && comments[post.id].length > 0 ? (
                                                 comments[post.id].map((comment) => (
                                                     <div key={comment.id} className="mb-3">
                                                         <div className="d-flex">
                                                             <Image
-                                                                src={comment.avatar}
+                                                                src={comment.avatar || "/assets/images/userplaceholder.png"}
                                                                 alt="Profile"
                                                                 className="rounded-circle me-1 mt-2"
                                                                 width={40}
@@ -1723,7 +2038,7 @@ export default function UserProfileCard({ params }) {
                                                                                 className="d-flex mb-2 mx-5"
                                                                             >
                                                                                 <Image
-                                                                                    src={reply.avatar}
+                                                                                    src={reply.avatar || "/assets/images/userplaceholder.png"}
                                                                                     alt="Profile"
                                                                                     className="rounded-circle me-1 mt-2"
                                                                                     width={40}
@@ -1822,37 +2137,119 @@ export default function UserProfileCard({ params }) {
                                                 </div>
                                             )}
                                         </div>
-                                    )}
+                                    )
+                                        :
+                                        null
+                                    }
 
-                                    <div className="d-flex align-items-center mt-3">
-                                        <Image
-                                            src={userdata.data.avatar}
-                                            alt="User Avatar"
-                                            className="rounded-5"
-                                            width={40}
-                                            height={40}
-                                        />
-                                        <form className="position-relative w-100 ms-2">
-                                            <input
-                                                type="text"
-                                                className="form-control bg-light border-1 rounded-2"
-                                                placeholder="Add a comment..."
-                                                value={commentText[post.id] || ""}
-                                                onChange={(e) => handleCommentTextChange(e, post.id)}
-                                            />
-                                            <button
-                                                className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                type="button"
-                                                onClick={() => handleCommentSubmit(post.id)}
-                                            >
-                                                <i className="bi bi-send"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+
+                                    {
+                                        post?.comments_status === "1" && (
+                                            <div className="d-flex align-items-center mt-3">
+                                                <Image
+                                                    src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
+                                                    alt="User Avatar"
+                                                    className="rounded-5"
+                                                    width={40}
+                                                    height={40}
+                                                />
+                                                <form className="position-relative w-100 ms-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control bg-light border-1 rounded-2"
+                                                        placeholder="Add a comment..."
+                                                        value={commentText[post.id] || ""}
+                                                        onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                    />
+                                                    <button
+                                                        className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                        type="button"
+                                                        onClick={() => handleCommentSubmit(post.id)}
+                                                    >
+                                                        <i className="bi bi-send"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        )
+                                    }
+
+
+
+                                    <hr />
+
+                                    {
+                                        post?.post_advertisement ? (
+
+                                            <div className="card mb-3 mt-4 p-2 border-secondary">
+                                                <div className="d-flex flex-column flex-md-row  align-items-center align-items-md-start">
+                                                    <div className="flex-shrink-0 mb-3 mb-md-0 align-self-center">
+                                                        <Image
+                                                            src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"}
+                                                            width={200}
+                                                            height={100}
+                                                            className="img-fluid rounded-4"
+                                                            alt="adv-img"
+                                                            style={{ objectFit: "conatin", }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex-grow-1 ms-md-3 align-self-center">
+                                                        <div className="card-body advertistment-details">
+                                                            <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none " target="_blank">{post?.post_advertisement.link}</a>
+                                                            <h5 className="card-title mb-lg-3">{post?.post_advertisement.title}</h5>
+                                                            <div className="card-text mb-lg-2">
+                                                                {post?.post_advertisement.body ? (
+                                                                    <span>
+                                                                        <ReadMoreLess
+                                                                            charLimit={70}
+                                                                            readMoreText="read more"
+                                                                            readLessText="read less"
+                                                                        >
+                                                                            {post?.post_advertisement.body}
+                                                                        </ReadMoreLess>
+                                                                    </span>
+                                                                ) : null}
+                                                            </div>
+                                                            <p className="card-text"><small className="text-body-secondary">{post?.post_advertisement.created_at.split(' ')[0]}</small></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )
+                                            :
+                                            null
+                                    }
+
+                                    {
+                                        userId !== post?.user_id && (
+                                            <>
+                                                {/* <hr /> */}
+                                                <div className="text-center mt-2">
+                                                    <button
+                                                        className="btn btn-outline-primary"
+                                                        onClick={() => {
+                                                            setShowAdvertismentModal(true);
+                                                            setPostID(post.id);
+                                                        }}
+                                                    >
+                                                        <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )
+                                    }
+
+
+
                                 </div>
                             </div>
                         ))}
 
+                        <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
+                            <div className="my-sm-5 py-sm-5 text-center">
+                                <i className="display-1 text-secondary bi bi-card-list" />
+                                <h5 className="mt-2 mb-3 text-body text-muted fw-bold">No More Posts to Show</h5>
+                            </div>
+                        </div>
 
                     </div>
 
@@ -1860,6 +2257,105 @@ export default function UserProfileCard({ params }) {
 
                 </div>
             </div>
+
+            {
+                showEditPostModal && (
+                    <EditPostModal
+                        showEditPostModal={showEditPostModal}
+                        setShowEditPostModal={setShowEditPostModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                        postID={postID}
+                    />
+                )
+            }
+
+            {
+                showEnableDisableCommentsModal && (
+                    <EnableDisableCommentsModal
+                        showEnableDisableCommentsModal={showEnableDisableCommentsModal}
+                        setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+
+                    />
+                )}
+
+
+            {
+                showReportPostModal && (
+                    <ReportPostModal
+
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showReportPostModal={showReportPostModal}
+                        setShowReportPostModal={setShowReportPostModal}
+                    />
+                )}
+
+
+            {
+                showSavePostModal && (
+                    <SavePostModal
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showSavePostModal={showSavePostModal}
+                        setShowSavePostModal={setShowSavePostModal}
+                    />
+                )}
+
+            {
+                donationModal && (
+                    <MakeDonationModal
+                        donationID={donationID}
+                        donationModal={donationModal}
+                        setDonationModal={setDonationModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                    />
+                )
+
+            }
+
+
+            {
+                pollModal &&
+                (
+                    <PostPollModal
+                        pollModal={pollModal}
+                        setPollModal={setPollModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                        newsFeed="newsFeed"
+                        privacy={privacy}
+                    />
+                )
+
+            }
+
+            {
+                fundingModal && (
+                    <FundingModal
+                        fundingModal={fundingModal}
+                        setFundingModal={setFundingModal}
+                        uploadPost={uploadPost}
+                    />
+                )
+            }
+
+            {
+                sharePostTimelineModal && (
+                    <SharePostTimelineModal
+                        sharePostTimelineModal={sharePostTimelineModal}
+                        setShareShowTimelineModal={setShareShowTimelineModal}
+                        postID={postID}
+                    />
+                )
+            }
+
         </>
     );
 }

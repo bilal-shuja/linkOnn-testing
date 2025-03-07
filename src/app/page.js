@@ -2,13 +2,20 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 const MyPage = () => {
   const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      router.push("/pages/newsfeed");
+      const token = Cookies.get("token");   
+
+      if (token) {
+        router.push("/pages/newsfeed");
+      } else {
+        router.push("/auth/sign-in"); 
+      }
     }
   }, [router]);
 

@@ -1,15 +1,24 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
-
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-
+import Greatjob from "../Modals/GreatJob/GreatJob";
+import CupofCoffee from "../Modals/CupOfCoffee/CupofCoffee";
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import EditPostModal from "../Modals/EditPostModal";
+import ReportPostModal from "../Modals/ReportPost";
+import EnableDisableCommentsModal from "../Modals/EnableDisableCommentsModal";
+import SavePostModal from "../Modals/SaveUnsavePost";
+import useConfirmationToast from "../Modals/useConfirmationToast";
+import { ReactionBarSelector } from '@charkour/react-reactions';
+import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
+import ReadMoreLess from 'react-read-more-less';
+
 
 export default function VideoFeed() {
 
@@ -18,6 +27,7 @@ export default function VideoFeed() {
     const [lastPostId, setLastPostId] = useState(0);
     const [limit] = useState(5);
     const [page, setPage] = useState(1);
+    const [userId, setUserId] = useState(null);
     const [noMorePosts, setNoMorePosts] = useState(false);
     const [showList, setShowList] = useState(false);
     const [commentText, setCommentText] = useState({});
@@ -28,7 +38,53 @@ export default function VideoFeed() {
     const [repliesData, setRepliesData] = useState({});
     const [showReplyInput, setShowReplyInput] = useState({});
     const [commentreplyText, setCommentreplyText] = useState({});
+    const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+    const [activeGreatJobId, setActiveGreatJobId] = useState(null);
     const api = createAPI();
+    const [showEditPostModal, setShowEditPostModal] = useState(false);
+    const [postID, setPostID] = useState("")
+    const [showEnableDisableCommentsModal, setShowEnableDisableCommentsModal] = useState(false);
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+    const [postReactions, setPostReactions] = useState({});
+    const [activeReactionPost, setActiveReactionPost] = useState(null);
+    const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
+    const settings = useSiteSettings()
+
+    const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
+
+
+    const reactionEmojis = {
+        satisfaction: "👍",
+        love: "❤️",
+        happy: "😂",
+        surprise: "😮",
+        sad: "😢",
+        angry: "😡"
+    };
+
+    const reactionValues = {
+        satisfaction: 1,
+        love: 2,
+        happy: 3,
+        surprise: 4,
+        sad: 5,
+        angry: 6
+    };
+
+
+    const handleReactionSelect = (reaction, postId) => {
+        const updatedReactions = {
+            ...postReactions,
+            [postId]: reactionEmojis[reaction] || "😊"
+        };
+
+        LikePost(postId, reactionValues[reaction] || 0);
+
+        setPostReactions(updatedReactions);
+        setActiveReactionPost(null);
+    };
+
 
     const handlePostDelete = (postId) => {
         showConfirmationToast([postId]);
@@ -68,6 +124,7 @@ export default function VideoFeed() {
     const fetchPosts = async (isInitialLoad = true) => {
         try {
             setLoading(true);
+
             const response = await api.post("/api/post/newsfeed", {
                 limit,
                 last_post_id: lastPostId,
@@ -77,13 +134,22 @@ export default function VideoFeed() {
             if (response.data && Array.isArray(response.data.data)) {
                 const newPosts = response.data.data;
 
+                // If no new posts are returned, mark noMorePosts as true
+                if (newPosts.length === 0) {
+                    setNoMorePosts(true);
+                    return; // Exit early since there are no new posts
+                }
+
                 if (newPosts.length > 0) {
                     const lastPost = newPosts[newPosts.length - 1];
                     setLastPostId(lastPost.id);
                 }
 
+                // If fewer posts are returned than the limit, there might be no more posts
                 if (newPosts.length < limit) {
                     setNoMorePosts(true);
+                } else {
+                    setNoMorePosts(false); // Reset when new posts are still available
                 }
 
                 setPosts((prevPosts) => {
@@ -101,11 +167,12 @@ export default function VideoFeed() {
                 toast.error("Invalid data format received from API.");
             }
         } catch (error) {
-            toast.error("An error occurred while fetching data.")
+            toast.error("An error occurred while fetching data.");
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleScroll = () => {
         if (loading || noMorePosts) return;
@@ -129,6 +196,12 @@ export default function VideoFeed() {
         };
     }, [page]);
 
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUserId = localStorage.getItem("userid");
+            setUserId(storedUserId);
+        }
+    }, []);
 
     const handleCommentSubmit = async (postId) => {
         const comment = commentText[postId] || "";
@@ -344,19 +417,52 @@ export default function VideoFeed() {
         }
     };
 
-    const LikePost = async (postId) => {
+    const LikePost = async (postId, reactionType) => {
+
         try {
             const response = await api.post("/api/post/action", {
                 post_id: postId,
                 action: "reaction",
-                reaction_type: 1,
+                reaction_type: reactionType,
             });
 
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
+            if (response.data.code === "200") {
+                setPosts(prevPosts =>
+                    prevPosts.map(post => {
+                        if (post.id === postId) {
+                            return {
+                                ...post,
+                                reaction: {
+                                    is_reacted: true,
+                                    reaction_type: reactionType,
+                                    count: post.reaction?.is_reacted
+                                        ? post.reaction.count
+                                        : (post.reaction?.count || 0) + 1,
+                                    image: post.reaction?.image || "",
+                                    color: post.reaction?.color || "",
+                                    text: post.reaction?.text || ""
+                                }
+                            };
+                        }
+                        return post;
+                    })
+                );
 
-            } else {
-                toast.error(response.data.message)
+
+                const reactionKey = Object.keys(reactionValues).find(
+                    key => reactionValues[key] === reactionType
+                );
+
+                if (reactionKey) {
+                    setPostReactions(prevReactions => ({
+                        ...prevReactions,
+                        [postId]: reactionEmojis[reactionKey]
+                    }));
+                }
+            }
+
+            else {
+                toast.error(response.data.message);
             }
         } catch (error) {
             toast.error("Error while reacting to the Post");
@@ -367,6 +473,26 @@ export default function VideoFeed() {
         navigator.clipboard.writeText(link);
         toast.success("Link copied successfully!");
     };
+
+    // Function to open/close Cup of Coffee modal
+    const openModalCupCoffee = (id) => {
+        setActiveCupCoffeeId(id);
+        setActiveGreatJobId(null); // Ensure other modal closes
+    };
+    const closeModalCupCoffee = () => {
+        setActiveCupCoffeeId(null);
+    };
+
+    // Function to open/close Great Job modal
+    const openModalGreatJob = (id) => {
+        setActiveGreatJobId(id);
+        setActiveCupCoffeeId(null); // Ensure other modal closes
+    };
+    const closeModalGreatJob = () => {
+        setActiveGreatJobId(null);
+    };
+
+    if (!settings) return null
 
     return (
         <div>
@@ -380,29 +506,25 @@ export default function VideoFeed() {
 
                         <div className="col-md-6 p-3">
 
-                            {posts.length === 0 && !loading && (
-                                <p className="text-center">No posts found.</p>
-                            )}
-
                             {posts.map((post, index) => (
                                 <div
                                     key={`${post.id}-${index}`}
-                                    className="card mb-4 shadow-lg border-0 rounded-1"
+                                    className="card mb-2 shadow-lg border-0 rounded-1"
                                 >
                                     <div className="card-body">
                                         <div className="d-flex align-items-center justify-content-between">
                                             <div className="d-flex align-items-center">
                                                 <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Link href="#">
-                                                        <Image
-                                                            className="avatar-img rounded-circle"
-                                                            src={post.user.avatar}
-                                                            alt="User Avatar"
-                                                            width={50}
-                                                            height={50}
-                                                            style={{ objectFit: 'cover' }}
-                                                        />
-                                                    </Link>
+
+                                                    <Image
+                                                        className="avatar-img rounded-circle"
+                                                        src={post.user.avatar || "/assets/images/placeholder-image.png"}
+                                                        alt="User Avatar"
+                                                        width={50}
+                                                        height={50}
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
+
 
                                                     {post.user.is_verified === '1' && (
                                                         <div
@@ -425,14 +547,54 @@ export default function VideoFeed() {
 
                                                 <div className="mx-2">
                                                     <h6 className="card-title">
-                                                        {post.user.first_name} {post.user.last_name}
-                                                        {post.post_location &&
-                                                            post.post_location !== "" && (
-                                                                <span className="text-primary">
-                                                                    <small className="text-dark"> is in </small>
-                                                                    {post.post_location}
-                                                                </span>
-                                                            )}
+                                                        <span
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                                        >
+                                                            {post.user.first_name} {post.user.last_name}
+                                                        </span>
+
+                                                        {post.post_location && post.post_location !== "" && (
+                                                            <span className="text-primary">
+                                                                <small className="text-dark"> is in </small> {post.post_location}
+                                                            </span>
+                                                        )}
+                                                        {(post.group || post.page) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
+
+                                                        {post.group &&
+                                                            <span
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                                            >
+                                                                {post.group.group_title}
+                                                            </span>
+                                                        }
+
+                                                        {post.page &&
+                                                            <span
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/page/myPageTimeline/${post.group_id}`)}
+                                                            >
+                                                                {post.page.page_title}
+                                                            </span>}
                                                     </h6>
                                                     <small className="text-muted lead-font-size">
                                                         {post.created_human}
@@ -444,61 +606,132 @@ export default function VideoFeed() {
                                                     <button
                                                         className="btn border-0"
                                                         type="button"
-                                                        id="dropdownMenuButton2"
+                                                        id={`dropdownMenuButton-${post.id}`}
                                                         data-bs-toggle="dropdown"
                                                         aria-expanded="false"
                                                     >
                                                         <i className="bi bi-caret-down"></i>
                                                     </button>
-                                                    <ul
-                                                        className="dropdown-menu dropdown-menu-light"
-                                                        aria-labelledby="dropdownMenuButton2"
-                                                    >
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-bookmark pe-2"></i> Save
-                                                                post
-                                                            </Link>
-                                                        </li>
-                                                        <li>
-                                                            <hr className="dropdown-divider" />
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-flag pe-2"></i> Report Post
-                                                            </Link>
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                                                Open post in new tab
-                                                            </Link>
-                                                        </li>
-                                                        {post.user.id == userdata.data.id && (
+
+                                                    {post.user.id !== userdata.data.id && (
+                                                        <ul
+                                                            className="dropdown-menu dropdown-menu-light"
+                                                            aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                        >
+                                                            <li className="align-items-center d-flex">
+                                                                <button className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowSavePostModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-bookmark pe-2"></i>
+                                                                    {post.is_saved === false ? "Save Post" : "Unsave Post"}
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <hr className="dropdown-divider" />
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <button className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowReportPostModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-flag pe-2"></i> Report Post
+                                                                </button>
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <Link
+                                                                    href={`/pages/openPostInNewTab/${post.id}`}
+                                                                    target="_blank" rel="noopener noreferrer"
+                                                                    className="text-decoration-none dropdown-item text-secondary">
+                                                                    <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                                </Link>
+                                                            </li>
+                                                        </ul>
+                                                    )}
+
+                                                    {post.user.id === userdata.data.id && (
+                                                        <ul
+                                                            className="dropdown-menu dropdown-menu-light"
+                                                            aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                        >
+
+                                                            <li className="align-items-center d-flex">
+                                                                <button
+                                                                    className="text-decoration-none dropdown-item text-secondary d-flex align-items-center"
+                                                                    onClick={() => {
+                                                                        setShowEnableDisableCommentsModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    {
+                                                                        post.comments_status === '1' ?
+                                                                            <>
+                                                                                <i className="bi bi-chat-left-text pe-2"></i> <span>Disable Comments</span>
+                                                                            </>
+                                                                            :
+                                                                            <>
+                                                                                <i className="bi bi-chat-left-text-fill pe-2"></i> <span>Enable Comments</span>
+                                                                            </>
+
+
+                                                                    }
+
+                                                                </button>
+                                                            </li>
+
+
+
+                                                            <li className="align-items-center d-flex">
+                                                                {post.post_type !== "donation" ? (
+                                                                    <button
+                                                                        className="text-decoration-none dropdown-item text-secondary"
+                                                                        onClick={() => {
+                                                                            setShowEditPostModal(true);
+                                                                            setPostID({ id: post.id, post_text: post.post_text });
+                                                                        }}
+                                                                    >
+                                                                        <i className="bi bi-pencil-fill fa-fw pe-2"></i> Edit Post
+                                                                    </button>
+                                                                ) : (
+                                                                    <Link className="text-decoration-none dropdown-item text-secondary" href={`/pages/Fundingslist/${post.id}`}>
+                                                                        <i className="bi bi-cash fa-fw pe-2"></i> Fundings
+                                                                    </Link>
+                                                                )}
+                                                            </li>
+
                                                             <li className="align-items-center d-flex">
                                                                 <button
                                                                     className="btn dropdown-item text-secondary"
                                                                     onClick={() => handlePostDelete(post.id)}
                                                                 >
-                                                                    <i className="bi bi-trash3 pe-2"></i>
-                                                                    Delete Post
+                                                                    <i className="bi bi-trash3 pe-2"></i> Delete Post
                                                                 </button>
                                                             </li>
-                                                        )}
-                                                    </ul>
+
+                                                            <li>
+                                                                <hr className="dropdown-divider" />
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <Link
+                                                                    href={`/pages/openPostInNewTab/${post.id}`}
+                                                                    target="_blank" rel="noopener noreferrer"
+                                                                    className="text-decoration-none dropdown-item text-secondary">
+                                                                    <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                                </Link>
+                                                            </li>
+                                                        </ul>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
-                                        <hr className="my-2 text-muted" />
+                                        <hr className="my-2 text-muted post-divider" />
 
                                         <p> {post.post_text} </p>
 
@@ -506,15 +739,11 @@ export default function VideoFeed() {
                                             {post.video && (
                                                 <div
                                                     className="media-container mt-1"
-                                                    style={{ width: "100%", height: "auto" }}
                                                 >
                                                     <video
                                                         controls
-                                                        style={{
-                                                            objectFit: "cover",
-                                                            width: "100%",
-                                                            height: "auto",
-                                                        }}
+                                                        className="w-100 rounded"
+                                                        style={{ maxHeight: '400px', objectFit: 'contain' }}
                                                     >
                                                         <source
                                                             src={post.video.media_path}
@@ -526,54 +755,93 @@ export default function VideoFeed() {
                                             )}
                                         </div>
 
-                                        <div className="d-flex justify-content-between align-items-center mb-2 mt-5 px-3">
-                                            <div className="d-flex align-items-center">
-                                                <span className="me-2">
+                                        <div className="post-card-info">
+                                            {/* Reaction Section */}
+                                            <div className="post-card-reactions">
+                                                <span className="post-card-reaction-count">
                                                     {post.reaction ? post.reaction.count || 0 : 0}
                                                 </span>
-                                                <i className="bi bi-hand-thumbs-up"></i>
+                                                <i className="bi bi-hand-thumbs-up post-card-icon reaction-icon"></i>
                                             </div>
-                                            <div className="d-flex align-items-center text-muted">
-                                                <span className="me-3">
-                                                    <i className="bi bi-eye me-1"></i>
+
+                                            {/* Post Engagement Stats */}
+                                            <div className="post-card-stats">
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-eye post-card-icon"></i>
                                                     {post.view_count || 0}
                                                 </span>
-                                                <span className="me-3">
-                                                    <i className="bi bi-chat-dots me-1"></i>
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-chat-dots post-card-icon"></i>
                                                     {post.comment_count || 0} comments
                                                 </span>
-                                                <span>
-                                                    <i className="bi bi-share me-1"></i>
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-share post-card-icon"></i>
                                                     {post.share_count || 0} Shares
                                                 </span>
                                             </div>
                                         </div>
-                                        <hr className="my-1" />
 
-                                        <div className="d-flex justify-content-between">
-                                            <button
-                                                className="btn border-0 d-flex align-items-center"
-                                                onClick={() => LikePost(post.id)}
-                                            >
-                                                <i className="bi bi-emoji-smile me-2"></i> Reaction
-                                            </button>
+
+                                        <hr className="post-divider" />
+
+                                        <div className="post-actions">
+                                            <div style={{ position: "relative", display: "inline-block" }}>
+                                                <button
+                                                    className="post-action-btn"
+                                                    onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                    onMouseLeave={() => setActiveReactionPost(null)}
+                                                    onClick={() => {
+                                                        setActiveReactionPost(activeReactionPost === post.id ? null : post.id);
+                                                    }}
+                                                >
+                                                    <span style={{ fontSize: "18px", marginRight: "8px" }}>
+
+                                                        {postReactions[post.id] || (post.reaction?.reaction_type ?
+                                                            reactionEmojis[
+                                                            Object.keys(reactionValues).find(
+                                                                key => reactionValues[key] === Number(post.reaction.reaction_type)
+                                                            )
+                                                            ] : "😊")}
+                                                    </span>
+                                                    Reaction
+                                                </button>
+
+                                                {activeReactionPost === post.id && (
+                                                    <div
+                                                        style={{
+                                                            position: "absolute",
+                                                            bottom: "100%",
+                                                            left: "0",
+                                                            zIndex: 1000,
+                                                            backgroundColor: "white",
+                                                            borderRadius: "5px",
+                                                        }}
+                                                        onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                        onMouseLeave={() => setActiveReactionPost(null)}
+                                                    >
+                                                        <ReactionBarSelector
+                                                            onSelect={(reaction) => handleReactionSelect(reaction, post.id)}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
 
                                             <button
-                                                className="btn border-0 d-flex align-items-center"
+                                                className="post-action-btn"
                                                 onClick={() => handleCommentToggle(post.id)}
                                             >
-                                                <i className="bi bi-chat me-2"></i> Comments
+                                                <i className="bi bi-chat"></i> Comments
                                             </button>
 
-                                            <div className="dropdown">
+                                            <div className="post-dropdown">
                                                 <button
-                                                    className="btn border-0"
+                                                    className="post-action-btn dropdown-toggle"
                                                     type="button"
-                                                    id="dropdownMenuButton3"
+                                                    id={`dropdownMenuButton-${post.id}`} // UNIQUE ID
                                                     data-bs-toggle="dropdown"
                                                     aria-expanded="false"
                                                 >
-                                                    <i className="bi bi-share me-2"></i> Share
+                                                    <i className="bi bi-share"></i> Share
                                                 </button>
 
                                                 <ul
@@ -613,17 +881,21 @@ export default function VideoFeed() {
                                                             Linkedln
                                                         </Link>
                                                     </li>
+
                                                     <li>
                                                         <hr className="dropdown-divider" />
                                                     </li>
                                                     <li className=" align-items-center d-flex">
-                                                        <Link
+                                                        <button
                                                             className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                            href="#"
+                                                            onClick={() => {
+                                                                setShareShowTimelineModal(true)
+                                                                setPostID(post.id)
+                                                            }}
                                                         >
                                                             <i className="bi bi-bookmark-check pe-2"></i> Post
                                                             on Timeline
-                                                        </Link>
+                                                        </button>
                                                     </li>
                                                     <li className=" align-items-center d-flex">
                                                         <span
@@ -634,35 +906,61 @@ export default function VideoFeed() {
                                                         </span>
                                                     </li>
                                                 </ul>
+
                                             </div>
+
                                         </div>
 
-                                        <hr className="my-1" />
+                                        <hr className="post-divider" />
 
                                         <div className="d-flex mb-3 mt-2">
-                                            <button
-                                                className="btn me-2 d-flex align-items-center rounded-1"
-                                                style={{
-                                                    backgroundColor: "#C19A6B",
-                                                    borderRadius: "10px",
-                                                    color: "#fff",
-                                                }}
-                                            >
-                                                <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                            </button>
-                                            <button className="btn btn-danger d-flex align-items-center rounded-1">
-                                                <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                            </button>
+                                            {settings["chck-cup_of_coffee"] === "1" &&
+                                                userId &&
+                                                post.user_id !== userId && (
+                                                    <button
+                                                        className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                        onClick={() => openModalCupCoffee(post.id)}
+                                                        style={{
+                                                            backgroundColor: "#A87F50",
+                                                            borderRadius: "10px",
+                                                            color: "#fff",
+                                                        }}
+                                                    >
+                                                        <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                    </button>
+                                                )}
+
+
+                                            {activeCupCoffeeId === post.id && (
+                                                <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                            )}
+
+
+                                            {settings["chck-great_job"] === "1" &&
+                                                userId && post.user_id !== userId && (
+                                                    <button
+                                                        className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                                                        onClick={() => openModalGreatJob(post.id)}
+                                                    >
+                                                        <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                    </button>
+                                                )}
+
+
+                                            {activeGreatJobId === post.id && (
+                                                <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                            )}
+
                                         </div>
 
-                                        {showComments[post.id] && (
+                                        {post.comments_status === "1" && showComments[post.id] ? (
                                             <div className="mt-2">
                                                 {comments[post.id] && comments[post.id].length > 0 ? (
                                                     comments[post.id].map((comment) => (
                                                         <div key={comment.id} className="mb-3">
                                                             <div className="d-flex">
                                                                 <Image
-                                                                    src={comment.avatar}
+                                                                    src={comment.avatar || "/assets/images/userplaceholder.png"}
                                                                     alt="Profile"
                                                                     className="rounded-circle me-1 mt-2"
                                                                     width={40}
@@ -737,7 +1035,7 @@ export default function VideoFeed() {
                                                                                     className="d-flex mb-2 mx-5"
                                                                                 >
                                                                                     <Image
-                                                                                        src={reply.avatar}
+                                                                                        src={reply.avatar || "/assets/images/userplaceholder.png"}
                                                                                         alt="Profile"
                                                                                         className="rounded-circle me-1 mt-2"
                                                                                         width={40}
@@ -836,54 +1134,212 @@ export default function VideoFeed() {
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
+                                        )
+                                            :
+                                            null
+                                        }
 
-                                        <div className="d-flex align-items-center mt-3">
-                                            <Image
-                                                src={userdata.data.avatar}
-                                                alt="User Avatar"
-                                                className="rounded-5"
-                                                width={40}
-                                                height={40}
-                                            />
-                                            <form className="position-relative w-100 ms-2">
-                                                <input
-                                                    type="text"
-                                                    className="form-control bg-light border-1 rounded-2"
-                                                    placeholder="Add a comment..."
-                                                    value={commentText[post.id] || ""}
-                                                    onChange={(e) => handleCommentTextChange(e, post.id)}
-                                                />
-                                                <button
-                                                    className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
-                                                    type="button"
-                                                    onClick={() => handleCommentSubmit(post.id)}
-                                                >
-                                                    <i className="bi bi-send"></i>
-                                                </button>
-                                            </form>
-                                        </div>
+
+                                        {
+                                            post?.comments_status === "1" && (
+                                                <div className="d-flex align-items-center mt-3">
+                                                    <Image
+                                                        src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
+                                                        alt="User Avatar"
+                                                        className="rounded-5"
+                                                        width={40}
+                                                        height={40}
+                                                    />
+                                                    <form className="position-relative w-100 ms-2">
+                                                        <input
+                                                            type="text"
+                                                            className="form-control bg-light border-1 rounded-2"
+                                                            placeholder="Add a comment..."
+                                                            value={commentText[post.id] || ""}
+                                                            onChange={(e) => handleCommentTextChange(e, post.id)}
+                                                        />
+                                                        <button
+                                                            className="btn btn-transparent position-absolute top-50 end-0 translate-middle-y"
+                                                            type="button"
+                                                            onClick={() => handleCommentSubmit(post.id)}
+                                                        >
+                                                            <i className="bi bi-send"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            )
+                                        }
+
+
+
+
+                                        <hr />
+
+                                        {
+                                            post?.post_advertisement ? (
+
+
+                                                <div className="card mb-3 mt-4 p-2 border-secondary">
+                                                    <div className="d-flex flex-column flex-md-row  align-items-center align-items-md-start">
+                                                        <div className="flex-shrink-0 mb-3 mb-md-0 align-self-center">
+                                                            <Image
+                                                                src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"}
+                                                                width={200}
+                                                                height={100}
+                                                                className="img-fluid rounded-4"
+                                                                alt="adv-img"
+                                                                style={{ objectFit: "conatin", }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex-grow-1 ms-md-3 align-self-center">
+                                                            <div className="card-body advertistment-details">
+                                                                <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none " target="_blank">{post?.post_advertisement.link}</a>
+                                                                <h5 className="card-title mb-lg-3">{post?.post_advertisement.title}</h5>
+                                                                <div className="card-text mb-lg-2">
+                                                                    {post?.post_advertisement.body ? (
+                                                                        <span>
+                                                                            <ReadMoreLess
+                                                                                charLimit={70}
+                                                                                readMoreText="read more"
+                                                                                readLessText="read less"
+                                                                            >
+                                                                                {post?.post_advertisement.body}
+                                                                            </ReadMoreLess>
+                                                                        </span>
+                                                                    ) : null}
+                                                                </div>
+                                                                <p className="card-text"><small className="text-body-secondary">{post?.post_advertisement.created_at.split(' ')[0]}</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            ) : null
+                                        }
+
+                                        {
+                                            userId !== post?.user_id && (
+                                                <>
+                                                    {/* <hr /> */}
+                                                    <div className="text-center mt-2">
+                                                        <button
+                                                            className="btn btn-outline-primary"
+                                                            onClick={() => {
+                                                                setShowAdvertismentModal(true);
+                                                                setPostID(post.id);
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+
+
                                     </div>
+
                                 </div>
                             ))}
-                            <div className="d-grid gap-2 col-3 mx-auto mt-4">
-                                {noMorePosts ? (
-                                    <button className="btn btn-primary" disabled>
-                                        No more posts
-                                    </button>
-                                ) : (
-                                    <button className="btn btn-primary" disabled={loading}>
-                                        {loading ? "Loading..." : ""}
-                                    </button>
-                                )}
+
+                            <div className="d-flex justify-content-center align-items-center">
+                                {loading ? (
+                                    <div className="d-flex justify-content-center align-items-center" style={{ height: "100px" }}>
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                ) : noMorePosts ? (
+                                    <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
+                                        <div className="my-sm-5 py-sm-5 text-center">
+                                            <i className="display-1 text-secondary bi bi-card-list" />
+                                            <h5 className="mt-2 mb-3 text-body text-muted fw-bold">No More Posts to Show</h5>
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
+
                         </div>
                         <div className="col-md-3 p-3 rounded">
                             <Leftnav />
                         </div>
                     </div>
+
+
                 </div>
             </div>
+            {
+                showEditPostModal && (
+                    <EditPostModal
+                        showEditPostModal={showEditPostModal}
+                        setShowEditPostModal={setShowEditPostModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                        postID={postID}
+                    />
+                )
+            }
+
+            {
+                showEnableDisableCommentsModal && (
+                    <EnableDisableCommentsModal
+                        showEnableDisableCommentsModal={showEnableDisableCommentsModal}
+                        setShowEnableDisableCommentsModal={setShowEnableDisableCommentsModal}
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+
+                    />
+                )}
+
+
+            {
+                showReportPostModal && (
+                    <ReportPostModal
+
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showReportPostModal={showReportPostModal}
+                        setShowReportPostModal={setShowReportPostModal}
+                    />
+                )}
+
+
+            {
+                showSavePostModal && (
+                    <SavePostModal
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showSavePostModal={showSavePostModal}
+                        setShowSavePostModal={setShowSavePostModal}
+                    />
+                )}
+
+            {
+                sharePostTimelineModal && (
+                    <SharePostTimelineModal
+                        sharePostTimelineModal={sharePostTimelineModal}
+                        setShareShowTimelineModal={setShareShowTimelineModal}
+                        postID={postID}
+                    />
+                )
+            }
+
+
+            {
+                showAdvertismentModal && (
+
+                    <AdvertismentModal
+                        showAdvertismentModal={showAdvertismentModal}
+                        setShowAdvertismentModal={setShowAdvertismentModal}
+                        postID={postID}
+                    />
+                )
+
+            }
+
         </div>
     );
 }

@@ -3,19 +3,33 @@
 import React, { useEffect, useState } from "react";
 import createAPI from "../../lib/axios";
 import Link from "next/link";
-
+import { ReactionBarSelector } from '@charkour/react-reactions';
 import Rightnav from "@/app/assets/components/rightnav/page";
 import Leftnav from "@/app/assets/components/leftnav/page";
 import Image from "next/image";
-
+import Greatjob from "../Modals/GreatJob/GreatJob";
+import CupofCoffee from "../Modals/CupOfCoffee/CupofCoffee";
+import AdvertismentModal from "@/app/pages/Modals/Advertisment/AdvertismentModal";
 import { toast } from "react-toastify";
+import ReportPostModal from "../Modals/ReportPost";
+import SavePostModal from "../Modals/SaveUnsavePost";
+import MakeDonationModal from "../Modals/MakeDonationModal";
+import UserImagesLayout from "../components/userImagesLayout";
+import SharePostTimelineModal from "../Modals/SharePostTimelineModal";
+import SharedPosts from "../components/sharedPosts";
+import { useRouter } from "next/navigation";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
+import ReadMoreLess from 'react-read-more-less';
+
 
 export default function Savedposts() {
 
+    const router = useRouter();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [lastPostId, setLastPostId] = useState(0);
+    const [userId, setUserId] = useState(null);
     const [limit] = useState(5);
     const [page, setPage] = useState(1);
     const [noMorePosts, setNoMorePosts] = useState(false);
@@ -29,22 +43,61 @@ export default function Savedposts() {
     const [commentreplyText, setCommentreplyText] = useState({});
     const [message, setMessage] = useState("");
     const [showList, setShowList] = useState(false);
-    const [donate, setDonate] = useState("");
-
+    const [activeCupCoffeeId, setActiveCupCoffeeId] = useState(null);
+    const [activeGreatJobId, setActiveGreatJobId] = useState(null);
+    const [postID, setPostID] = useState("")
+    const [showReportPostModal, setShowReportPostModal] = useState(false);
+    const [showSavePostModal, setShowSavePostModal] = useState(false);
+    const [donationModal, setDonationModal] = useState(false);
+    const [donationID, setDonationID] = useState("");
+    const [sharePostTimelineModal, setShareShowTimelineModal] = useState(false);
     const api = createAPI();
+    const [postReactions, setPostReactions] = useState({});
+    const [activeReactionPost, setActiveReactionPost] = useState(null);
+    const settings = useSiteSettings()
+
+    const [showAdvertismentModal, setShowAdvertismentModal] = useState(false)
+
+
+
+
+    const reactionEmojis = {
+        satisfaction: "👍",
+        love: "❤️",
+        happy: "😂",
+        surprise: "😮",
+        sad: "😢",
+        angry: "😡"
+    };
+
+    const reactionValues = {
+        satisfaction: 1,
+        love: 2,
+        happy: 3,
+        surprise: 4,
+        sad: 5,
+        angry: 6
+    };
+
+
+    const handleReactionSelect = (reaction, postId) => {
+        const updatedReactions = {
+            ...postReactions,
+            [postId]: reactionEmojis[reaction] || "😊"
+        };
+
+        LikePost(postId, reactionValues[reaction] || 0);
+
+        setPostReactions(updatedReactions);
+        setActiveReactionPost(null);
+    };
 
     const fetchPosts = async (isInitialLoad = true) => {
         try {
-            setLoading(true);
             const response = await api.get("/api/post/saved");
 
             if (response.data && Array.isArray(response.data.data)) {
                 const newPosts = response.data.data;
-
-                if (newPosts.length > 0) {
-                    const lastPost = newPosts[newPosts.length - 1];
-                    setLastPostId(lastPost.id);
-                }
 
                 if (newPosts.length < limit) {
                     setNoMorePosts(true);
@@ -66,10 +119,9 @@ export default function Savedposts() {
             }
         } catch (error) {
             toast.error("An error occurred while fetching data.");
-        } finally {
-            setLoading(false);
         }
     };
+
 
     const handleScroll = () => {
         if (loading || noMorePosts) return;
@@ -92,6 +144,13 @@ export default function Savedposts() {
             window.removeEventListener("scroll", handleScroll);
         };
     }, [page]);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUserId = localStorage.getItem("userid");
+            setUserId(storedUserId);
+        }
+    }, []);
 
 
     const handleCommentSubmit = async (postId) => {
@@ -308,41 +367,55 @@ export default function Savedposts() {
         }
     };
 
-    const LikePost = async (postId) => {
+    const LikePost = async (postId, reactionType) => {
+
         try {
             const response = await api.post("/api/post/action", {
                 post_id: postId,
                 action: "reaction",
-                reaction_type: 1,
+                reaction_type: reactionType,
             });
 
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
-                toast.error(`Error: ${response.data.message}`);
+            if (response.data.code === "200") {
+                setPosts(prevPosts =>
+                    prevPosts.map(post => {
+                        if (post.id === postId) {
+                            return {
+                                ...post,
+                                reaction: {
+                                    is_reacted: true,
+                                    reaction_type: reactionType,
+                                    count: post.reaction?.is_reacted
+                                        ? post.reaction.count
+                                        : (post.reaction?.count || 0) + 1,
+                                    image: post.reaction?.image || "",
+                                    color: post.reaction?.color || "",
+                                    text: post.reaction?.text || ""
+                                }
+                            };
+                        }
+                        return post;
+                    })
+                );
+
+
+                const reactionKey = Object.keys(reactionValues).find(
+                    key => reactionValues[key] === reactionType
+                );
+
+                if (reactionKey) {
+                    setPostReactions(prevReactions => ({
+                        ...prevReactions,
+                        [postId]: reactionEmojis[reactionKey]
+                    }));
+                }
             }
-        } catch (error) {
-            toast.error("Error while reacting to the Post");
-        }
-    };
 
-    const donateAmount = (e) => {
-        setDonate(e.target.value);
-    };
-
-    const handleDonationsend = async (postDonationId) => {
-        try {
-            const response = await api.post("/api/donate", {
-                fund_id: postDonationId,
-                amount: donate,
-            });
-            if (response.data.code == "200") {
-                toast.success(response.data.message);
-            } else {
+            else {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            toast.error("Error while donating Fund.");
+            toast.error("Error while reacting to the Post");
         }
     };
 
@@ -391,10 +464,52 @@ export default function Savedposts() {
         toast.success("Link copied successfully!");
     };
 
+    // Function to open/close Cup of Coffee modal
+    const openModalCupCoffee = (id) => {
+        setActiveCupCoffeeId(id);
+        setActiveGreatJobId(null); // Ensure other modal closes
+    };
+    const closeModalCupCoffee = () => {
+        setActiveCupCoffeeId(null);
+    };
+
+    // Function to open/close Great Job modal
+    const openModalGreatJob = (id) => {
+        setActiveGreatJobId(id);
+        setActiveCupCoffeeId(null); // Ensure other modal closes
+    };
+    const closeModalGreatJob = () => {
+        setActiveGreatJobId(null);
+    };
+
+    const colorMap = {
+        '23jo': '#FFFFFF',
+        '23ju': '#C600FF',
+        '_2j78': '#111111',
+        '_2j79': 'linear-gradient(45deg, rgb(255, 0, 71) 0%, rgb(44, 52, 199) 100%)',
+        '_2j80': 'linear-gradient(45deg, rgb(252, 54, 253) 0%, rgb(93, 63, 218) 100%)',
+        '_2j81': 'linear-gradient(45deg, rgb(93, 99, 116) 0%, rgb(22, 24, 29) 100%)',
+        '_2j82': '#00A859',
+        '_2j83': '#0098DA',
+        '_2j84': '#3E4095',
+        '_2j85': '#4B4F56',
+        '_2j86': '#161616',
+        '_2j87': 'url(https://images.socioon.com/assets/images/post/bgpst1.png)',
+        '_2j88': 'url(https://images.socioon.com/assets/images/post/bgpst2.png)',
+        '_2j89': 'url(https://images.socioon.com/assets/images/post/bgpst3.png)',
+        '_2j90': 'url(https://images.socioon.com/assets/images/post/bgpst4.png)',
+    };
+
+    const getDisplayColor = (code) => {
+        return colorMap[code] || code;
+    };
+
+    if (!settings) return null
+
     return (
         <div>
 
-            <div className="container-fluid bg-light">
+            <div className="container-fluid">
                 <div className="container mt-3 pt-5">
                     <div className="row">
                         <div className="col-md-3 p-3 rounded">
@@ -403,9 +518,9 @@ export default function Savedposts() {
 
                         <div className="col-md-6 p-3">
 
-                            {posts.length === 0 && !loading && (
+                            {/* {posts.length === 0 && !loading && (
                                 <p className="text-center">No posts found.</p>
-                            )}
+                            )} */}
 
                             {error && <p className="text-center text-danger">{error}</p>}
 
@@ -419,16 +534,16 @@ export default function Savedposts() {
                                             <div className="d-flex align-items-center">
 
                                                 <div className="avatar-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Link href="#">
-                                                        <Image
-                                                            className="avatar-img rounded-circle"
-                                                            src={post.user.avatar}
-                                                            alt="User Avatar"
-                                                            width={50}
-                                                            height={50}
-                                                            style={{ objectFit: 'cover' }}
-                                                        />
-                                                    </Link>
+
+                                                    <Image
+                                                        className="avatar-img rounded-circle"
+                                                        src={post.user.avatar || "/assets/images/userplaceholder.png"}
+                                                        alt="User Avatar"
+                                                        width={50}
+                                                        height={50}
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
+
 
                                                     {post.user.is_verified === '1' && (
                                                         <div
@@ -451,13 +566,54 @@ export default function Savedposts() {
 
                                                 <div className="mx-2">
                                                     <h6 className="card-title">
-                                                        {post.user.first_name} {post.user.last_name}
+                                                        <span
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                color: 'inherit',
+                                                                transition: 'color 0.3s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                            onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                                        >
+                                                            {post.user.first_name} {post.user.last_name}
+                                                        </span>
+
                                                         {post.post_location && post.post_location !== "" && (
                                                             <span className="text-primary">
-                                                                <small className="text-dark"> is in </small>
-                                                                {post.post_location}
+                                                                <small className="text-dark"> is in </small> {post.post_location}
                                                             </span>
                                                         )}
+                                                        {(post.group || post.page) && <i className="bi bi-arrow-right fa-fw mx-2"></i>}
+
+                                                        {post.group &&
+                                                            <span
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/UserProfile/timeline/${post.user.id}`)}
+                                                            >
+                                                                {post.group.group_title}
+                                                            </span>
+                                                        }
+
+                                                        {post.page &&
+                                                            <span
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/page/myPageTimeline/${post.group_id}`)}
+                                                            >
+                                                                {post.page.page_title}
+                                                            </span>}
                                                     </h6>
                                                     <small className="text-secondary">
                                                         {post.created_human} -
@@ -489,352 +645,416 @@ export default function Savedposts() {
                                                     <button
                                                         className="btn border-0"
                                                         type="button"
-                                                        id="dropdownMenuButton2"
+                                                        id={`dropdownMenuButton-${post.id}`}
                                                         data-bs-toggle="dropdown"
                                                         aria-expanded="false"
                                                     >
                                                         <i className="bi bi-caret-down"></i>
                                                     </button>
-                                                    <ul
-                                                        className="dropdown-menu dropdown-menu-light"
-                                                        aria-labelledby="dropdownMenuButton2"
-                                                    >
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-bookmark pe-2"></i> Unsave
-                                                                post
-                                                            </Link>
-                                                        </li>
-                                                        <li>
-                                                            <hr className="dropdown-divider" />
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-flag pe-2"></i> Report Post
-                                                            </Link>
-                                                        </li>
-                                                        <li className=" align-items-center d-flex">
-                                                            <Link
-                                                                className="text-decoration-none dropdown-item text-secondary"
-                                                                href="#"
-                                                            >
-                                                                <i className="bi bi-box-arrow-up-right pe-2"></i>
-                                                                Open post in new tab
-                                                            </Link>
-                                                        </li>
-                                                    </ul>
+
+                                                    {post.user.id !== userdata.data.id && (
+                                                        <ul
+                                                            className="dropdown-menu dropdown-menu-light"
+                                                            aria-labelledby={`dropdownMenuButton-${post.id}`}
+                                                        >
+                                                            <li className="align-items-center d-flex">
+                                                                <button className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowSavePostModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-bookmark pe-2"></i>
+                                                                    {post.is_saved === false ? "Save Post" : "Unsave Post"}
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <hr className="dropdown-divider" />
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <button className="text-decoration-none dropdown-item text-secondary"
+                                                                    onClick={() => {
+                                                                        setShowReportPostModal(true)
+                                                                        setPostID(post.id)
+
+                                                                    }}
+                                                                >
+                                                                    <i className="bi bi-flag pe-2"></i> Report Post
+                                                                </button>
+                                                            </li>
+                                                            <li className="align-items-center d-flex">
+                                                                <Link
+                                                                    href={`/pages/openPostInNewTab/${post.id}`}
+                                                                    target="_blank" rel="noopener noreferrer"
+                                                                    className="text-decoration-none dropdown-item text-secondary">
+                                                                    <i className="bi bi-box-arrow-up-right pe-2"></i> Open post in new tab
+                                                                </Link>
+                                                            </li>
+                                                        </ul>
+                                                    )}
+
                                                 </div>
                                             </div>
                                         </div>
-                                        <hr className="my-2 text-muted" />
 
-                                        {post.post_type !== "donation" && (
+                                        <hr className="my-2 post-divider" />
+
+                                        {
+                                            post.bg_color && (
+                                                <div className="card-body inner-bg-post d-flex justify-content-center flex-wrap mb-1 h-100"
+                                                    style={{
+                                                        background: getDisplayColor(post.bg_color),
+                                                        backgroundSize: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'cover' : 'auto',
+                                                        backgroundRepeat: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'no-repeat' : 'repeat',
+                                                        backgroundPosition: post.bg_color?.startsWith('_2j8') || post.bg_color?.startsWith('_2j9') ? 'center' : 'unset',
+                                                        padding: "220px 27px",
+                                                    }}
+                                                >
+                                                    <span className="text-dark fw-bold" style={{ fontSize: "1.5rem" }}>   {post.post_text} </span>
+                                                </div>
+                                            )
+
+                                        }
+
+                                        {post.post_type !== "donation" && !post.bg_color && (
                                             <p
-                                                className="mt-4"
+                                                className="mt-2 mx-2"
                                                 dangerouslySetInnerHTML={{ __html: post.post_text }}
                                             />
                                         )}
 
-                                        <div className="d-flex justify-content-center flex-wrap mb-3">
-                                            {post.poll && post.poll.poll_options && (
-                                                <div className="w-100">
-                                                    <ul className="list-unstyled">
-                                                        {post.poll.poll_options.map((option) => {
-                                                            const totalVotes =
-                                                                post.poll.poll_total_votes || 0;
-                                                            const percentage =
-                                                                totalVotes > 0
-                                                                    ? Math.round(
-                                                                        (option.no_of_votes / totalVotes) * 100
-                                                                    )
-                                                                    : 0;
+                                        {post.shared_post === null ?
 
-                                                            return (
-                                                                <li key={option.id} className="mb-3 w-100">
-                                                                    <div className="d-flex align-items-center justify-content-between">
-                                                                        <div
-                                                                            className="progress flex-grow-1"
-                                                                            style={{
-                                                                                height: "30px",
-                                                                                cursor: "pointer",
-                                                                            }}
-                                                                            onClick={() =>
-                                                                                handleVote(
-                                                                                    option.id,
-                                                                                    post.poll.id,
-                                                                                    post.id
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <div
-                                                                                className="progress-bar"
-                                                                                role="progressbar"
-                                                                                style={{
-                                                                                    width: `${percentage}%`,
-                                                                                    backgroundColor: "#66b3ff",
-                                                                                }}
-                                                                                aria-valuenow={percentage}
-                                                                                aria-valuemin="0"
-                                                                                aria-valuemax="100"
-                                                                            >
+                                            <>
+                                                <div className="d-flex justify-content-center flex-wrap">
+                                                    {post.poll && post.poll.poll_options && (
+                                                        <div className="w-100">
+                                                            <ul className="list-unstyled">
+                                                                {post.poll.poll_options.map((option) => {
+                                                                    const totalVotes =
+                                                                        post.poll.poll_total_votes || 0;
+                                                                    const percentage =
+                                                                        totalVotes > 0
+                                                                            ? Math.round(
+                                                                                (option.no_of_votes / totalVotes) * 100
+                                                                            )
+                                                                            : 0;
+
+                                                                    return (
+                                                                        <li key={option.id} className="mb-4 w-100">
+                                                                            <div className="d-flex align-items-center justify-content-between">
                                                                                 <div
-                                                                                    className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                                                    className="progress flex-grow-1"
                                                                                     style={{
-                                                                                        position: "absolute",
-                                                                                        overflow: "hidden",
-                                                                                        textOverflow: "ellipsis",
-                                                                                        whiteSpace: "nowrap",
+                                                                                        height: "30px",
+                                                                                        cursor: "pointer",
                                                                                     }}
+                                                                                    onClick={() =>
+                                                                                        handleVote(
+                                                                                            option.id,
+                                                                                            post.poll.id,
+                                                                                            post.id
+                                                                                        )
+                                                                                    }
                                                                                 >
-                                                                                    {option.option_text}
+                                                                                    <div
+                                                                                        className="progress-bar"
+                                                                                        role="progressbar"
+                                                                                        style={{
+                                                                                            width: `${percentage}%`,
+                                                                                            backgroundColor: "#66b3ff",
+                                                                                        }}
+                                                                                        aria-valuenow={percentage}
+                                                                                        aria-valuemin="0"
+                                                                                        aria-valuemax="100"
+                                                                                    >
+                                                                                        <div
+                                                                                            className="progress-text w-100 text-secondary fs-6 fw-bold"
+                                                                                            style={{
+                                                                                                position: "absolute",
+                                                                                                overflow: "hidden",
+                                                                                                textOverflow: "ellipsis",
+                                                                                                whiteSpace: "nowrap",
+                                                                                            }}
+                                                                                        >
+                                                                                            {option.option_text}
+                                                                                        </div>
+                                                                                    </div>
                                                                                 </div>
+                                                                                <span className="px-3">{percentage}%</span>
                                                                             </div>
-                                                                        </div>
-                                                                        <span className="px-3">{percentage}%</span>
-                                                                    </div>
-                                                                </li>
-                                                            );
-                                                        })}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="container mt-5">
-                                            {post.donation && (
-                                                <div>
-                                                    <Image
-                                                        src={post.donation.image}
-                                                        alt={post.donation.title}
-                                                        className="img-fluid"
-                                                        width={500}
-                                                        height={300}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
-
-                                                    <div className="card-body text-center">
-                                                        <h5 className="card-title">
-                                                            {post.donation.title}
-                                                        </h5>
-                                                        <p className="card-text">
-                                                            {post.donation.description}
-                                                        </p>
-                                                        <div className="progress mb-3">
-                                                            <div
-                                                                className="progress-bar"
-                                                                role="progressbar"
-                                                                style={{
-                                                                    width: `${(post.donation.collected_amount /
-                                                                        post.donation.amount) *
-                                                                        100
-                                                                        }%`,
-                                                                }}
-                                                                aria-valuenow={post.donation.collected_amount}
-                                                                aria-valuemin="0"
-                                                                aria-valuemax={post.donation.amount}
-                                                            ></div>
+                                                                        </li>
+                                                                    );
+                                                                })}
+                                                            </ul>
                                                         </div>
-                                                        <div className="d-flex align-items-center justify-content-between">
-                                                            <p className="text-muted">
-                                                                {post.donation.collected_amount} Collected
-                                                            </p>
-                                                            <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
-                                                            <button
-                                                                className="btn btn-primary btn-sm"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#DonateModal"
-                                                            >
-                                                                Donate
-                                                            </button>
-                                                        </div>
-                                                    </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
 
-                                        <div
-                                            className="modal fade"
-                                            id="DonateModal"
-                                            tabIndex="-1"
-                                            aria-labelledby="ModalLabel"
-                                            aria-hidden="true"
-                                        >
-                                            <div className="modal-dialog modal-dialog-centered">
-                                                <div className="modal-content">
-                                                    <div className="modal-header">
-                                                        <h5
-                                                            className="modal-title fw-semibold"
-                                                            id="fundModalLabel"
-                                                        >
-                                                            Donate Amount
-                                                        </h5>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-close"
-                                                            data-bs-dismiss="modal"
-                                                            aria-label="Close"
-                                                        ></button>
-                                                    </div>
-                                                    <div className="modal-body">
+                                                <div className="container mt-1">
+                                                    {post.donation && (
                                                         <div>
-                                                            <label className="form-label">Amount</label>
-                                                            <input
-                                                                type="number"
-                                                                className="form-control"
-                                                                value={donate}
-                                                                onChange={donateAmount}
+                                                            <Image
+                                                                src={post.donation.image || "/assets/images/placeholder-image.png"}
+                                                                alt={post.donation.title}
+                                                                width={500}
+                                                                height={300}
+                                                                className="img-fluid rounded"
+                                                                style={{
+                                                                    objectFit: "contain",
+                                                                    objectPosition: "center",
+                                                                    display: "block",
+                                                                    margin: "0 auto",
+                                                                }}
                                                             />
+
+
+                                                            <div className="card-body text-center">
+                                                                <h5 className="card-title">
+                                                                    {post.donation.title}
+                                                                </h5>
+                                                                <p className="card-text">
+                                                                    {post.donation.description}
+                                                                </p>
+                                                                <div className="progress mb-3">
+                                                                    <div
+                                                                        className="progress-bar"
+                                                                        role="progressbar"
+                                                                        style={{
+                                                                            width: `${(post.donation.collected_amount /
+                                                                                post.donation.amount) *
+                                                                                100
+                                                                                }%`,
+                                                                        }}
+                                                                        aria-valuenow={post.donation.collected_amount}
+                                                                        aria-valuemin="0"
+                                                                        aria-valuemax={post.donation.amount}
+                                                                    ></div>
+                                                                </div>
+                                                                <div className="d-flex align-items-center justify-content-between">
+                                                                    <p className="text-muted">
+                                                                        {post.donation.collected_amount} Collected
+                                                                    </p>
+                                                                    <p className="text-dark"> Required: <span className="fw-bold"> {post.donation.amount} </span> </p>
+
+                                                                    <button
+                                                                        className="btn btn-primary btn-sm"
+                                                                        onClick={() => {
+                                                                            setDonationModal(!donationModal)
+
+                                                                            setDonationID(post.donation.id)
+                                                                        }}
+                                                                    >
+                                                                        Donate
+                                                                    </button>
+
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="modal-footer">
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-primary"
-                                                            onClick={() =>
-                                                                handleDonationsend(post.donation.id)
-                                                            }
-                                                        >
-                                                            Save changes
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-dark"
-                                                            data-bs-dismiss="modal"
-                                                        >
-                                                            Close
-                                                        </button>
-                                                    </div>
+                                                    )}
                                                 </div>
+
+                                                <div className="d-flex flex-column align-items-center mb-3">
+
+                                                    <UserImagesLayout key={`${post.id}-${index}`} post={post} />
+
+                                                    {/* Event Section */}
+                                                    {post.event && post.event.cover && (
+                                                        <div className="w-100 text-center mt-2">
+                                                            <Image
+                                                                src={post.event.cover || "/assets/images/placeholder-image.png"}
+                                                                alt="Event Cover"
+                                                                width={500}
+                                                                height={300}
+                                                                className="img-fluid rounded"
+                                                                style={{ objectFit: "cover" }}
+                                                            />
+
+                                                            <h5 className="fw-bold mt-2"
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: 'inherit',
+                                                                    transition: 'color 0.3s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.target.style.color = 'blue'}
+                                                                onMouseLeave={(e) => e.target.style.color = 'inherit'}
+                                                                onClick={() => router.push(`/pages/Events/eventDetails/${post.event_id}`)}
+                                                            >
+                                                                {post.event.name}
+                                                            </h5>
+
+                                                            <span className="badge bg-primary rounded-pill mt-2 px-3 py-2">{post.event.start_date}</span>
+                                                        </div>
+                                                    )}
+
+                                                    {post.product && post.product.images.length > 0 && (
+                                                        <div className="w-100 mt-4 card shadow-sm border-0 rounded p-3">
+                                                            {/* Product Image */}
+                                                            <div className="text-center">
+                                                                <Image
+                                                                    src={post.product.images[0].image || "/assets/images/placeholder-image.png"}
+                                                                    alt={post.product.product_name}
+                                                                    width={600}
+                                                                    height={400}
+                                                                    className="img-fluid rounded"
+                                                                    style={{ objectFit: "cover", maxHeight: "300px" }}
+                                                                />
+                                                            </div>
+
+                                                            {/* Product Details */}
+                                                            <div className="card-body">
+                                                                <h5 className="fw-bold text-dark">{post.product.product_name}</h5>
+                                                                <hr className="mb-2" />
+
+                                                                <div className="row align-items-center">
+                                                                    <div className="col-md-9">
+                                                                        <p className="mb-1"><b>Price:</b> <span className="text-success fw-bold">{post.product.price} {post.product.currency}</span></p>
+                                                                        <p className="mb-1"><b>Category:</b> {post.product.category}</p>
+                                                                        <p className="mb-0 text-primary">
+                                                                            <i className="bi bi-geo-alt-fill"></i> {post.product.location}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <div className="col-md-3 text-end">
+                                                                        <Link href={`/pages/Marketplace/productdetails/${post.product.id}`}>
+                                                                            <button className="btn btn-primary rounded-pill px-3 py-2">
+                                                                                {userId === post.user_id ? "Edit Product" : "Buy Product"}
+                                                                            </button>
+                                                                        </Link>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Video Section */}
+                                                    {post.video && (
+                                                        <div className="w-100">
+                                                            <video controls className="w-100 rounded" style={{ maxHeight: '400px', objectFit: 'contain' }}>
+                                                                <source src={post.video.media_path} type="video/mp4" />
+                                                                Your browser does not support the video tag.
+                                                            </video>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Audio Section */}
+                                                    {post.audio && (
+                                                        <div className="w-100 mt-3">
+                                                            <audio controls className="w-100">
+                                                                <source src={post.audio.media_path} />
+                                                                Your browser does not support the audio tag.
+                                                            </audio>
+                                                        </div>
+                                                    )}
+
+                                                </div>
+
+                                            </>
+
+                                            :
+
+                                            post.shared_post && <SharedPosts sharedPost={post.shared_post} post={post} posts={posts} setPosts={setPosts} />
+
+                                        }
+
+                                        {post.parent_id !== "0" && !post.shared_post && (
+                                            <div className="alert alert-warning" role="alert">
+                                                <strong>This content is not available</strong>
+                                                <p className="mb-0" style={{ fontSize: "14px" }}>
+                                                    This content is not available right now. When this happens, it is usually because the owner
+                                                    only shared it with a small group of people, changed who can see it, or it is been deleted.
+                                                </p>
                                             </div>
-                                        </div>
+                                        )}
 
-                                        <div className="d-flex justify-content-center flex-wrap mb-3">
-                                            {post.images &&
-                                                post.images.length > 0 &&
-                                                post.images.map((image, index) => (
-                                                    <Image
-                                                        key={index}
-                                                        src={image.media_path}
-                                                        alt={`Post image ${index + 1}`}
-                                                        className="img-fluid mt-1"
-                                                        width={500}
-                                                        height={300}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
-
-                                                ))}
-
-                                            {post.event && post.event.cover && (
-                                                <div>
-                                                    <Image
-                                                        src={post.event.cover}
-                                                        alt="Event Cover"
-                                                        className="img-fluid mt-1"
-                                                        width={500}
-                                                        height={300}
-                                                        style={{
-                                                            objectFit: "cover",
-                                                        }}
-                                                    />
-
-                                                    <button className="badge btn-primary rounded-pill mt-3">
-                                                        {post.event.start_date}
-                                                    </button>
-                                                    <h5 className="fw-bold mt-2">{post.event.name}</h5>
-                                                </div>
-                                            )}
-
-                                            {post.video && (
-                                                <div
-                                                    className="media-container mt-1"
-                                                    style={{ width: "100%", height: "auto" }}
-                                                >
-                                                    <video
-                                                        controls
-                                                        style={{
-                                                            objectFit: "cover",
-                                                            width: "100%",
-                                                            height: "auto",
-                                                        }}
-                                                    >
-                                                        <source
-                                                            src={post.video.media_path}
-                                                            type="video/mp4"
-                                                        />
-                                                        Your browser does not support the video tag.
-                                                    </video>
-                                                </div>
-                                            )}
-
-                                            {post.audio && (
-                                                <div className="media-container w-100">
-                                                    <audio controls className="w-100">
-                                                        <source src={post.audio.media_path} />
-                                                        Your browser does not support the audio tag.
-                                                    </audio>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 mt-5 px-3">
-                                            <div className="d-flex align-items-center mb-2 mb-md-0">
-                                                <span className="me-2">
+                                        <div className="post-card-info">
+                                            {/* Reaction Section */}
+                                            <div className="post-card-reactions">
+                                                <span className="post-card-reaction-count">
                                                     {post.reaction ? post.reaction.count || 0 : 0}
                                                 </span>
-                                                <i className="bi bi-hand-thumbs-up"></i>
+                                                <i className="bi bi-hand-thumbs-up post-card-icon reaction-icon"></i>
                                             </div>
-                                            <div className="d-flex flex-wrap align-items-center text-muted">
-                                                <span className="me-3 d-flex align-items-center">
-                                                    <i className="bi bi-eye me-1"></i>
+
+                                            {/* Post Engagement Stats */}
+                                            <div className="post-card-stats">
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-eye post-card-icon"></i>
                                                     {post.view_count || 0}
                                                 </span>
-                                                <span className="me-3 d-flex align-items-center">
-                                                    <i className="bi bi-chat-dots me-1"></i>
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-chat-dots post-card-icon"></i>
                                                     {post.comment_count || 0} comments
                                                 </span>
-                                                <span className="d-flex align-items-center">
-                                                    <i className="bi bi-share me-1"></i>
+                                                <span className="post-card-stat">
+                                                    <i className="bi bi-share post-card-icon"></i>
                                                     {post.share_count || 0} Shares
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <hr className="my-1" />
 
-                                        <div className="d-flex justify-content-between">
-                                            <button
-                                                className="btn border-0 d-flex align-items-center"
-                                                onClick={() => LikePost(post.id)}
-                                            >
-                                                <i className="bi bi-emoji-smile me-2"></i> Reaction
-                                            </button>
+                                        <hr className="post-divider" />
+
+                                        <div className="post-actions">
+                                            <div style={{ position: "relative", display: "inline-block" }}>
+                                                <button
+                                                    className="post-action-btn"
+                                                    onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                    onMouseLeave={() => setActiveReactionPost(null)}
+                                                    onClick={() => {
+                                                        setActiveReactionPost(activeReactionPost === post.id ? null : post.id);
+                                                    }}
+                                                >
+                                                    <span style={{ fontSize: "18px", marginRight: "8px" }}>
+
+                                                        {postReactions[post.id] || (post.reaction?.reaction_type ?
+                                                            reactionEmojis[
+                                                            Object.keys(reactionValues).find(
+                                                                key => reactionValues[key] === Number(post.reaction.reaction_type)
+                                                            )
+                                                            ] : "😊")}
+                                                    </span>
+                                                    Reaction
+                                                </button>
+
+                                                {activeReactionPost === post.id && (
+                                                    <div
+                                                        style={{
+                                                            position: "absolute",
+                                                            bottom: "100%",
+                                                            left: "0",
+                                                            zIndex: 1000,
+                                                            backgroundColor: "white",
+                                                            borderRadius: "5px",
+                                                        }}
+                                                        onMouseEnter={() => setActiveReactionPost(post.id)}
+                                                        onMouseLeave={() => setActiveReactionPost(null)}
+                                                    >
+                                                        <ReactionBarSelector
+                                                            onSelect={(reaction) => handleReactionSelect(reaction, post.id)}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
 
                                             <button
-                                                className="btn border-0 d-flex align-items-center"
+                                                className="post-action-btn"
                                                 onClick={() => handleCommentToggle(post.id)}
                                             >
-                                                <i className="bi bi-chat me-2"></i> Comments
+                                                <i className="bi bi-chat"></i> Comments
                                             </button>
 
-                                            <div className="dropdown">
+                                            <div className="post-dropdown">
                                                 <button
-                                                    className="btn border-0"
+                                                    className="post-action-btn dropdown-toggle"
                                                     type="button"
-                                                    id="dropdownMenuButton3"
+                                                    id={`dropdownMenuButton-${post.id}`}
                                                     data-bs-toggle="dropdown"
                                                     aria-expanded="false"
                                                 >
-                                                    <i className="bi bi-share me-2"></i> Share
+                                                    <i className="bi bi-share"></i> Share
                                                 </button>
 
                                                 <ul
@@ -879,13 +1099,16 @@ export default function Savedposts() {
                                                         <hr className="dropdown-divider" />
                                                     </li>
                                                     <li className=" align-items-center d-flex">
-                                                        <Link
+                                                        <button
                                                             className="text-decoration-none dropdown-item text-muted custom-hover"
-                                                            href="#"
+                                                            onClick={() => {
+                                                                setShareShowTimelineModal(true)
+                                                                setPostID(post.id)
+                                                            }}
                                                         >
                                                             <i className="bi bi-bookmark-check pe-2"></i> Post
                                                             on Timeline
-                                                        </Link>
+                                                        </button>
                                                     </li>
                                                     <li className=" align-items-center d-flex">
                                                         <span
@@ -897,24 +1120,50 @@ export default function Savedposts() {
                                                     </li>
                                                 </ul>
                                             </div>
+
                                         </div>
 
-                                        <hr className="my-1" />
+                                        <hr className="post-divider" />
 
                                         <div className="d-flex mb-3 mt-2">
-                                            <button
-                                                className="btn me-2 d-flex align-items-center rounded-1"
-                                                style={{
-                                                    backgroundColor: "#C19A6B",
-                                                    borderRadius: "10px",
-                                                    color: "#fff",
-                                                }}
-                                            >
-                                                <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
-                                            </button>
-                                            <button className="btn btn-danger d-flex align-items-center rounded-1">
-                                                <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
-                                            </button>
+
+                                            {settings["chck-cup_of_coffee"] === "1" &&
+                                                userId &&
+                                                post.user_id !== userId && (
+                                                    <button
+                                                        className="btn me-2 d-flex align-items-center rounded-1 fw-semibold"
+                                                        onClick={() => openModalCupCoffee(post.id)}
+                                                        style={{
+                                                            backgroundColor: "#A87F50",
+                                                            borderRadius: "10px",
+                                                            color: "#fff",
+                                                        }}
+                                                    >
+                                                        <i className="bi bi-cup-hot me-2"></i>Cup of Coffee
+                                                    </button>
+                                                )}
+
+
+                                            {activeCupCoffeeId === post.id && (
+                                                <CupofCoffee postId={post.id} handleClose={closeModalCupCoffee} />
+                                            )}
+
+
+                                            {settings["chck-great_job"] === "1" &&
+                                                userId && post.user_id !== userId && (
+                                                    <button
+                                                        className="btn btn-danger d-flex align-items-center rounded-1 fw-semibold"
+                                                        onClick={() => openModalGreatJob(post.id)}
+                                                    >
+                                                        <i className="bi bi-hand-thumbs-up me-2"></i> Great Job
+                                                    </button>
+                                                )}
+
+
+                                            {activeGreatJobId === post.id && (
+                                                <Greatjob postId={post.id} handleClose={closeModalGreatJob} />
+                                            )}
+
                                         </div>
 
                                         {showComments[post.id] && (
@@ -924,7 +1173,7 @@ export default function Savedposts() {
                                                         <div key={comment.id} className="mb-3">
                                                             <div className="d-flex">
                                                                 <Image
-                                                                    src={comment.avatar}
+                                                                    src={comment.avatar || "/assets/images/userplaceholder.png"}
                                                                     alt="Profile"
                                                                     className="rounded-circle me-1 mt-2"
                                                                     width={40}
@@ -999,7 +1248,7 @@ export default function Savedposts() {
                                                                                     className="d-flex mb-2 mx-5"
                                                                                 >
                                                                                     <Image
-                                                                                        src={reply.avatar}
+                                                                                        src={reply.avatar || "/assets/images/userplaceholder.png"}
                                                                                         alt="Profile"
                                                                                         className="rounded-circle me-1 mt-2"
                                                                                         width={40}
@@ -1102,7 +1351,7 @@ export default function Savedposts() {
 
                                         <div className="d-flex align-items-center mt-3">
                                             <Image
-                                                src={userdata.data.avatar}
+                                                src={userdata.data.avatar || "/assets/images/userplaceholder.png"}
                                                 alt="User Avatar"
                                                 className="rounded-5"
                                                 width={40}
@@ -1125,21 +1374,85 @@ export default function Savedposts() {
                                                 </button>
                                             </form>
                                         </div>
+
+
+
+                                        <hr />
+
+                                        {
+                                            post?.post_advertisement ? (
+
+
+                                                <div className="card mb-3 mt-4 p-2 border-secondary">
+                                                    <div className="d-flex flex-column flex-md-row  align-items-center align-items-md-start">
+                                                        <div className="flex-shrink-0 mb-3 mb-md-0 align-self-center">
+                                                            <Image
+                                                                src={post?.post_advertisement.image || "/assets/images/userplaceholder.png"}
+                                                                width={200}
+                                                                height={100}
+                                                                className="img-fluid rounded-4"
+                                                                alt="adv-img"
+                                                                style={{ objectFit: "conatin", }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex-grow-1 ms-md-3 align-self-center">
+                                                            <div className="card-body advertistment-details">
+                                                                <a href={`${post?.post_advertisement.link}`} className="card-title text-primary text-decoration-none " target="_blank">{post?.post_advertisement.link}</a>
+                                                                <h5 className="card-title mb-lg-3">{post?.post_advertisement.title}</h5>
+                                                                <div className="card-text mb-lg-2">
+                                                                    {post?.post_advertisement.body ? (
+                                                                        <span>
+                                                                            <ReadMoreLess
+                                                                                charLimit={70}
+                                                                                readMoreText="read more"
+                                                                                readLessText="read less"
+                                                                            >
+                                                                                {post?.post_advertisement.body}
+                                                                            </ReadMoreLess>
+                                                                        </span>
+                                                                    ) : null}
+                                                                </div>
+                                                                <p className="card-text"><small className="text-body-secondary">{post?.post_advertisement.created_at.split(' ')[0]}</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            ) : null
+                                        }
+
+                                        {
+                                            userId !== post?.user_id && (
+                                                <>
+                                                    {/* <hr /> */}
+                                                    <div className="text-center mt-2">
+                                                        <button
+                                                            className="btn btn-outline-primary"
+                                                            onClick={() => {
+                                                                setShowAdvertismentModal(true);
+                                                                setPostID(post.id);
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-aspect-ratio-fill"></i> Advertise Here
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )
+                                        }
                                     </div>
+
+
+
                                 </div>
                             ))}
 
-                            <div className="d-grid gap-2 col-3 mx-auto mt-4">
-                                {noMorePosts ? (
-                                    <button className="btn btn-primary" disabled>
-                                        No more posts
-                                    </button>
-                                ) : (
-                                    <button className="btn btn-primary" disabled={loading}>
-                                        {loading ? "Loading..." : ""}
-                                    </button>
-                                )}
+                            <div className="card col-md-12 shadow-lg border-0 rounded-3 mt-2 mb-2">
+                                <div className="my-sm-5 py-sm-5 text-center">
+                                    <i className="display-1 text-secondary bi bi-card-list" />
+                                    <h5 className="mt-2 mb-3 text-body text-muted fw-bold">No More Posts to Show</h5>
+                                </div>
                             </div>
+
                         </div>
                         <div className="col-md-3 p-3 rounded">
                             <Leftnav />
@@ -1147,6 +1460,69 @@ export default function Savedposts() {
                     </div>
                 </div>
             </div>
+
+            {
+                showReportPostModal && (
+                    <ReportPostModal
+
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        showReportPostModal={showReportPostModal}
+                        setShowReportPostModal={setShowReportPostModal}
+                    />
+                )}
+
+
+            {
+                showSavePostModal && (
+                    <SavePostModal
+                        postID={postID}
+                        posts={posts}
+                        setPosts={setPosts}
+                        saveFeed="saveFeed"
+                        showSavePostModal={showSavePostModal}
+                        setShowSavePostModal={setShowSavePostModal}
+                    />
+                )}
+
+            {
+                donationModal && (
+                    <MakeDonationModal
+                        donationID={donationID}
+                        donationModal={donationModal}
+                        setDonationModal={setDonationModal}
+                        posts={posts}
+                        setPosts={setPosts}
+                    />
+                )
+
+            }
+
+            {
+                sharePostTimelineModal && (
+                    <SharePostTimelineModal
+                        sharePostTimelineModal={sharePostTimelineModal}
+                        setShareShowTimelineModal={setShareShowTimelineModal}
+                        postID={postID}
+                    />
+                )
+            }
+
+
+            {
+                showAdvertismentModal && (
+
+                    <AdvertismentModal
+                        showAdvertismentModal={showAdvertismentModal}
+                        setShowAdvertismentModal={setShowAdvertismentModal}
+                        postID={postID}
+                    />
+                )
+
+            }
+
+
         </div>
     );
 }

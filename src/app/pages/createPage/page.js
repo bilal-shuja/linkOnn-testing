@@ -1,15 +1,15 @@
 "use client";
 
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
-   
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { toast } from "react-toastify";
 
 export default function Pageform() {
-    
+
   const router = useRouter();
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
@@ -20,7 +20,7 @@ export default function Pageform() {
   const [cover, setCover] = useState(null);
   const [category, setCategory] = useState("");
   const [isClient, setIsClient] = useState(false);
-
+  const settings = useSiteSettings();
   const api = createAPI();
 
   useEffect(() => {
@@ -95,12 +95,14 @@ export default function Pageform() {
   };
 
   if (!isClient) {
-    return <div>Loading...</div>;
+    return null;
   }
+
+  if (!settings) return null;
 
   return (
     <div>
-        
+
       <div className="container-fluid bg-light">
         <div className="container mt-3 pt-5">
           <div className="row">
@@ -145,30 +147,15 @@ export default function Pageform() {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                       >
-                        <option value="">Select Category</option>{" "}
-                        <option value="1">Arts & Entertainment</option>
-                        <option value="2">Business & Finance</option>
-                        <option value="3">Education & Learning</option>
-                        <option value="4">Fashion & Beauty</option>
-                        <option value="5">Food & Beverage</option>
-                        <option value="6">Health & Wellness</option>
-                        <option value="7">News & Media</option>
-                        <option value="8">Science & Technology</option>
-                        <option value="9">Sports & Recreation</option>
-                        <option value="10">Travel & Tourism</option>
-                        <option value="11">Community & Social Services</option>
-                        <option value="12">Home & Garden</option>
-                        <option value="13">Real Estate</option>
-                        <option value="14">Automotive</option>
-                        <option value="15">Pets & Animals</option>
-                        <option value="16">Music & Performing Arts</option>
-                        <option value="17">Photography & Visual Arts</option>
-                        <option value="18">Legal & Government</option>
-                        <option value="19">Environmental & Nature</option>
-                        <option value="20">Hobbies & Crafts</option>
-                        <option value="21">Books & Literature</option>
-                        <option value="22">Religion & Spirituality</option>
+                        <option value="">Select Category</option>
+                        {settings?.page_categories &&
+                          Object.entries(settings.page_categories).map(([key, value]) => (
+                            <option key={key} value={key}>
+                              {value}
+                            </option>
+                          ))}
                       </select>
+
                     </div>
                     <div className="w-50">
                       <label className="form-label text-muted px-1">
@@ -223,14 +210,14 @@ export default function Pageform() {
                     ></textarea>
 
                     <label className="text-secondary form-label">
-                      {" "}
-                      <small> Character limit: 500 </small>{" "}
+
+                      <small> Character limit: 500 </small>
                     </label>
                   </div>
 
                   <div className="mt-4 d-flex justify-content-end">
                     <button className="btn btn-primary" onClick={addPage}>
-                      Create Event
+                      Create Page
                     </button>
                   </div>
                 </div>

@@ -1,5 +1,18 @@
-module.exports = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    domains: ['demo.socioon.com'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: process.env.NEXT_PUBLIC_API_BASE_URL.replace("https://", ""),
+        pathname: "/uploads/photos/**",
+      },
+    ],
+    domains: [process.env.NEXT_PUBLIC_API_BASE_URL.replace("https://", "")],
+    minimumCacheTTL: 60,
   },
-}
+  reactStrictMode: true,
+  // output: 'export', 
+};
+
+module.exports = nextConfig;

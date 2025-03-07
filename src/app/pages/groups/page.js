@@ -1,18 +1,19 @@
 "use client";
 
- 
+
 import Rightnav from "@/app/assets/components/rightnav/page";
 import React, { useState, useEffect } from "react";
 import createAPI from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-   
+import { Modal, Spinner } from 'react-bootstrap';
 import { toast } from "react-toastify";
-import useConfirmationToast from "@/app/hooks/useConfirmationToast";
+import useConfirmationToast from "@/app/pages/Modals/useConfirmationToast";
 import Link from "next/link";
+import { useSiteSettings } from "@/context/SiteSettingsContext"
 
 export default function Groups() {
-    
+
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState({ suggested: false, myGroups: false });
   const [groups, setGroups] = useState([]);
@@ -24,6 +25,10 @@ export default function Groups() {
   const itemsPerPage = 6;
   const router = useRouter();
   const api = createAPI();
+  const [groupToJoin, setGroupToJoin] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [loadingJoin, setLoadingJoin] = useState(false);
+  const settings = useSiteSettings()
 
   const fetchSuggestedGroups = async (page) => {
     const offset = (page - 1) * itemsPerPage;
@@ -124,12 +129,61 @@ export default function Groups() {
     cancelText: 'Cancel',
   });
 
+  const handleJoinGroup = async (groupId) => {
+    setGroupToJoin(groupId);
+    setShowModal(true);
+  };
+
+  const handleConfirmJoinGroup = async () => {
+    setLoadingJoin(true);
+    try {
+      const response = await api.post("/api/join-group", {
+        group_id: groupToJoin,
+      });
+
+      if (response.data.code === "200") {
+        setGroups((prevGroups) =>
+          prevGroups.map((group) =>
+            group.id === groupToJoin ? { ...group, is_joined: "1" } : group
+          )
+        );
+        toast.success(response.data.message);
+      } else {
+        toast.error(`Error: ${response.data.message}`);
+      }
+    } catch (error) {
+      toast.error("Error while Joining group");
+    } finally {
+      setLoadingJoin(false);
+      setShowModal(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+
   const suggestedTotalPages = totalSuggested ? Math.ceil(totalSuggested / itemsPerPage) : 0;
   const myGroupsTotalPages = totalMyGroups ? Math.ceil(totalMyGroups / itemsPerPage) : 0;
 
+
+  if (!settings) return null
+
+  if (settings["chck-groups"] !== "1")
+
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+
+
   return (
     <div>
-        
+
       <div className="container-fluid bg-light">
         <div className="container pt-5">
           <div className="row">
@@ -186,10 +240,7 @@ export default function Groups() {
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4>All Groups</h4>
                         <div className="d-flex align-items-center">
-                          <select className="form-select me-2" style={{ width: "150px" }}>
-                            <option>Newest</option>
-                            <option>Alphabetical</option>
-                          </select>
+
                           <button
                             className="btn btn-primary"
                             onClick={() => router.push("/pages/createGroup")}
@@ -229,50 +280,45 @@ export default function Groups() {
                               {groups.map((group) => (
                                 <div key={group.id} className="col-md-4 mb-4">
                                   <div className="card text-center">
-                                    {group.avatar ? (
-                                      <Image
-                                        src={group.avatar}
-                                        alt="Group Image"
-                                        className="card-img-top mx-auto mt-3"
-                                        width={80}
-                                        height={200}
-                                        style={{ objectFit: "cover" }}
-                                      />
-                                    ) : (
-                                      <div
-                                        style={{
-                                          backgroundColor: "black",
-                                          color: "white",
-                                          width: "200px",
-                                          height: "200px",
-                                          display: "flex",
-                                          justifyContent: "center",
-                                          alignItems: "center",
-                                          fontSize: "12px",
-                                          fontWeight: "bold",
-                                        }}
-                                        className="card-img-top mx-auto mt-3"
-                                      >
-                                        No image
-                                      </div>
-                                    )}
+
+                                    <Image
+                                      src={group.avatar || "/assets/images/placeholder-image.png"}
+                                      alt="Group Image"
+                                      className="d-block mx-auto mt-1 rounded-circle"
+                                      width={150}
+                                      height={150}
+                                    // style={{ objectFit: "cover" }}
+                                    />
+
 
                                     <div className="card-body">
-                                      <h5 className="card-title mb-1">{group.group_title}</h5>
+                                      <h5 className="card-title mb-1"
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => router.push(`/pages/groups/groupTimeline/${group.id}`)}
+                                      >{group.group_title}</h5>
                                       <p className="text-muted align-items-center">
                                         <i className="bi bi-globe pe-2"></i>
                                         {group.category}
                                       </p>
-                                      <div className="d-flex justify-content-around align-items-center border-bottom">
+                                      <div className="d-flex justify-content-around align-items-center border-bottom py-2">
                                         <div className="text-center">
-                                          <p className="fs-5 text-dark fw-semibold mb-0">{group.members_count}</p>
-                                          <p className="mb-1">Members</p>
+                                          <p className="fs-6 text-dark fw-semibold mb-0">{group?.members_count || 0}</p>
+                                          <p className="mb-1 text-secondary">Members</p>
+                                        </div>
+                                        <div className="text-center">
+                                          <p className="fs-5 text-dark fw-semibold mb-0">{group?.post_count || 0}</p>
+                                          <p className="mb-1 text-secondary">Posts</p>
                                         </div>
                                       </div>
-                                      <button className="btn btn-outline-success mt-3">
-                                        <i className="bi bi-check-circle-fill pe-2"></i>
-                                        {group.is_joined === 1 ? "Joined" : "Join"}
-                                      </button>
+                                      {group.is_joined === "1" ? (
+                                        <button className="btn btn-outline-success btn-sm mt-2">
+                                          <i className="bi bi-check-circle-fill pe-1"> </i>
+                                          Joined</button>
+                                      ) : (
+                                        <button className="btn btn-outline-primary btn-sm mt-2"
+                                          onClick={() => handleJoinGroup(group.id)}
+                                        >+ Join Group</button>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -355,54 +401,41 @@ export default function Groups() {
                             myGroups.map((group) => (
                               <div key={group.id} className="col-md-4 mb-4">
                                 <div className="card text-center">
-                                  {group.avatar ? (
-                                    <Image
-                                      src={group.avatar}
-                                      alt="Group Image"
-                                      className="d-block mx-auto mt-1 rounded-circle"
-                                      width={150}
-                                      height={150}
-                                      // style={{ objectFit: "cover" }}
-                                    />
-                                  ) : (
-                                    <div
-                                      style={{
-                                        backgroundColor: "black",
-                                        color: "white",
-                                        width: "150px",
-                                        height: "150px",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        fontSize: "12px",
-                                        fontWeight: "bold",
-                                        textAlign: "center",
-                                      }}
-                                      className="d-flex justify-content-center align-items-center mx-auto mt-1 rounded-circle"
-                                    >
-                                      No image
-                                    </div>
-                                  )}
+                                  <Image
+                                    src={group.avatar || "/assets/images/placeholder-image.png"}
+                                    alt="Group Image"
+                                    className="d-block mx-auto mt-1 rounded-circle"
+                                    width={150}
+                                    height={150}
+                                  // style={{ objectFit: "cover" }}
+                                  />
 
                                   <div className="card-body">
-                                    <h5 className="card-title mb-1">{group.group_title}</h5>
+                                    <h5 className="card-title mb-1"
+                                      style={{ cursor: 'pointer' }}
+                                      onClick={() => router.push(`/pages/groups/groupTimeline/${group.id}`)}
+                                    >{group.group_title}</h5>
                                     <div className="text-muted align-items-center fs-6">
                                       <i className="bi bi-globe pe-2 fs-6"></i>
                                       {group.category}
                                     </div>
-                                    <div className="d-flex justify-content-around align-items-center border-bottom">
+                                    <div className="d-flex justify-content-around align-items-center border-bottom py-2">
                                       <div className="text-center">
-                                        <p className="fs-6 text-dark fw-semibold mb-0">{group.members_count}</p>
-                                        <p className="mb-1">Members</p>
+                                        <p className="fs-6 text-dark fw-semibold mb-0">{group?.members_count || 0}</p>
+                                        <p className="mb-1 text-secondary">Members</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="fs-5 text-dark fw-semibold mb-0">{group?.post_count || 0}</p>
+                                        <p className="mb-1 text-secondary">Posts</p>
                                       </div>
                                     </div>
                                     <div className="d-flex justify-content-center mt-3">
-                                      <Link 
-                                          href={`/pages/groups/${group.id}`}
+                                      <Link
+                                        href={`/pages/groups/editGroup/${group.id}`}
                                         className="btn btn-sm btn-outline-info me-2">
-                                      <i className="bi bi-pencil"></i>&nbsp;
+                                        <i className="bi bi-pencil"></i>&nbsp;
                                         Edit
-                                        </Link>
+                                      </Link>
                                       <button
                                         className="btn btn-sm btn-outline-danger"
                                         onClick={() => handleDeleteGroup(group.id)}
@@ -439,6 +472,24 @@ export default function Groups() {
           </div>
         </div>
       </div>
+      <Modal show={showModal} centered onHide={handleCloseModal}>
+        <Modal.Body className="text-center">
+          <i className="bi bi-exclamation-circle text-danger pe-2"></i>
+          Are you sure you want to join this group?
+        </Modal.Body>
+        <Modal.Footer>
+          <button className="btn btn-sm btn-primary ps-4 pe-4" onClick={handleConfirmJoinGroup} disabled={loadingJoin}>
+            {loadingJoin ? (
+              <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+            ) : (
+              "Yes, Join"
+            )}
+          </button>
+          <button className="btn btn-sm btn-secondary ps-4 pe-4" onClick={handleCloseModal} disabled={loadingJoin}>
+            Cancel
+          </button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
