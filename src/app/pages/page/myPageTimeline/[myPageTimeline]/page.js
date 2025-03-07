@@ -1,7 +1,9 @@
 "use client";
+import React, { useState, useEffect } from "react";
+import createAPI from "@/app/lib/axios";
+import Image from "next/image";
 import { use } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { toast } from "react-toastify";
 import createAPI from "@/app/lib/axios";
 import EmojiPicker from 'emoji-picker-react';
@@ -44,6 +46,7 @@ import ModuleUnavailable from "@/app/pages/Modals/ModuleUnavailable";
 export default function MyPageTimeline({ params }) {
 
     const settings = useSiteSettings()
+
 
     const router = useRouter();
     const api = createAPI();
@@ -896,6 +899,7 @@ export default function MyPageTimeline({ params }) {
         <>
             <div className="container-fluid">
                 <div className="container mt-3 pt-2">
+
                     <div className="row">
 
                         <div className="col-12 col-md-8">
